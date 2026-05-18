@@ -607,20 +607,18 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
           <div class="divider"></div>
           <div class="sec-title">Distribuição por tipo</div>
           <div id="stk-dist" style="margin-top:8px"></div>
+          <div class="divider"></div>
+          <div class="sec-title">Entradas e saídas por mês</div>
+          <div id="stk-monthly" style="margin-top:8px"></div>
         </div>
 
         <!-- OPERAÇÕES -->
         <div id="page-ops" class="page">
           <div class="metrics" id="ops-metrics"></div>
           <div class="divider"></div>
-          <div class="sec-title">Recargas</div>
-          <div id="ops-recharges"></div>
+          <div id="ops-valor-mes"></div>
           <div class="divider"></div>
-          <div class="sec-title">Ativações</div>
-          <div id="ops-activations"></div>
-          <div class="divider"></div>
-          <div class="sec-title">Reativações</div>
-          <div id="ops-reactivations"></div>
+          <div id="ops-sections"></div>
         </div>
 
         <!-- HISTÓRICO -->
@@ -1006,6 +1004,7 @@ function setPeriod(p,btn){
   document.getElementById('stk-dist').innerHTML=
     '<div class="bar-row"><span class="bar-lbl">Orgânico</span><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(normal/tot*100)+'%"></div></div><span class="bar-num">'+normal+'</span></div>'+
     '<div class="bar-row"><span class="bar-lbl">Eventos</span><div class="bar-track"><div class="bar-fill amber" style="width:'+Math.round(ev/tot*100)+'%"></div></div><span class="bar-num">'+ev+'</span></div>';
+  renderStockMonthly();
 }
 function applyFilter(){
   var from=document.getElementById('filter-from').value;
@@ -1050,27 +1049,128 @@ function copyIds(){
   });
 }
 
+/* ── STOCK MONTHLY ───────────────────── */
+function renderStockMonthly(){
+  var chips=S.recs.filter(function(r){return r.nature==='chip'});
+  var entries=S.recs.filter(function(r){return r.nature==='entry'});
+  var months={};
+  chips.forEach(function(r){
+    var d=new Date(r.date);
+    var ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    var key=ms[d.getMonth()]+'/'+d.getFullYear();
+    if(!months[key])months[key]={out:0,in:0};
+    months[key].out+=(r.qty||0);
+  });
+  entries.forEach(function(r){
+    var d=new Date(r.date);
+    var ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    var key=ms[d.getMonth()]+'/'+d.getFullYear();
+    if(!months[key])months[key]={out:0,in:0};
+    months[key].in+=(r.qty||0);
+  });
+  var keys=Object.keys(months);
+  if(!keys.length){document.getElementById('stk-monthly').innerHTML='<div class="empty">Nenhum dado mensal ainda.</div>';return;}
+  var html='<table class="rtable"><thead><tr><th>Mês</th><th>Entradas</th><th>Saídas</th><th>Saldo</th></tr></thead><tbody>';
+  keys.forEach(function(k){
+    var m=months[k];
+    var saldo=m.in-m.out;
+    var cor=saldo>=0?'var(--accent)':'var(--red)';
+    html+='<tr><td style="font-weight:500">'+k+'</td><td style="color:var(--teal)">+'+m.in+'</td><td style="color:var(--amber)">-'+m.out+'</td><td style="color:'+cor+';font-weight:500">'+(saldo>=0?'+':'')+saldo+'</td></tr>';
+  });
+  html+='</tbody></table>';
+  document.getElementById('stk-monthly').innerHTML=html;
+}
+
 /* ── OPS ─────────────────────────────── */
 function renderOps(){
   var rch=S.recs.filter(function(r){return r.nature==='recharge'});
   var act=S.recs.filter(function(r){return r.nature==='activation'});
   var rxt=S.recs.filter(function(r){return r.nature==='reactivation'});
+  var all=[...rch,...act,...rxt];
+
+  // Total valor recargas por mes
+  var valMes={};
+  rch.forEach(function(r){
+    var d=new Date(r.date);
+    var ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    var key=ms[d.getMonth()]+'/'+d.getFullYear();
+    valMes[key]=(valMes[key]||0)+(parseFloat(r.value)||0);
+  });
+  var totalVal=rch.reduce(function(a,r){return a+(parseFloat(r.value)||0)},0);
+
   document.getElementById('ops-metrics').innerHTML=
     '<div class="mc a"><div class="mc-val">'+rch.length+'</div><div class="mc-lbl">Recargas</div></div>'+
     '<div class="mc b"><div class="mc-val">'+act.length+'</div><div class="mc-lbl">Ativações</div></div>'+
-    '<div class="mc p"><div class="mc-val">'+rxt.length+'</div><div class="mc-lbl">Reativações</div></div>';
-  function listH(items,icoSvg,cls){
-    if(!items.length)return '<div class="empty" style="padding:16px">Nenhum registro ainda.</div>';
-    return items.map(function(r){
-      return '<div class="rec"><div class="rec-ico '+cls+'">'+icoSvg+'</div><div class="rec-body"><div class="rec-title">'+(r.requester||'—')+'</div><div class="rec-sub">'+(r.number||r.reason||'—')+'</div></div><div class="rec-meta"><span class="resp-tag">'+r.responsavel+'</span><div class="rec-date" style="margin-top:4px">'+new Date(r.date).toLocaleDateString('pt-BR')+'</div></div></div>';
-    }).join('');
+    '<div class="mc p"><div class="mc-val">'+rxt.length+'</div><div class="mc-lbl">Reativações</div></div>'+
+    (totalVal>0?'<div class="mc g"><div class="mc-val" style="font-size:18px">R$'+totalVal.toFixed(2)+'</div><div class="mc-lbl">Total recargas</div></div>':'');
+
+  // Valor por mês
+  var valKeys=Object.keys(valMes);
+  var valHtml='';
+  if(valKeys.length){
+    valHtml='<div class="sec-title">Valor de recargas por mês</div><table class="rtable" style="margin-bottom:0"><thead><tr><th>Mês</th><th>Qtd</th><th>Valor total</th></tr></thead><tbody>';
+    valKeys.forEach(function(k){
+      var qtd=rch.filter(function(r){var d=new Date(r.date);var ms=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];return ms[d.getMonth()]+"/"+d.getFullYear()===k}).length;
+      valHtml+='<tr><td style="font-weight:500">'+k+'</td><td>'+qtd+'</td><td style="color:var(--accent);font-weight:500">R$ '+valMes[k].toFixed(2)+'</td></tr>';
+    });
+    valHtml+='</tbody></table>';
   }
+  document.getElementById('ops-valor-mes').innerHTML=valHtml;
+
+  // Seções por tipo agrupadas por mês
   var boltSvg='<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
   var actSvg='<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
   var refSvg='<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>';
-  document.getElementById('ops-recharges').innerHTML=listH(rch,boltSvg,'ico-a');
-  document.getElementById('ops-activations').innerHTML=listH(act,actSvg,'ico-b');
-  document.getElementById('ops-reactivations').innerHTML=listH(rxt,refSvg,'ico-p');
+
+  function buildSection(title,items,icoSvg,cls,id){
+    if(!items.length)return '<div class="sec-title">'+title+'</div><div class="empty" style="padding:12px">Nenhum registro ainda.</div>';
+    // group by month
+    var groups={};
+    items.forEach(function(r){
+      var d=new Date(r.date);
+      var ms=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+      var key=ms[d.getMonth()]+"/"+d.getFullYear();
+      if(!groups[key])groups[key]=[];
+      groups[key].push(r);
+    });
+    var html='<div class="sec-title">'+title+' <span style="color:var(--text3);font-weight:400;font-size:11px">'+items.length+' total</span></div>';
+    Object.keys(groups).forEach(function(mes){
+      var grp=groups[mes];
+      var uid=id+'_'+mes.replace("/","_");
+      var preview=grp.slice(0,3);
+      var rest=grp.slice(3);
+      html+='<div style="margin-bottom:14px">';
+      html+='<div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:6px 10px;background:var(--surface3);border-radius:var(--radius);margin-bottom:4px;display:flex;justify-content:space-between"><span>'+mes+'</span><span>'+grp.length+' lançamentos</span></div>';
+      preview.forEach(function(r){
+        html+='<div class="rec"><div class="rec-ico '+cls+'">'+icoSvg+'</div><div class="rec-body"><div class="rec-title">'+( r.requester||'—')+'</div><div class="rec-sub">'+( r.number||r.reason||'—')+'</div></div><div class="rec-meta"><span class="resp-tag">'+r.responsavel+'</span><div class="rec-date" style="margin-top:4px">'+new Date(r.date).toLocaleDateString('pt-BR')+'</div></div></div>';
+      });
+      if(rest.length){
+        html+='<div id="'+uid+'_rest" style="display:none">';
+        rest.forEach(function(r){
+          html+='<div class="rec"><div class="rec-ico '+cls+'">'+icoSvg+'</div><div class="rec-body"><div class="rec-title">'+( r.requester||'—')+'</div><div class="rec-sub">'+( r.number||r.reason||'—')+'</div></div><div class="rec-meta"><span class="resp-tag">'+r.responsavel+'</span><div class="rec-date" style="margin-top:4px">'+new Date(r.date).toLocaleDateString('pt-BR')+'</div></div></div>';
+        });
+        html+='</div>';
+        html+='<button onclick="toggleExpand(\''+uid+'_rest\',this)" style="margin-top:6px;background:transparent;border:1px solid var(--border2);color:var(--text3);font-size:11px;padding:4px 12px;border-radius:20px;cursor:pointer;font-family:var(--font)">Ver mais '+rest.length+' lançamentos ↓</button>';
+      }
+      html+='</div>';
+    });
+    return html;
+  }
+
+  document.getElementById('ops-sections').innerHTML=
+    buildSection('Recargas',rch,boltSvg,'ico-a','rch')+
+    '<div class="divider"></div>'+
+    buildSection('Ativações',act,actSvg,'ico-b','act')+
+    '<div class="divider"></div>'+
+    buildSection('Reativações',rxt,refSvg,'ico-p','rxt');
+}
+
+function toggleExpand(id,btn){
+  var el=document.getElementById(id);
+  if(!el)return;
+  var open=el.style.display!=='none';
+  el.style.display=open?'none':'block';
+  btn.textContent=open?btn.textContent.replace('↑','↓').replace('Ocultar','Ver mais'):btn.textContent.replace('↓','↑').replace('Ver mais','Ocultar');
 }
 
 /* ── HISTORY ─────────────────────────── */
