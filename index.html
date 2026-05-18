@@ -760,7 +760,7 @@ function doLogin(){
   }
   document.getElementById('me-date').value=new Date().toISOString().slice(0,10);
   updateSidebar();
-  setSyncStatus('idle');
+  loadFromSheets();
 }
 
 function doLogout(){
@@ -899,45 +899,37 @@ function setSyncStatus(s,msg){
   else{dot.className='sdot';lbl.textContent='Não configurado';}
 }
 
-/* ── SHEETS ──────────────────────────── */
-function sheetsUrl(range){return 'https://sheets.googleapis.com/v4/spreadsheets/'+S.sheetId+'/values/'+encodeURIComponent(range)+'?key='+S.apiKey}
-function sheetsAppendUrl(){return 'https://sheets.googleapis.com/v4/spreadsheets/'+S.sheetId+'/values/lancamentos!A:A:append?valueInputOption=RAW&key='+S.apiKey}
+/* ── APPS SCRIPT ─────────────────────── */
+var SCRIPT_URL='https://script.google.com/macros/s/AKfycbwiFN7NWYmJ0QraGqsk413ZvO48czCWgLbuvJ0RsiihBHyQc9AtnVFpXeZ7OZ1yh1K0/exec';
 function loadFromSheets(){
-  if(!S.sheetId||!S.apiKey)return;
   setSyncStatus('loading');
-  fetch(sheetsUrl('lancamentos!A2:T'))
+  fetch(SCRIPT_URL)
     .then(function(r){return r.json()})
     .then(function(data){
-      if(data.error){setSyncStatus('err',data.error.message);return Promise.reject();}
-      var rows=data.values||[];
+      if(data.error){setSyncStatus('err');return;}
+      var rows=(data.rows||[]).slice(1);
       S.recs=rows.map(function(row){
         return {id:row[0],nature:row[1],sub:row[2],date:row[3],iccid:row[4],qty:parseInt(row[5])||0,licensedName:row[6],licensedId:row[7],event:row[8],number:row[9],value:row[10],requester:row[11],sector:row[12],reason:row[13],plan:row[14],cancelDate:row[15],obs:row[16],supplier:row[17],responsavel:row[18]||'—'};
-      }).reverse();
-      return fetch(sheetsUrl('estoque!B2'));
-    })
-    .then(function(r){return r.json()})
-    .then(function(data){
-      if(data.values&&data.values[0])S.stock=parseInt(data.values[0][0])||S.stock;
+      }).filter(function(r){return r.nature}).reverse();
+      if(data.stock)S.stock=parseInt(data.stock)||S.stock;
       localStorage.setItem('cc_stock',S.stock);
       updateSidebar();setSyncStatus('ok');
     })
-    .catch(function(){});
+    .catch(function(){setSyncStatus('err');});
 }
 function saveToSheets(r){
-  if(!S.sheetId||!S.apiKey)return Promise.resolve();
   setSyncStatus('loading');
-  var row=[[r.id,r.nature,r.sub||'',r.date,r.iccid||'',r.qty||'',r.licensedName||'',r.licensedId||'',r.event||'',r.number||'',r.value||'',r.requester||'',r.sector||'',r.reason||'',r.plan||'',r.cancelDate||'',r.obs||'',r.supplier||'',r.responsavel||'']];
-  return fetch(sheetsAppendUrl(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:row})})
+  var row=[r.id,r.nature,r.sub||'',r.date,r.iccid||'',r.qty||'',r.licensedName||'',r.licensedId||'',r.event||'',r.number||'',r.value||'',r.requester||'',r.sector||'',r.reason||'',r.plan||'',r.cancelDate||'',r.obs||'',r.supplier||'',r.responsavel||''];
+  return fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({row:row})})
     .then(function(r){return r.json()})
     .then(function(data){
-      if(data.error)setSyncStatus('err',data.error.message);
-      else{setSyncStatus('ok');updateStockInSheets();}
+      if(data.ok){setSyncStatus('ok');updateStockInSheets();}
+      else setSyncStatus('err');
     })
     .catch(function(){setSyncStatus('err');});
 }
 function updateStockInSheets(){
-  if(!S.sheetId||!S.apiKey)return;
-  fetch('https://sheets.googleapis.com/v4/spreadsheets/'+S.sheetId+'/values/estoque!B2?valueInputOption=RAW&key='+S.apiKey,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:[[S.stock]]})});
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({updateStock:true,stock:S.stock})}).catch(function(){});
 }
 
 /* ── CONFIG ──────────────────────────── */
