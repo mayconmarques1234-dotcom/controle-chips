@@ -928,8 +928,19 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
       <div class="fg"><label>Alertar abaixo de</label><input type="number" id="contel-cfg-env-min" placeholder="Ex: 100"></div>
     </div>
     <div class="divider" style="margin:16px 0"></div>
-    <div class="fg"><label>WhatsApp para alertas (com DDD, só números)</label><input type="tel" id="contel-cfg-wpp" placeholder="Ex: 34999990000"></div>
+    <div style="font-size:11px;font-weight:500;color:var(--amber);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">📱 WhatsApp automático (CallMeBot)</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.6">Para ativar: adicione <strong style="color:var(--text2)">+34 644 59 34 48</strong> na agenda e envie <strong style="color:var(--text2)">"I allow callmebot to send me messages"</strong>. Você receberá uma API Key.</div>
+    <div class="row2">
+      <div class="fg"><label>Seu número (com código do país)</label><input type="tel" id="contel-cfg-cmb-num" placeholder="Ex: 5534999990000"></div>
+      <div class="fg"><label>API Key do CallMeBot</label><input type="text" id="contel-cfg-cmb-key" placeholder="Ex: 1234567"></div>
+    </div>
+    <div class="divider" style="margin:16px 0"></div>
+    <div style="font-size:11px;font-weight:500;color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">✉️ E-mail automático (via Gmail)</div>
+    <div class="fg"><label>E-mail do coordenador</label><input type="email" id="contel-cfg-email" placeholder="Ex: coordenador@igreen.com.br"></div>
     <div class="fg"><label>Mensagem personalizada (opcional)</label><input type="text" id="contel-cfg-msg" placeholder="Ex: Repor estoque Contel com urgência!"></div>
+    <div class="divider" style="margin:16px 0"></div>
+    <div style="font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">📲 Fallback manual (WhatsApp link)</div>
+    <div class="fg"><label>Número WhatsApp (DDD + número)</label><input type="tel" id="contel-cfg-wpp" placeholder="Ex: 34999990000"></div>
     <div class="divider" style="margin:14px 0"></div>
     <div style="background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);padding:12px 14px">
       <div style="font-size:11px;font-weight:500;color:var(--red);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Ajuste manual de estoque</div>
@@ -978,6 +989,10 @@ var SL={
   envMin:parseInt(localStorage.getItem('contel_env_min')||'100'),
   wpp:localStorage.getItem('contel_wpp')||'',
   msg:localStorage.getItem('contel_msg')||'',
+  callmebotKey:localStorage.getItem('contel_cmb_key')||'8229133',
+  callmebotNum:localStorage.getItem('contel_cmb_num')||'5534920001508',
+  alertEmail:localStorage.getItem('contel_alert_email')||'',
+  iccidRegistry:JSON.parse(localStorage.getItem('contel_iccid_registry')||'[]'),
   log:JSON.parse(localStorage.getItem('contel_log')||'[]')
 };
 var S={
@@ -1211,6 +1226,7 @@ function setSyncStatus(s,msg){
 
 /* ── APPS SCRIPT ─────────────────────── */
 var SCRIPT_URL='https://script.google.com/macros/s/AKfycbwiFN7NWYmJ0QraGqsk413ZvO48czCWgLbuvJ0RsiihBHyQc9AtnVFpXeZ7OZ1yh1K0/exec';
+var WPP_URL='https://script.google.com/macros/s/AKfycbxnlBQdTexHC0TolhdL7AsJ-oHDrHIaqR17YtM57KuHPg2Rxasb7LsdJUz__geapUQ/exec';
 function loadFromSheets(){
   setSyncStatus('loading');
   fetch(SCRIPT_URL)
@@ -1652,6 +1668,10 @@ function renderContelHistory(){
 function saveContelState(){
   localStorage.setItem('contel_chips',SL.chips);
   localStorage.setItem('contel_env',SL.env);
+  localStorage.setItem('contel_cmb_key',SL.callmebotKey||'');
+  localStorage.setItem('contel_cmb_num',SL.callmebotNum||'');
+  localStorage.setItem('contel_alert_email',SL.alertEmail||'');
+  localStorage.setItem('contel_iccid_registry',JSON.stringify(SL.iccidRegistry||[]));
   localStorage.setItem('contel_chips_min',SL.chipsMin);
   localStorage.setItem('contel_env_min',SL.envMin);
   localStorage.setItem('contel_wpp',SL.wpp);
@@ -1677,6 +1697,12 @@ function openContelModal(type){
     document.getElementById('contel-cfg-env-min').value=SL.envMin;
     document.getElementById('contel-cfg-wpp').value=SL.wpp;
     document.getElementById('contel-cfg-msg').value=SL.msg;
+    document.getElementById('contel-cfg-cmb-key').value=SL.callmebotKey;
+    document.getElementById('contel-cfg-cmb-num').value=SL.callmebotNum;
+    document.getElementById('contel-cfg-email').value=SL.alertEmail;
+    var regCount=SL.iccidRegistry?SL.iccidRegistry.length:0;
+    var ri=document.getElementById('contel-registry-info');
+    if(ri)ri.textContent=regCount?regCount+' ICCIDs registrados':'';
     document.getElementById('modal-contel-config').classList.add('open');
   }
 }
@@ -1724,31 +1750,67 @@ function saveContelConfig(){
   toast('Configurações Contel salvas!');
 }
 
-function sendContelAlert(type){
-  if(!SL.wpp){toast('Configure um WhatsApp para alertas em "Configurar mínimos e alerta".');return;}
+function buildAlertLines(type){
   var item=type==='chips'?'chips':'envelopes';
   var qtd=type==='chips'?SL.chips:SL.env;
   var min=type==='chips'?SL.chipsMin:SL.envMin;
-  var lines=[
-    '⚠️ *ALERTA DE ESTOQUE CONTEL — iGreen*',
-    '',
-    'O estoque de *'+item+'* da unidade Contel está abaixo do mínimo.',
-    '📦 Restam apenas *'+qtd+' '+item+'*',
-    '🔔 Mínimo configurado: '+min,
-    '',
-    (SL.msg||'Favor solicitar reposição com urgência.'),
-    '',
-    '_Enviado automaticamente pelo Chips Control_'
-  ];
-  var msg=lines.join('\n');
-  window.open('https://wa.me/55'+SL.wpp+'?text='+encodeURIComponent(msg),'_blank');
+  return {
+    item:item, qtd:qtd, min:min,
+    text:[
+      'ALERTA DE ESTOQUE CONTEL - iGreen',
+      '',
+      'O estoque de '+item+' esta abaixo do minimo.',
+      'Restam apenas '+qtd+' '+item,
+      'Minimo configurado: '+min,
+      '',
+      (SL.msg||'Favor solicitar reposicao com urgencia.'),
+      '',
+      'Enviado automaticamente pelo Chips Control'
+    ].join('\n')
+  };
+}
+
+function sendContelAlert(type){
+  var al=buildAlertLines(type);
+
+  // 1. WhatsApp via Apps Script dedicado (sem CORS)
+  if(SL.callmebotKey&&SL.callmebotNum){
+    var params='?phone='+encodeURIComponent(SL.callmebotNum)+'&text='+encodeURIComponent(al.text)+'&apikey='+encodeURIComponent(SL.callmebotKey);
+    fetch(WPP_URL+params,{method:'GET',redirect:'follow'})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.ok){
+          toast('📱 WhatsApp enviado com sucesso!');
+        } else {
+          toast('⚠️ Erro WhatsApp: '+(d.error||d.body||'verifique a API Key'));
+        }
+      })
+      .catch(function(err){
+        toast('⚠️ Erro na conexão: '+err);
+      });
+  } else if(SL.wpp){
+    window.open('https://wa.me/55'+SL.wpp+'?text='+encodeURIComponent(al.text),'_blank');
+  }
+
+  // 2. E-mail via Apps Script
+  if(SL.alertEmail&&typeof SCRIPT_URL!=='undefined'&&SCRIPT_URL){
+    var subject='Alerta de Estoque Contel - '+al.item+' abaixo do minimo';
+    var body='Ola,\n\n'+al.text+'\n\nEste e-mail foi enviado automaticamente pelo Chips Control.';
+    fetch(SCRIPT_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({sendEmail:true,to:SL.alertEmail,subject:subject,body:body})
+    }).then(function(r){return r.json();}).then(function(d){
+      if(d.ok)toast('✉️ E-mail enviado para '+SL.alertEmail+'!');
+    }).catch(function(){});
+  }
 }
 
 /* ── PLANILHA ICCID ──────────────────────── */
 /* ICCID dedup registry — persists across uploads */
 var contelIccidCount=0;
 var contelNewIccids=[];  // ICCIDs novos desta leitura
-if(!SL.iccidRegistry)SL.iccidRegistry=JSON.parse(localStorage.getItem('contel_iccid_registry')||'[]');
+// iccidRegistry already in SL state
 
 function normalizeIccid(v){
   // Remove prefix "ICCID: ", spaces, quotes — return just the number/id
@@ -2017,15 +2079,29 @@ function sendAlert(type){
   var msg=buildAlertMsg();
   if(type==='wpp'){
     var wpp=localStorage.getItem('cc_alert_wpp')||'';
-    if(!wpp){toast('Configure um número de WhatsApp primeiro.');return;}
-    var url='https://wa.me/55'+wpp+'?text='+encodeURIComponent(msg);
-    window.open(url,'_blank');
+    var cmbKey=localStorage.getItem('cc_cmb_key')||'';
+    var cmbNum=localStorage.getItem('cc_cmb_num')||'';
+    if(cmbKey&&cmbNum&&typeof SCRIPT_URL!=='undefined'&&SCRIPT_URL){
+      fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({sendWhatsapp:true,phone:cmbNum,apikey:cmbKey,text:msg.replace(/\*/g,'')})})
+        .then(function(r){return r.json();}).then(function(d){if(d.ok)toast('📱 WhatsApp enviado automaticamente!');else toast('⚠️ Erro: '+(d.error||''));})
+        .catch(function(){toast('Erro no envio automático.');});
+    } else if(wpp){
+      window.open('https://wa.me/55'+wpp+'?text='+encodeURIComponent(msg),'_blank');
+    } else {
+      toast('Configure um número de WhatsApp primeiro.');
+    }
   } else {
     var email=localStorage.getItem('cc_alert_email')||'';
-    if(!email){toast('Configure um e-mail primeiro.');return;}
-    var subject=encodeURIComponent('⚠️ Alerta de Estoque Baixo — Chips Control');
-    var body=encodeURIComponent(msg.replace(/\*/g,''));
-    window.open('mailto:'+email+'?subject='+subject+'&body='+body,'_blank');
+    if(email&&typeof SCRIPT_URL!=='undefined'&&SCRIPT_URL){
+      fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({sendEmail:true,to:email,subject:'⚠️ Alerta de Estoque Baixo — Chips Control',body:msg.replace(/\*/g,'')})})
+        .then(function(r){return r.json();}).then(function(d){if(d.ok)toast('✉️ E-mail enviado!');});
+    } else if(email){
+      var subject=encodeURIComponent('⚠️ Alerta de Estoque Baixo — Chips Control');
+      var body=encodeURIComponent(msg.replace(/\*/g,''));
+      window.open('mailto:'+email+'?subject='+subject+'&body='+body,'_blank');
+    } else {
+      toast('Configure um e-mail primeiro.');
+    }
   }
 }
 function checkStockAlert(){
