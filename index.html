@@ -1742,8 +1742,11 @@ function saveContelConfig(){
   SL.env=parseInt(document.getElementById('contel-cfg-env').value)||SL.env;
   SL.chipsMin=parseInt(document.getElementById('contel-cfg-chips-min').value)||SL.chipsMin;
   SL.envMin=parseInt(document.getElementById('contel-cfg-env-min').value)||SL.envMin;
-  SL.wpp=document.getElementById('contel-cfg-wpp').value.replace(/\D/g,'');
-  SL.msg=document.getElementById('contel-cfg-msg').value.trim();
+  SL.wpp=(document.getElementById('contel-cfg-wpp')?document.getElementById('contel-cfg-wpp').value.replace(/\D/g,''):SL.wpp);
+  SL.msg=(document.getElementById('contel-cfg-msg')?document.getElementById('contel-cfg-msg').value.trim():SL.msg);
+  SL.callmebotKey=(document.getElementById('contel-cfg-cmb-key')?document.getElementById('contel-cfg-cmb-key').value.trim():SL.callmebotKey);
+  SL.callmebotNum=(document.getElementById('contel-cfg-cmb-num')?document.getElementById('contel-cfg-cmb-num').value.replace(/\D/g,''):SL.callmebotNum);
+  SL.alertEmail=(document.getElementById('contel-cfg-email')?document.getElementById('contel-cfg-email').value.trim():SL.alertEmail);
   saveContelState();
   renderContel();
   closeContelModal('config');
