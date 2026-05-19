@@ -8,44 +8,63 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0d1a0d;
-  --bg2:#111e11;
-  --surface:#172117;
-  --surface2:#1e2d1e;
-  --surface3:#243224;
-  --border:#2a3d2a;
-  --border2:#3a503a;
-  --accent:#4ade80;
+  --bg:#0a0f0a;
+  --bg2:#0d1410;
+  --surface:#111a13;
+  --surface2:#162019;
+  --surface3:#1c2a20;
+  --border:#1e2e22;
+  --border2:#2a3f30;
+  --accent:#34d474;
   --accent-dim:#22c55e;
-  --accent-dark:#166534;
-  --accent-glow:rgba(74,222,128,.12);
-  --text:#e8f5e8;
-  --text2:#9db89d;
-  --text3:#5a7a5a;
-  --amber:#f59e0b;
-  --amber-bg:rgba(245,158,11,.15);
-  --amber-border:rgba(245,158,11,.35);
-  --blue:#60a5fa;
-  --blue-bg:rgba(96,165,250,.12);
-  --blue-border:rgba(96,165,250,.3);
-  --purple:#a78bfa;
-  --purple-bg:rgba(167,139,250,.12);
-  --purple-border:rgba(167,139,250,.3);
-  --red:#f87171;
-  --red-bg:rgba(248,113,113,.12);
-  --red-border:rgba(248,113,113,.3);
-  --teal:#2dd4bf;
-  --teal-bg:rgba(45,212,191,.12);
-  --teal-border:rgba(45,212,191,.3);
-  --radius:8px;--radius-lg:12px;--radius-xl:16px;
+  --accent-dark:#0d6e38;
+  --accent-glow:rgba(52,212,116,.10);
+  --accent-subtle:rgba(52,212,116,.06);
+  --text:#eef5f0;
+  --text2:#8aa898;
+  --text3:#4d6b57;
+  --amber:#f0a429;
+  --amber-bg:rgba(240,164,41,.12);
+  --amber-border:rgba(240,164,41,.28);
+  --blue:#5ba3f5;
+  --blue-bg:rgba(91,163,245,.10);
+  --blue-border:rgba(91,163,245,.25);
+  --purple:#9d7ef0;
+  --purple-bg:rgba(157,126,240,.10);
+  --purple-border:rgba(157,126,240,.25);
+  --red:#f06b6b;
+  --red-bg:rgba(240,107,107,.10);
+  --red-border:rgba(240,107,107,.25);
+  --teal:#26c9b3;
+  --teal-bg:rgba(38,201,179,.10);
+  --teal-border:rgba(38,201,179,.25);
+  --gold:#c9a84c;
+  --gold-bg:rgba(201,168,76,.10);
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.25);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.3);
+  --radius:8px;--radius-lg:14px;--radius-xl:18px;
   --font:'DM Sans',system-ui,sans-serif;
   --mono:'DM Mono',monospace;
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px}
+/* Premium glass/depth effects */
+.sidebar{box-shadow:1px 0 0 var(--border);}
+.modal{box-shadow:var(--shadow-lg);}
+.mc{box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s;}
+.mc:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.35);}
+.login-box{box-shadow:var(--shadow-lg);}
+.topbar{box-shadow:0 1px 0 var(--border);}
+.rec{border-radius:var(--radius);border:1px solid transparent;transition:all .15s;}
+.rec:hover{background:var(--surface2);border-color:var(--border);}
+.fields{box-shadow:inset 0 1px 0 rgba(255,255,255,.03);}
+.btn-primary{box-shadow:0 1px 3px rgba(0,0,0,.3),0 0 0 1px rgba(52,212,116,.2);letter-spacing:.01em;}
+.btn-primary:hover{box-shadow:0 2px 8px rgba(52,212,116,.25),0 0 0 1px rgba(52,212,116,.3);}
+.nav-item.active{box-shadow:inset 3px 0 0 var(--accent);}
+.copy-box{box-shadow:inset 0 1px 3px rgba(0,0,0,.3);}
 
 /* ── LOGIN ─────────────────────────────── */
 #login-screen{
-  position:fixed;inset:0;background:var(--bg);
+  position:fixed;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(52,212,116,.07) 0%,var(--bg) 60%),var(--bg);
   display:flex;align-items:center;justify-content:center;
   z-index:1000;flex-direction:column;gap:0;
 }
@@ -251,6 +270,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .rec-sub{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .rec-meta{text-align:right;flex-shrink:0}
 .rec-date{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.rec-obs{font-size:11px;color:var(--text3);margin-top:3px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:400px}
+.rec:hover .edit-btn{opacity:1!important}
 .badge{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:500;display:inline-block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
 .bdg-g{background:rgba(74,222,128,.15);color:var(--accent);border:1px solid rgba(74,222,128,.25)}
 .bdg-a{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
@@ -297,6 +318,20 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .btn-copy.copied{background:var(--blue);color:#fff}
 .copy-ok{font-size:12px;color:var(--accent);opacity:0;transition:opacity .3s;margin-left:10px}
 
+
+/* ── CONFIG PASSWORD ─────────────────── */
+function checkCfgPass(){
+  var v=document.getElementById('cfg-pass-input').value;
+  if(v==='conf2026'){
+    document.getElementById('cfg-lock').style.display='none';
+    document.getElementById('cfg-content').style.display='block';
+  }else{
+    var err=document.getElementById('cfg-pass-err');
+    err.style.display='block';
+    setTimeout(function(){err.style.display='none';},2500);
+  }
+}
+
 /* ── MODAL ───────────────────────────────── */
 .modal-overlay{
   display:none;position:fixed;inset:0;
@@ -312,7 +347,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .modal-sub{font-size:12px;color:var(--text3);margin-bottom:20px}
 .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
 
-/* ── RESULTS TABLE ───────────────────────── */
+/* ── RECONTELTS TABLE ───────────────────────── */
 .rtable{width:100%;border-collapse:collapse;font-size:12px}
 .rtable th{font-size:10px;font-weight:500;color:var(--text3);text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.05em}
 .rtable td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--text)}
@@ -431,6 +466,10 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
         Histórico
         <span class="nav-badge" id="badge-count" style="display:none">0</span>
       </button>
+      <button class="nav-item" onclick="setPage('contel',this)">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Contel
+      </button>
       <button class="nav-item" onclick="setPage('config',this)">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
         Configurações
@@ -493,7 +532,15 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
                   <div class="fg"><label>ID do licenciado</label><input id="fi-lid" placeholder="LIC-0001"></div>
                 </div>
                 <div id="fi-event-wrap" style="display:none">
-                  <div class="fg" style="margin-top:12px"><label>Nome do evento</label><input id="fi-event" placeholder="Ex: Feira Tech MG"></div>
+                  <div class="fg" style="margin-top:12px">
+                    <label>Nome do evento</label>
+                    <div class="pill-group" style="margin-bottom:8px" id="evento-pills">
+                      <div class="pill" onclick="selEvento('iGreen Experience',this)">iGreen Experience</div>
+                      <div class="pill" onclick="selEvento('Convenção',this)">Convenção</div>
+                      <div class="pill" onclick="selEvento('outro',this)">Outro</div>
+                    </div>
+                    <input id="fi-event" placeholder="Digite o nome do evento..." style="display:none">
+                  </div>
                 </div>
                 <div class="fg" style="margin-top:12px"><label>Observações</label><textarea id="fi-obs" placeholder="Informações adicionais..."></textarea></div>
               </div>
@@ -526,7 +573,10 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
                 <div class="fg"><label>Setor</label><input id="fa-sec" placeholder="Ex: Expansão"></div>
                 <div class="fg"><label>Plano / Produto</label><input id="fa-plan" placeholder="Plano 30GB"></div>
               </div>
-              <div class="fg"><label>Motivo</label><textarea id="fa-reason" placeholder="Descreva o motivo..."></textarea></div>
+              <div class="row2">
+                <div class="fg"><label>Valor (R$)</label><input id="fa-val" type="number" placeholder="Ex: 50"></div>
+                <div class="fg"><label>Motivo</label><textarea id="fa-reason" placeholder="Descreva o motivo..." style="min-height:52px"></textarea></div>
+              </div>
             </div>
           </div>
 
@@ -537,12 +587,15 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
                 <div class="fg"><label>Número reativado</label><input id="frx-num" placeholder="34 9 9999-0000"></div>
                 <div class="fg"><label>Solicitado por</label><input id="frx-req" placeholder="Nome"></div>
               </div>
-              <div class="fg"><label>Motivo da reativação</label><textarea id="frx-reason" placeholder="Ex: chip cancelado por engano..."></textarea></div>
+              <div class="row2">
+                <div class="fg"><label>Motivo da reativação</label><textarea id="frx-reason" placeholder="Ex: chip cancelado por engano..." style="min-height:52px"></textarea></div>
+                <div class="fg"><label>Valor (R$)</label><input id="frx-val" type="number" placeholder="Ex: 30"></div>
+              </div>
               <div class="fg"><label>Data do cancelamento original</label><input id="frx-date" type="date"></div>
             </div>
           </div>
 
-          <div id="submit-wrap" style="display:none;margin-top:20px;display:none">
+          <div id="submit-wrap" style="display:none;margin-top:20px">
             <button class="btn-primary" id="btn-submit" onclick="submitRec()">
               <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#0d1a0d;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg>
               Registrar lançamento
@@ -603,7 +656,7 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
               <span class="copy-ok" id="copy-ok">✓ Copiado!</span>
             </div>
           </div>
-          <div id="filter-results"></div>
+          <div id="filter-recontelts"></div>
           <div class="divider"></div>
           <div class="sec-title">Distribuição por tipo</div>
           <div id="stk-dist" style="margin-top:8px"></div>
@@ -623,18 +676,95 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
 
         <!-- HISTÓRICO -->
         <div id="page-history" class="page">
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px">
-            <input class="search-bar" id="hist-search" placeholder="Buscar por nome, número, ICCID, responsável..." oninput="renderHistory()" style="flex:1">
-            <button class="btn-secondary" onclick="exportCSV()">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+            <input class="search-bar" id="hist-search" placeholder="Buscar por nome, número, ICCID, responsável..." oninput="renderHistory()" style="flex:1;min-width:200px">
+            <button class="btn-secondary" onclick="exportXLSX('all')">
               <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Exportar CSV
+              Todos
             </button>
+            <button class="btn-secondary" onclick="exportXLSX('chip')" style="color:var(--accent);border-color:rgba(74,222,128,.3)">Chips</button>
+            <button class="btn-secondary" onclick="exportXLSX('recharge')" style="color:var(--amber);border-color:var(--amber-border)">Recargas</button>
+            <button class="btn-secondary" onclick="exportXLSX('activation')" style="color:var(--blue);border-color:var(--blue-border)">Ativações</button>
+            <button class="btn-secondary" onclick="exportXLSX('reactivation')" style="color:var(--purple);border-color:var(--purple-border)">Reativações</button>
           </div>
           <div id="hist-list"></div>
         </div>
 
+
+        <!-- CONTEL -->
+        <div id="page-contel" class="page">
+          <div id="contel-alert-chips" class="alert-bar" style="display:none">
+            <svg viewBox="0 0 24 24" style="width:15px;height:15px;flex-shrink:0;stroke:var(--amber);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span id="contel-alert-chips-txt"></span>
+            <button onclick="sendContelAlert('chips')" style="margin-left:auto;background:var(--accent);color:#0a0f0a;border:none;border-radius:var(--radius);padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap">📱 Alertar via WhatsApp</button>
+          </div>
+          <div id="contel-alert-env" class="alert-bar" style="display:none">
+            <svg viewBox="0 0 24 24" style="width:15px;height:15px;flex-shrink:0;stroke:var(--amber);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span id="contel-alert-env-txt"></span>
+            <button onclick="sendContelAlert('env')" style="margin-left:auto;background:var(--accent);color:#0a0f0a;border:none;border-radius:var(--radius);padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap">📱 Alertar via WhatsApp</button>
+          </div>
+
+          <!-- METRICS -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+            <div class="mc g" style="padding:20px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div class="mc-lbl" style="margin:0;font-size:12px">CHIPS — CONTEL</div>
+                <span style="font-size:10px;color:var(--text3);font-family:var(--mono)" id="contel-chips-min-label"></span>
+              </div>
+              <div class="mc-val" id="contel-chips-val" style="font-size:40px">—</div>
+              <div style="margin-top:12px;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden">
+                <div id="contel-chips-bar" style="height:100%;border-radius:2px;background:var(--accent);transition:width .5s"></div>
+              </div>
+            </div>
+            <div class="mc b" style="padding:20px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div class="mc-lbl" style="margin:0;font-size:12px">ENVELOPES — CONTEL</div>
+                <span style="font-size:10px;color:var(--text3);font-family:var(--mono)" id="contel-env-min-label"></span>
+              </div>
+              <div class="mc-val" id="contel-env-val" style="font-size:40px;color:var(--blue)">—</div>
+              <div style="margin-top:12px;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden">
+                <div id="contel-env-bar" style="height:100%;border-radius:2px;background:var(--blue);transition:width .5s"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACTIONS -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+            <button class="btn-primary" onclick="openContelModal('entrada')">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#0a0f0a;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Registrar envio ao Contel
+            </button>
+            <button class="btn-secondary" onclick="openContelModal('planilha')">
+              <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              Baixar por planilha (ICCID)
+            </button>
+            <button class="btn-secondary" onclick="openContelModal('config')">
+              <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+              Configurar mínimos e alerta
+            </button>
+          </div>
+
+          <div class="divider"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="sec-title" style="margin:0">Histórico de movimentações</div>
+            <button class="btn-secondary" onclick="exportContelCSV()" style="font-size:11px;padding:5px 12px">Exportar CSV</button>
+          </div>
+          <div id="contel-history"></div>
+        </div>
+
         <!-- CONFIG -->
         <div id="page-config" class="page">
+          <div id="cfg-lock" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 0;gap:16px">
+            <svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:var(--text3);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div style="font-size:14px;font-weight:500;color:var(--text2)">Área restrita</div>
+            <div style="font-size:12px;color:var(--text3)">Digite a senha para acessar as configurações</div>
+            <div style="display:flex;gap:8px">
+              <input type="password" id="cfg-pass-input" placeholder="Senha" style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:8px 14px;font-size:13px;color:var(--text);font-family:var(--font);outline:none;width:180px" onkeydown="if(event.key==='Enter')checkCfgPass()">
+              <button class="btn-primary" onclick="checkCfgPass()">Entrar</button>
+            </div>
+            <div id="cfg-pass-err" style="font-size:12px;color:var(--red);display:none">Senha incorreta.</div>
+          </div>
+          <div id="cfg-content" style="display:none">
           <div class="config-card">
             <h3>Google Sheets — conexão</h3>
             <p>Cole o ID da planilha e a chave de API. Todos os lançamentos serão salvos e lidos de lá.</p>
@@ -661,6 +791,23 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
             <button class="btn-primary" style="margin-top:4px" onclick="saveUsers()">Salvar usuários</button>
           </div>
           <div class="config-card">
+            <h3>Alerta de estoque baixo</h3>
+            <p>Quando o estoque cair abaixo do mínimo, um link de notificação será gerado automaticamente para envio via WhatsApp ou e-mail.</p>
+            <div class="row2">
+              <div class="fg"><label>WhatsApp (com DDD, só números)</label><input id="cfg-wpp" placeholder="Ex: 34999990000" type="tel"></div>
+              <div class="fg"><label>E-mail de alerta</label><input id="cfg-email" placeholder="Ex: gestor@email.com" type="email"></div>
+            </div>
+            <div class="fg"><label>Mensagem personalizada (opcional)</label><input id="cfg-alert-msg" placeholder="Ex: Estoque crítico! Solicitar reposição urgente."></div>
+            <button class="btn-primary" style="margin-top:4px" onclick="saveAlertConfig()">Salvar configuração de alerta</button>
+            <div id="cfg-alert-test" style="margin-top:12px;display:none">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em">Testar agora</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn-secondary" onclick="sendAlert('wpp')" style="color:var(--accent)">📱 Testar WhatsApp</button>
+                <button class="btn-secondary" onclick="sendAlert('email')">✉️ Testar E-mail</button>
+              </div>
+            </div>
+          </div>
+          <div class="config-card">
             <h3>Instruções de configuração</h3>
             <p style="line-height:1.9">
               1. Crie uma planilha com abas <code>lancamentos</code> e <code>estoque</code><br>
@@ -670,9 +817,132 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
               5. Compartilhe a planilha como <strong>"Qualquer pessoa com o link pode editar"</strong>
             </p>
           </div>
+          </div><!-- /cfg-content -->
         </div>
 
       </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL EDITAR/EXCLUIR -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal" style="width:480px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div class="modal-title">Editar lançamento</div>
+        <div class="modal-sub" style="margin:0">Altere os campos e salve</div>
+      </div>
+      <button onclick="closeEditModal()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px">✕</button>
+    </div>
+    <div id="edit-fields"></div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn-secondary" onclick="deleteRec()" style="color:var(--red);border-color:var(--red-border)">
+        <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        Excluir
+      </button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-secondary" onclick="closeEditModal()">Cancelar</button>
+        <button class="btn-primary" onclick="saveEdit()">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:#0a0f0a;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg>
+          Salvar alterações
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL CONTEL ENTRADA -->
+<div class="modal-overlay" id="modal-contel-entrada">
+  <div class="modal" style="width:440px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title">Registrar envio ao Contel</div>
+      <button onclick="closeContelModal('entrada')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <div class="modal-sub" style="margin-bottom:20px">Informe a quantidade enviada e atualize o estoque</div>
+    <div class="row2">
+      <div class="fg"><label>Chips enviados</label><input type="number" id="contel-e-chips" min="0" value="0" placeholder="0"></div>
+      <div class="fg"><label>Envelopes enviados</label><input type="number" id="contel-e-env" min="0" value="0" placeholder="0"></div>
+    </div>
+    <div class="fg"><label>Data do envio</label><input type="date" id="contel-e-date"></div>
+    <div class="fg"><label>Observações</label><textarea id="contel-e-obs" placeholder="Ex: Remessa NF 1234, transportadora X..." style="min-height:52px"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeContelModal('entrada')">Cancelar</button>
+      <button class="btn-primary" onclick="submitContelEntrada()">Registrar envio</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONTEL PLANILHA -->
+<div class="modal-overlay" id="modal-contel-planilha">
+  <div class="modal" style="width:480px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title">Baixar por planilha (ICCID)</div>
+      <button onclick="closeContelModal('planilha')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <div class="modal-sub" style="margin-bottom:20px">Suba a planilha de relatório de vendas. O sistema busca a coluna <strong style="color:var(--accent)">ICCID ENVELOPADO</strong> e desconta <strong>1 chip + 1 envelope</strong> por linha preenchida, independente do formato do valor (ex: "ICCID: 8955...").</div>
+    <div id="contel-drop-zone" onclick="document.getElementById('contel-file-input').click()" style="border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:32px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px">
+      <svg viewBox="0 0 24 24" style="width:32px;height:32px;stroke:var(--text3);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;margin:0 auto 8px;display:block"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div style="font-size:13px;color:var(--text2);font-weight:500">Clique para selecionar o arquivo</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">Suporta .xlsx, .xls e .csv · Coluna obrigatória: <strong style="color:var(--accent)">ICCID ENVELOPADO</strong></div>
+    </div>
+    <input type="file" id="contel-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleContelFile(this)">
+    <div id="contel-file-preview" style="display:none">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Reconteltado da leitura</div>
+        <div style="display:flex;gap:16px">
+          <div><div style="font-size:24px;font-weight:600;color:var(--accent)" id="contel-iccid-count">0</div><div style="font-size:11px;color:var(--text3)">ICCIDs encontrados</div></div>
+          <div style="width:1px;background:var(--border)"></div>
+          <div><div style="font-size:13px;color:var(--accent);margin-top:4px;font-weight:500" id="contel-iccid-col">—</div><div style="font-size:11px;color:var(--text3)">Coluna encontrada</div></div>
+        </div>
+        <div id="contel-iccid-sample" style="margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--text3)"></div>
+      </div>
+      <div class="fg"><label>Observações</label><input type="text" id="contel-p-obs" placeholder="Ex: Ativações de maio/2026"></div>
+    </div>
+    <div id="contel-file-error" style="display:none;color:var(--red);font-size:12px;margin-bottom:12px"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeContelModal('planilha')">Cancelar</button>
+      <button class="btn-primary" id="contel-p-btn" onclick="submitContelPlanilha()" disabled style="opacity:.4">Confirmar baixa</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONTEL CONFIG -->
+<div class="modal-overlay" id="modal-contel-config">
+  <div class="modal" style="width:420px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title">Configurar estoque Contel</div>
+      <button onclick="closeContelModal('config')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <div class="modal-sub" style="margin-bottom:20px">Defina os estoques iniciais, mínimos e WhatsApp para alertas. <span id="contel-registry-info" style="color:var(--accent)"></span></div>
+    <div style="font-size:11px;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Chips</div>
+    <div class="row2">
+      <div class="fg"><label>Estoque atual</label><input type="number" id="contel-cfg-chips" placeholder="Ex: 500"></div>
+      <div class="fg"><label>Alertar abaixo de</label><input type="number" id="contel-cfg-chips-min" placeholder="Ex: 100"></div>
+    </div>
+    <div style="font-size:11px;font-weight:500;color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin:16px 0 10px">Envelopes</div>
+    <div class="row2">
+      <div class="fg"><label>Estoque atual</label><input type="number" id="contel-cfg-env" placeholder="Ex: 500"></div>
+      <div class="fg"><label>Alertar abaixo de</label><input type="number" id="contel-cfg-env-min" placeholder="Ex: 100"></div>
+    </div>
+    <div class="divider" style="margin:16px 0"></div>
+    <div class="fg"><label>WhatsApp para alertas (com DDD, só números)</label><input type="tel" id="contel-cfg-wpp" placeholder="Ex: 34999990000"></div>
+    <div class="fg"><label>Mensagem personalizada (opcional)</label><input type="text" id="contel-cfg-msg" placeholder="Ex: Repor estoque Contel com urgência!"></div>
+    <div class="divider" style="margin:14px 0"></div>
+    <div style="background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);padding:12px 14px">
+      <div style="font-size:11px;font-weight:500;color:var(--red);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Ajuste manual de estoque</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Use para corrigir o estoque manualmente quando houver divergência.</div>
+      <div class="row2">
+        <div class="fg"><label>Chips (valor exato)</label><input type="number" id="contel-adj-chips" placeholder="Ex: 650"></div>
+        <div class="fg"><label>Envelopes (valor exato)</label><input type="number" id="contel-adj-env" placeholder="Ex: 650"></div>
+      </div>
+      <button onclick="applyContelAdjust()" style="background:var(--red);color:#fff;border:none;border-radius:var(--radius);padding:7px 16px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);margin-top:4px">Aplicar ajuste</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeContelModal('config')">Cancelar</button>
+      <button class="btn-primary" onclick="saveContelConfig()">Salvar configurações</button>
     </div>
   </div>
 </div>
@@ -701,6 +971,15 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
 <div class="toast" id="toast"><div class="toast-dot"></div><span id="toast-msg"></span></div>
 
 <script>
+var SL={
+  chips:parseInt(localStorage.getItem('contel_chips')||'0'),
+  env:parseInt(localStorage.getItem('contel_env')||'0'),
+  chipsMin:parseInt(localStorage.getItem('contel_chips_min')||'100'),
+  envMin:parseInt(localStorage.getItem('contel_env_min')||'100'),
+  wpp:localStorage.getItem('contel_wpp')||'',
+  msg:localStorage.getItem('contel_msg')||'',
+  log:JSON.parse(localStorage.getItem('contel_log')||'[]')
+};
 var S={
   nature:null,sub:null,recs:[],
   stock:parseInt(localStorage.getItem('cc_stock')||'100'),
@@ -712,8 +991,8 @@ var S={
   users:JSON.parse(localStorage.getItem('cc_users')||'[]')
 };
 
-var TITLES={launch:'Novo lançamento',stock:'Estoque',ops:'Operações',history:'Histórico',config:'Configurações'};
-var SUBS={launch:'Selecione a natureza e preencha os dados',stock:'Visão geral e filtro de saídas de chips',ops:'Recargas, ativações e reativações',history:'Todos os lançamentos registrados',config:'Conexão com Google Sheets e preferências'};
+var TITLES={launch:'Novo lançamento',stock:'Estoque',ops:'Operações',history:'Histórico',contel:'Logística Contel',config:'Configurações'};
+var SUBS={launch:'Selecione a natureza e preencha os dados',stock:'Visão geral e filtro de saídas de chips',ops:'Recargas, ativações e reativações',history:'Todos os lançamentos registrados',contel:'Chips e envelopes enviados ao Contel do país',config:'Conexão com Google Sheets e preferências'};
 
 /* ── LOGIN ────────────────────────────── */
 function buildQuickUsers(){
@@ -751,6 +1030,11 @@ function doLogin(){
   document.getElementById('cfg-stock').value=S.stock;
   document.getElementById('cfg-min').value=S.minStock;
   document.getElementById('cfg-users').value=S.users.join(', ');
+  var _wpp=localStorage.getItem('cc_alert_wpp')||'';var _em=localStorage.getItem('cc_alert_email')||'';var _am=localStorage.getItem('cc_alert_msg')||'';
+  if(document.getElementById('cfg-wpp'))document.getElementById('cfg-wpp').value=_wpp;
+  if(document.getElementById('cfg-email'))document.getElementById('cfg-email').value=_em;
+  if(document.getElementById('cfg-alert-msg'))document.getElementById('cfg-alert-msg').value=_am;
+  if((_wpp||_em)&&document.getElementById('cfg-alert-test'))document.getElementById('cfg-alert-test').style.display='block';
   if(S.sheetId&&S.apiKey){
     document.getElementById('cfg-sheet-id').value=S.sheetId;
     document.getElementById('cfg-api-key').value=S.apiKey;
@@ -758,7 +1042,7 @@ function doLogin(){
   }
   document.getElementById('me-date').value=new Date().toISOString().slice(0,10);
   updateSidebar();
-  loadFromSheets();
+  if(SCRIPT_URL)loadFromSheets();
 }
 
 function doLogout(){
@@ -779,6 +1063,7 @@ function setPage(p,btn){
   if(p==='stock')renderStock();
   if(p==='ops')renderOps();
   if(p==='history')renderHistory();
+  if(p==='contel')renderContel();
 }
 
 /* ── FORM ─────────────────────────────── */
@@ -801,6 +1086,13 @@ function selSub(s,el){
   document.getElementById('fi-event-wrap').style.display=s==='event'?'block':'none';
   document.getElementById('submit-wrap').style.display='block';
 }
+function selEvento(v,el){
+  document.querySelectorAll('#evento-pills .pill').forEach(function(p){p.classList.remove('sel')});
+  el.classList.add('sel');
+  var inp=document.getElementById('fi-event');
+  if(v==='outro'){inp.style.display='block';inp.value='';inp.focus();}
+  else{inp.style.display='none';inp.value=v;}
+}
 function setFType(t,el){
   S.ftype=t;
   document.querySelectorAll('#page-stock .pill-group .pill').forEach(function(p){p.classList.remove('sel')});
@@ -820,6 +1112,7 @@ function submitRec(){
     if(S.sub==='event')r.event=document.getElementById('fi-event').value||'—';
     S.stock=Math.max(0,S.stock-r.qty);
     localStorage.setItem('cc_stock',S.stock);
+    setTimeout(checkStockAlert,500);
   }else if(S.nature==='recharge'){
     r.number=document.getElementById('fr-num').value||'—';
     r.value=document.getElementById('fr-val').value||'—';
@@ -831,11 +1124,13 @@ function submitRec(){
     r.requester=document.getElementById('fa-req').value||'—';
     r.sector=document.getElementById('fa-sec').value||'—';
     r.plan=document.getElementById('fa-plan').value||'—';
+    r.value=document.getElementById('fa-val').value||'—';
     r.reason=document.getElementById('fa-reason').value||'—';
   }else if(S.nature==='reactivation'){
     r.number=document.getElementById('frx-num').value||'—';
     r.requester=document.getElementById('frx-req').value||'—';
     r.reason=document.getElementById('frx-reason').value||'—';
+    r.value=document.getElementById('frx-val').value||'—';
     r.cancelDate=document.getElementById('frx-date').value||'—';
   }
   S.recs.unshift(r);
@@ -851,9 +1146,25 @@ function resetForm(){
   ['chip','recharge','activation','reactivation'].forEach(function(x){document.getElementById('f-'+x).style.display='none'});
   document.getElementById('submit-wrap').style.display='none';
   document.getElementById('chip-fields').style.display='none';
+  document.getElementById('fi-event').style.display='none';
+  document.querySelectorAll('#evento-pills .pill').forEach(function(p){p.classList.remove('sel')});
   document.querySelectorAll('#page-launch input,#page-launch textarea').forEach(function(el){
     if(el.type==='number')el.value=el.id==='fi-qty'?1:''; else el.value='';
   });
+}
+
+
+/* ── CONFIG PASSWORD ─────────────────── */
+function checkCfgPass(){
+  var v=document.getElementById('cfg-pass-input').value;
+  if(v==='conf2026'){
+    document.getElementById('cfg-lock').style.display='none';
+    document.getElementById('cfg-content').style.display='block';
+  }else{
+    var err=document.getElementById('cfg-pass-err');
+    err.style.display='block';
+    setTimeout(function(){err.style.display='none';},2500);
+  }
 }
 
 /* ── MODAL ────────────────────────────── */
@@ -865,6 +1176,7 @@ function submitEntry(){
   var entry={id:Date.now(),nature:'entry',date:document.getElementById('me-date').value||new Date().toISOString().slice(0,10),qty:qty,supplier:document.getElementById('me-supplier').value||'—',obs:document.getElementById('me-obs').value,responsavel:S.user};
   S.stock+=qty;
   localStorage.setItem('cc_stock',S.stock);
+  setTimeout(checkStockAlert,500);
   S.recs.unshift(entry);
   saveToSheets(entry);
   updateSidebar();renderStock();closeModal();
@@ -1010,17 +1322,17 @@ function applyFilter(){
   var from=document.getElementById('filter-from').value;
   var to=document.getElementById('filter-to').value;
   var chips=S.recs.filter(function(r){return r.nature==='chip'});
-  var results=chips.filter(function(r){
+  var recontelts=chips.filter(function(r){
     var d=r.date.slice(0,10);
     return((!from||d>=from)&&(!to||d<=to))&&(S.ftype==='all'||S.ftype===r.sub);
   });
-  var banner=document.getElementById('copy-banner'),resEl=document.getElementById('filter-results');
-  if(!results.length){banner.style.display='none';resEl.innerHTML='<div class="empty">Nenhuma saída encontrada no período.</div>';return;}
-  var ids=[...new Set(results.map(function(r){return r.licensedId||''}).filter(function(id){return id&&id!=='—'}))];
+  var banner=document.getElementById('copy-banner'),resEl=document.getElementById('filter-recontelts');
+  if(!recontelts.length){banner.style.display='none';resEl.innerHTML='<div class="empty">Nenhuma saída encontrada no período.</div>';return;}
+  var ids=[...new Set(recontelts.map(function(r){return r.licensedId||''}).filter(function(id){return id&&id!=='—'}))];
   document.getElementById('copy-box').textContent=ids.length?ids.join(', '):'(nenhum ID preenchido nos registros)';
   document.getElementById('copy-count').textContent=ids.length+' ID'+(ids.length!==1?'s únicos':'');
   banner.style.display='block';
-  var rows=results.map(function(r){
+  var rows=recontelts.map(function(r){
     return '<tr><td class="mono">'+r.licensedId+'</td><td>'+r.licensedName+'</td><td class="mono" style="color:var(--text3)">'+r.iccid+'</td><td>'+(r.qty||1)+'</td><td>'+(r.sub==='event'?'Evento':'Orgânico')+'</td><td style="color:var(--purple)">'+r.responsavel+'</td><td class="mono" style="color:var(--text3)">'+new Date(r.date).toLocaleDateString('pt-BR')+'</td></tr>';
   }).join('');
   resEl.innerHTML='<div style="margin-top:4px;overflow-x:auto"><table class="rtable"><thead><tr><th>ID</th><th>Licenciado</th><th>ICCID</th><th>Qtd</th><th>Tipo</th><th>Responsável</th><th>Data</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
@@ -1032,7 +1344,7 @@ function clearFilter(){
   document.querySelectorAll('#page-stock .pill-group .pill').forEach(function(p){p.classList.remove('sel')});
   var fa=document.getElementById('ftype-all');if(fa)fa.classList.add('sel');
   document.getElementById('copy-banner').style.display='none';
-  document.getElementById('filter-results').innerHTML='';
+  document.getElementById('filter-recontelts').innerHTML='';
 }
 function copyIds(){
   var txt=document.getElementById('copy-box').textContent;
@@ -1098,11 +1410,14 @@ function renderOps(){
   });
   var totalVal=rch.reduce(function(a,r){return a+(parseFloat(r.value)||0)},0);
 
+  var totalAct=act.reduce(function(a,r){return a+(parseFloat(r.value)||0)},0);
+  var totalRxt=rxt.reduce(function(a,r){return a+(parseFloat(r.value)||0)},0);
+  function fmtVal(v){return v>0?'R$ '+v.toFixed(2):'—';}
   document.getElementById('ops-metrics').innerHTML=
-    '<div class="mc a"><div class="mc-val">'+rch.length+'</div><div class="mc-lbl">Recargas</div></div>'+
-    '<div class="mc b"><div class="mc-val">'+act.length+'</div><div class="mc-lbl">Ativações</div></div>'+
-    '<div class="mc p"><div class="mc-val">'+rxt.length+'</div><div class="mc-lbl">Reativações</div></div>'+
-    (totalVal>0?'<div class="mc g"><div class="mc-val" style="font-size:18px">R$'+totalVal.toFixed(2)+'</div><div class="mc-lbl">Total recargas</div></div>':'');
+    '<div class="mc a" style="min-width:0"><div class="mc-lbl" style="margin-top:0;margin-bottom:4px">Recargas</div><div style="display:flex;align-items:baseline;gap:10px"><span class="mc-val">'+rch.length+'</span><span style="font-size:13px;color:var(--amber)">'+fmtVal(totalVal)+'</span></div></div>'+
+    '<div class="mc b" style="min-width:0"><div class="mc-lbl" style="margin-top:0;margin-bottom:4px">Ativações</div><div style="display:flex;align-items:baseline;gap:10px"><span class="mc-val">'+act.length+'</span><span style="font-size:13px;color:var(--blue)">'+fmtVal(totalAct)+'</span></div></div>'+
+    '<div class="mc p" style="min-width:0"><div class="mc-lbl" style="margin-top:0;margin-bottom:4px">Reativações</div><div style="display:flex;align-items:baseline;gap:10px"><span class="mc-val">'+rxt.length+'</span><span style="font-size:13px;color:var(--purple)">'+fmtVal(totalRxt)+'</span></div></div>'+
+    '<div class="mc g" style="min-width:0"><div class="mc-lbl" style="margin-top:0;margin-bottom:4px">Total geral</div><div style="font-size:16px;font-weight:600;color:var(--accent);margin-top:4px">'+fmtVal(totalVal+totalAct+totalRxt)+'</div></div>';
 
   // Valor por mês
   var valKeys=Object.keys(valMes);
@@ -1150,7 +1465,7 @@ function renderOps(){
           html+='<div class="rec"><div class="rec-ico '+cls+'">'+icoSvg+'</div><div class="rec-body"><div class="rec-title">'+( r.requester||'—')+'</div><div class="rec-sub">'+( r.number||r.reason||'—')+'</div></div><div class="rec-meta"><span class="resp-tag">'+r.responsavel+'</span><div class="rec-date" style="margin-top:4px">'+new Date(r.date).toLocaleDateString('pt-BR')+'</div></div></div>';
         });
         html+='</div>';
-        html+='<button onclick="toggleExpand(\''+uid+'_rest\',this)" style="margin-top:6px;background:transparent;border:1px solid var(--border2);color:var(--text3);font-size:11px;padding:4px 12px;border-radius:20px;cursor:pointer;font-family:var(--font)">Ver mais '+rest.length+' lançamentos ↓</button>';
+        html+='<button onclick="toggleExpand(this)" data-target="'+uid+'_rest" style="margin-top:6px;background:transparent;border:1px solid var(--border2);color:var(--text3);font-size:11px;padding:4px 12px;border-radius:20px;cursor:pointer;font-family:var(--font)">Ver mais '+rest.length+' lançamentos ↓</button>';
       }
       html+='</div>';
     });
@@ -1165,12 +1480,15 @@ function renderOps(){
     buildSection('Reativações',rxt,refSvg,'ico-p','rxt');
 }
 
-function toggleExpand(id,btn){
+function toggleExpand(btn){
+  var id=btn.dataset.target||btn.getAttribute('data-target');
   var el=document.getElementById(id);
   if(!el)return;
   var open=el.style.display!=='none';
   el.style.display=open?'none':'block';
-  btn.textContent=open?btn.textContent.replace('↑','↓').replace('Ocultar','Ver mais'):btn.textContent.replace('↓','↑').replace('Ver mais','Ocultar');
+  var txt=btn.textContent;
+  if(open){btn.textContent=txt.replace('↑','↓').replace('Ocultar','Ver mais');}
+  else{btn.textContent=txt.replace('↓','↑').replace('Ver mais','Ocultar');}
 }
 
 /* ── HISTORY ─────────────────────────── */
@@ -1178,6 +1496,7 @@ function renderHistory(){
   var q=(document.getElementById('hist-search').value||'').toLowerCase();
   var all=S.recs.filter(function(r){return r.nature!=='entry'});
   var filtered=all.filter(function(r){return !q||JSON.stringify(r).toLowerCase().includes(q)});
+  if(!filtered.length){document.getElementById('hist-list').innerHTML='<div class="empty">Nenhum lançamento encontrado.</div>';return;}
   var labels={chip:'Chip',recharge:'Recarga',activation:'Ativação',reactivation:'Reativação'};
   var bclass={chip:'bdg-g',recharge:'bdg-a',activation:'bdg-b',reactivation:'bdg-p'};
   var iclass={chip:'ico-g',recharge:'ico-a',activation:'ico-b',reactivation:'ico-p'};
@@ -1187,11 +1506,74 @@ function renderHistory(){
     activation:'<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
     reactivation:'<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>'
   };
-  document.getElementById('hist-list').innerHTML=!filtered.length?'<div class="empty">Nenhum lançamento encontrado.</div>':filtered.map(function(r){
+  // Group by month
+  var groups={};
+  filtered.forEach(function(r){
+    var d=new Date(r.date);
+    var ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    var key=ms[d.getMonth()]+'/'+d.getFullYear();
+    if(!groups[key])groups[key]=[];
+    groups[key].push(r);
+  });
+  function recHtml(r){
     var lbl=labels[r.nature]||r.nature;
     var sub=r.nature==='chip'?('Licenciado: '+(r.licensedName||'—')+' · ICCID: '+(r.iccid||'—')+' · '+(r.qty||1)+' chips'):('Por: '+(r.requester||'—')+(r.number?' · '+r.number:''));
-    return '<div class="rec"><div class="rec-ico '+(iclass[r.nature]||'ico-g')+'">'+(svgs[r.nature]||'')+'</div><div class="rec-body"><div class="rec-title">'+lbl+(r.sub==='event'?' — Evento':'')+'</div><div class="rec-sub">'+sub+'</div></div><div class="rec-meta"><span class="badge '+(bclass[r.nature]||'bdg-g')+'">'+lbl+'</span><br><span class="resp-tag" style="margin-top:4px;display:inline-flex">'+r.responsavel+'</span><div class="rec-date" style="margin-top:4px">'+new Date(r.date).toLocaleDateString('pt-BR')+'</div></div></div>';
-  }).join('');
+        var val=(r.value&&r.value!=='—')?' · R$ '+r.value:'';
+    var obs=(r.obs&&r.obs.trim()&&r.obs!=='—')?'<div class="rec-obs">'+r.obs+'</div>':'';
+    var eid=String(r.id).replace(/'/g,'');
+    return '<div class="rec" style="position:relative"><div class="rec-ico '+(iclass[r.nature]||'ico-g')+'">'+(svgs[r.nature]||'')+'</div><div class="rec-body"><div class="rec-title">'+lbl+(r.sub==='event'?' — Evento':'')+'</div><div class="rec-sub">'+sub+val+'</div>'+obs+'</div><div class="rec-meta"><span class="badge '+(bclass[r.nature]||'bdg-g')+'">'+lbl+'</span><br><span class="resp-tag" style="margin-top:4px;display:inline-flex">'+r.responsavel+'</span><div class="rec-date" style="margin-top:4px">'+new Date(r.date).toLocaleDateString('pt-BR')+'</div></div><button onclick="openEditModal(this.dataset.id)" data-id="'+eid+'" style="position:absolute;top:8px;right:0;background:none;border:1px solid var(--border2);border-radius:6px;padding:3px 8px;color:var(--text3);cursor:pointer;font-size:10px;font-family:var(--font);opacity:0;transition:opacity .15s" class="edit-btn">editar</button></div>';
+  }
+  var html='';
+  Object.keys(groups).forEach(function(mes){
+    var grp=groups[mes];
+    var uid='hist_'+mes.replace('/','_');
+    var preview=grp.slice(0,5);
+    var rest=grp.slice(5);
+    html+='<div style="margin-bottom:16px">';
+    html+='<div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:6px 10px;background:var(--surface3);border-radius:var(--radius);margin-bottom:4px;display:flex;justify-content:space-between"><span>'+mes+'</span><span>'+grp.length+' lançamentos</span></div>';
+    preview.forEach(function(r){html+=recHtml(r);});
+    if(rest.length){
+      html+='<div id="'+uid+'_rest" style="display:none">';
+      rest.forEach(function(r){html+=recHtml(r);});
+      html+='</div>';
+      html+='<button onclick="toggleExpand(this)" data-target="'+uid+'_rest" style="margin-top:6px;background:transparent;border:1px solid var(--border2);color:var(--text3);font-size:11px;padding:4px 12px;border-radius:20px;cursor:pointer;font-family:var(--font)">Ver mais '+rest.length+' lançamentos ↓</button>';
+    }
+    html+='</div>';
+  });
+  document.getElementById('hist-list').innerHTML=html;
+}
+/* ── EXPORT XLSX ─────────────────────── */
+function exportXLSX(type){
+  var labels={chip:'Chips',recharge:'Recargas',activation:'Ativacoes',reactivation:'Reativacoes',all:'Todos'};
+  var all=S.recs.filter(function(r){return r.nature!=='entry'});
+  var data=type==='all'?all:all.filter(function(r){return r.nature===type});
+  if(!data.length){toast('Nenhum dado para exportar.');return;}
+
+  var colsMap={
+    chip:['id','data','iccid','quantidade','nome_licenciado','id_licenciado','subtipo','evento','responsavel','observacoes'],
+    recharge:['id','data','numero','valor','solicitante','setor','motivo','responsavel'],
+    activation:['id','data','numero','valor','solicitante','setor','plano','motivo','responsavel'],
+    reactivation:['id','data','numero','valor','solicitante','motivo','data_cancelamento','responsavel'],
+    all:['id','natureza','data','iccid','quantidade','nome_licenciado','id_licenciado','numero','valor','solicitante','setor','motivo','responsavel']
+  };
+  var fieldMap={id:'id',data:'date',iccid:'iccid',quantidade:'qty',nome_licenciado:'licensedName',id_licenciado:'licensedId',subtipo:'sub',evento:'event',responsavel:'responsavel',observacoes:'obs',numero:'number',valor:'value',solicitante:'requester',setor:'sector',motivo:'reason',plano:'plan',data_cancelamento:'cancelDate',natureza:'nature'};
+  var cols=colsMap[type]||colsMap.all;
+
+  // Build CSV with BOM for Excel
+  var bom='﻿';
+  var rows=[cols.join(';')];
+  data.forEach(function(r){
+    rows.push(cols.map(function(c){
+      var v=r[fieldMap[c]]||'';
+      return '"'+String(v).replace(/"/g,'""')+'"';
+    }).join(';'));
+  });
+  var blob=new Blob([bom+rows.join('\n')],{type:'application/vnd.ms-excel;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='controle_chips_'+(labels[type]||type)+'_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  toast((labels[type]||type)+' exportado!');
 }
 
 /* ── CSV ─────────────────────────────── */
@@ -1209,6 +1591,476 @@ function exportCSV(){
   toast('CSV exportado!');
 }
 
+
+
+/* ── LOGÍSTICA CONTEL ───────────────────────── */
+function renderContel(){
+  // Update counters
+  var cPct=Math.round(SL.chips/Math.max(SL.chips+200,200)*100);
+  var ePct=Math.round(SL.env/Math.max(SL.env+200,200)*100);
+  document.getElementById('contel-chips-val').textContent=SL.chips;
+  document.getElementById('contel-env-val').textContent=SL.env;
+  document.getElementById('contel-chips-bar').style.width=Math.min(100,cPct)+'%';
+  document.getElementById('contel-env-bar').style.width=Math.min(100,ePct)+'%';
+  document.getElementById('contel-chips-min-label').textContent='mín: '+SL.chipsMin;
+  document.getElementById('contel-env-min-label').textContent='mín: '+SL.envMin;
+  // Alerts
+  var ac=document.getElementById('contel-alert-chips');
+  var ae=document.getElementById('contel-alert-env');
+  if(SL.chips<=SL.chipsMin){
+    ac.style.display='flex';
+    document.getElementById('contel-alert-chips-txt').textContent='Chips Contel abaixo do mínimo! Restam apenas '+SL.chips+' chips.';
+  } else ac.style.display='none';
+  if(SL.env<=SL.envMin){
+    ae.style.display='flex';
+    document.getElementById('contel-alert-env-txt').textContent='Envelopes Contel abaixo do mínimo! Restam apenas '+SL.env+' envelopes.';
+  } else ae.style.display='none';
+  // History
+  renderContelHistory();
+}
+
+function renderContelHistory(){
+  var el=document.getElementById('contel-history');
+  if(!SL.log.length){el.innerHTML='<div class="empty">Nenhuma movimentação registrada.</div>';return;}
+  var html='';
+  var reversed=[].concat(SL.log).reverse();
+  reversed.forEach(function(r){
+    var isEntry=r.type==='entrada';
+    var isBaixa=r.type==='baixa';
+    var isAjuste=r.type==='ajuste';
+    var cor=isEntry?'var(--accent)':isAjuste?'var(--blue)':'var(--amber)';
+    var icon=isEntry?'+':isAjuste?'⚙':'−';
+    var label=isEntry?'Envio ao Contel':isBaixa?'Baixa por planilha':isAjuste?'Ajuste manual':'Movimentação';
+    html+='<div class="rec">';
+    html+='<div class="rec-ico" style="background:'+(isEntry?'rgba(52,212,116,.12)':'rgba(240,164,41,.12)')+';color:'+cor+';font-size:16px;font-weight:600">'+icon+'</div>';
+    html+='<div class="rec-body">';
+    html+='<div class="rec-title">'+label+'</div>';
+    html+='<div class="rec-sub">';
+    if(r.chips)html+='🟢 '+Math.abs(r.chips)+' chips  ';
+    if(r.env)html+='🔵 '+Math.abs(r.env)+' envelopes';
+    if(r.iccids)html+=' · '+r.iccids+' ICCIDs lidos';
+    html+='</div>';
+    if(r.obs)html+='<div class="rec-obs">'+r.obs+'</div>';
+    html+='</div>';
+    html+='<div class="rec-meta"><div class="rec-date">'+new Date(r.date).toLocaleDateString('pt-BR')+'</div>';
+    html+='<div class="rec-date" style="margin-top:2px">'+r.responsavel+'</div></div>';
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+
+function saveContelState(){
+  localStorage.setItem('contel_chips',SL.chips);
+  localStorage.setItem('contel_env',SL.env);
+  localStorage.setItem('contel_chips_min',SL.chipsMin);
+  localStorage.setItem('contel_env_min',SL.envMin);
+  localStorage.setItem('contel_wpp',SL.wpp);
+  localStorage.setItem('contel_msg',SL.msg);
+  localStorage.setItem('contel_log',JSON.stringify(SL.log));
+}
+
+function openContelModal(type){
+  if(type==='entrada'){
+    document.getElementById('contel-e-date').value=new Date().toISOString().slice(0,10);
+    document.getElementById('modal-contel-entrada').classList.add('open');
+  } else if(type==='planilha'){
+    document.getElementById('contel-file-preview').style.display='none';
+    document.getElementById('contel-file-error').style.display='none';
+    document.getElementById('contel-p-btn').disabled=true;
+    document.getElementById('contel-p-btn').style.opacity='.4';
+    document.getElementById('contel-file-input').value='';
+    document.getElementById('modal-contel-planilha').classList.add('open');
+  } else if(type==='config'){
+    document.getElementById('contel-cfg-chips').value=SL.chips;
+    document.getElementById('contel-cfg-env').value=SL.env;
+    document.getElementById('contel-cfg-chips-min').value=SL.chipsMin;
+    document.getElementById('contel-cfg-env-min').value=SL.envMin;
+    document.getElementById('contel-cfg-wpp').value=SL.wpp;
+    document.getElementById('contel-cfg-msg').value=SL.msg;
+    document.getElementById('modal-contel-config').classList.add('open');
+  }
+}
+function closeContelModal(type){document.getElementById('modal-contel-'+type).classList.remove('open');}
+
+function submitContelEntrada(){
+  var chips=parseInt(document.getElementById('contel-e-chips').value)||0;
+  var env=parseInt(document.getElementById('contel-e-env').value)||0;
+  if(!chips&&!env){toast('Informe pelo menos chips ou envelopes.');return;}
+  SL.chips+=chips; SL.env+=env;
+  var entry={type:'entrada',chips:chips,env:env,date:document.getElementById('contel-e-date').value,obs:document.getElementById('contel-e-obs').value,responsavel:S.user};
+  SL.log.push(entry);
+  saveContelState();
+  renderContel();
+  closeContelModal('entrada');
+  toast('Envio registrado: '+chips+' chips e '+env+' envelopes ao Contel!');
+  document.getElementById('contel-e-chips').value=0;
+  document.getElementById('contel-e-env').value=0;
+  document.getElementById('contel-e-obs').value='';
+}
+
+function applyContelAdjust(){
+  var chips=parseInt(document.getElementById('contel-adj-chips').value);
+  var env=parseInt(document.getElementById('contel-adj-env').value);
+  if(isNaN(chips)&&isNaN(env)){toast('Informe pelo menos um valor.');return;}
+  if(!isNaN(chips))SL.chips=Math.max(0,chips);
+  if(!isNaN(env))SL.env=Math.max(0,env);
+  var entry={type:'ajuste',chips:SL.chips,env:SL.env,date:new Date().toISOString().slice(0,10),obs:'Ajuste manual de estoque',responsavel:S.user};
+  SL.log.push(entry);
+  saveContelState();
+  renderContel();
+  closeContelModal('config');
+  toast('Estoque ajustado: '+SL.chips+' chips e '+SL.env+' envelopes.');
+}
+function saveContelConfig(){
+  SL.chips=parseInt(document.getElementById('contel-cfg-chips').value)||SL.chips;
+  SL.env=parseInt(document.getElementById('contel-cfg-env').value)||SL.env;
+  SL.chipsMin=parseInt(document.getElementById('contel-cfg-chips-min').value)||SL.chipsMin;
+  SL.envMin=parseInt(document.getElementById('contel-cfg-env-min').value)||SL.envMin;
+  SL.wpp=document.getElementById('contel-cfg-wpp').value.replace(/\D/g,'');
+  SL.msg=document.getElementById('contel-cfg-msg').value.trim();
+  saveContelState();
+  renderContel();
+  closeContelModal('config');
+  toast('Configurações Contel salvas!');
+}
+
+function sendContelAlert(type){
+  if(!SL.wpp){toast('Configure um WhatsApp para alertas em "Configurar mínimos e alerta".');return;}
+  var item=type==='chips'?'chips':'envelopes';
+  var qtd=type==='chips'?SL.chips:SL.env;
+  var min=type==='chips'?SL.chipsMin:SL.envMin;
+  var lines=[
+    '⚠️ *ALERTA DE ESTOQUE CONTEL — iGreen*',
+    '',
+    'O estoque de *'+item+'* da unidade Contel está abaixo do mínimo.',
+    '📦 Restam apenas *'+qtd+' '+item+'*',
+    '🔔 Mínimo configurado: '+min,
+    '',
+    (SL.msg||'Favor solicitar reposição com urgência.'),
+    '',
+    '_Enviado automaticamente pelo Chips Control_'
+  ];
+  var msg=lines.join('\n');
+  window.open('https://wa.me/55'+SL.wpp+'?text='+encodeURIComponent(msg),'_blank');
+}
+
+/* ── PLANILHA ICCID ──────────────────────── */
+/* ICCID dedup registry — persists across uploads */
+var contelIccidCount=0;
+var contelNewIccids=[];  // ICCIDs novos desta leitura
+if(!SL.iccidRegistry)SL.iccidRegistry=JSON.parse(localStorage.getItem('contel_iccid_registry')||'[]');
+
+function normalizeIccid(v){
+  // Remove prefix "ICCID: ", spaces, quotes — return just the number/id
+  return String(v).replace(/^iccid[:\s]*/i,'').replace(/[\s"]/g,'').trim();
+}
+function isValidIccid(v){
+  var n=normalizeIccid(v);
+  return n&&n.length>5&&n!=='undefined'&&n!=='null'&&n!=='None';
+}
+
+function handleContelFile(input){
+  var file=input.files[0];
+  if(!file)return;
+  var errEl=document.getElementById('contel-file-error');
+  errEl.style.display='none';
+  var ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='csv'){
+    var reader=new FileReader();
+    reader.onload=function(e){parseContelCSV(e.target.result);};
+    reader.readAsText(file,'utf-8');
+  } else if(ext==='xlsx'||ext==='xls'){
+    var reader=new FileReader();
+    reader.onload=function(e){parseContelXLSX(e.target.result);};
+    reader.readAsArrayBuffer(file);
+  } else {
+    errEl.textContent='Formato não suportado. Use .xlsx, .xls ou .csv';
+    errEl.style.display='block';
+  }
+}
+
+function parseContelCSV(text){
+  var lines=text.split(/\r?\n/).filter(function(l){return l.trim();});
+  if(!lines.length){showContelFileError('Arquivo vazio.');return;}
+  var sep=lines[0].includes(';')?';':',';
+  var headers=lines[0].split(sep).map(function(h){return h.replace(/"/g,'').trim();});
+  var iccidIdx=-1;
+  headers.forEach(function(h,i){if(h&&h.toUpperCase().trim().replace(/\s+/g,' ')==='ICCID ENVELOPADO')iccidIdx=i;});
+  if(iccidIdx<0){headers.forEach(function(h,i){if(h&&h.toUpperCase().includes('ICCID ENVELOP'))iccidIdx=i;});}
+  if(iccidIdx<0){showContelFileError('Coluna "ICCID ENVELOPADO" não encontrada. Verifique o cabeçalho da planilha.');return;}
+  var rows=lines.slice(1);
+  var allIccids=[];
+  rows.forEach(function(l){
+    var cols=l.split(sep);
+    var v=(cols[iccidIdx]||'').replace(/"/g,'').trim();
+    if(isValidIccid(v))allIccids.push(normalizeIccid(v));
+  });
+  processDedup(allIccids,headers[iccidIdx]);
+}
+
+function parseContelXLSX(buffer){
+  if(typeof XLSX==='undefined'){
+    var s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload=function(){var wb=XLSX.read(new Uint8Array(buffer),{type:'array'});processContelWorkbook(wb);};
+    s.onerror=function(){showContelFileError('Erro ao carregar leitor de Excel. Tente converter para CSV.');};
+    document.head.appendChild(s);
+    return;
+  }
+  var wb=XLSX.read(new Uint8Array(buffer),{type:'array'});
+  processContelWorkbook(wb);
+}
+
+function processContelWorkbook(wb){
+  var ws=wb.Sheets[wb.SheetNames[0]];
+  var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  if(!data.length){showContelFileError('Planilha vazia.');return;}
+  var headers=data[0].map(function(h){return String(h).trim();});
+  var iccidIdx=-1;
+  headers.forEach(function(h,i){if(h&&String(h).toUpperCase().trim().replace(/\s+/g,' ')==='ICCID ENVELOPADO')iccidIdx=i;});
+  if(iccidIdx<0){headers.forEach(function(h,i){if(h&&String(h).toUpperCase().includes('ICCID ENVELOP'))iccidIdx=i;});}
+  if(iccidIdx<0){showContelFileError('Coluna "ICCID ENVELOPADO" não encontrada. Certifique-se que o cabeçalho contém essa coluna.');return;}
+  var rows=data.slice(1);
+  var allIccids=[];
+  rows.forEach(function(r){
+    var v=String(r[iccidIdx]||'').trim();
+    if(isValidIccid(v))allIccids.push(normalizeIccid(v));
+  });
+  processDedup(allIccids,headers[iccidIdx]);
+}
+
+function processDedup(allIccids,colName){
+  var registry=SL.iccidRegistry||[];
+  var registrySet={};
+  registry.forEach(function(id){registrySet[id]=true;});
+  var novos=allIccids.filter(function(id){return !registrySet[id];});
+  var duplicados=allIccids.length-novos.length;
+  contelNewIccids=novos;
+  showContelFileResult(novos.length,allIccids.length,duplicados,colName,novos.slice(0,3));
+}
+
+function showContelFileError(msg){
+  document.getElementById('contel-file-error').textContent=msg;
+  document.getElementById('contel-file-error').style.display='block';
+  document.getElementById('contel-file-preview').style.display='none';
+  document.getElementById('contel-p-btn').disabled=true;
+  document.getElementById('contel-p-btn').style.opacity='.4';
+  contelIccidCount=0;
+  contelNewIccids=[];
+}
+
+function showContelFileResult(novos,total,duplicados,colName,samples){
+  contelIccidCount=novos;
+  document.getElementById('contel-iccid-count').textContent=novos;
+  document.getElementById('contel-iccid-col').textContent=colName;
+  var sampleTxt=novos?'Ex: '+samples.join(', '):'Nenhum ICCID novo encontrado';
+  var dupInfo=duplicados>0?' · ⚠️ '+duplicados+' já processados anteriormente (ignorados)':'';
+  document.getElementById('contel-iccid-sample').textContent=sampleTxt+dupInfo;
+  document.getElementById('contel-file-preview').style.display='block';
+  document.getElementById('contel-file-error').style.display='none';
+  // Update count label to show total vs new
+  document.getElementById('contel-iccid-count').title='Total na planilha: '+total+' | Novos: '+novos+' | Duplicados: '+duplicados;
+  var btn=document.getElementById('contel-p-btn');
+  if(novos>0){btn.disabled=false;btn.style.opacity='1';btn.textContent='Confirmar baixa ('+novos+' novos)';}
+  else{btn.disabled=true;btn.style.opacity='.4';btn.textContent=duplicados>0?'Todos já processados':'Confirmar baixa';}
+}
+
+function submitContelPlanilha(){
+  if(!contelIccidCount||!contelNewIccids.length){toast('Nenhum ICCID novo para processar.');return;}
+  // Register new ICCIDs
+  SL.iccidRegistry=(SL.iccidRegistry||[]).concat(contelNewIccids);
+  localStorage.setItem('contel_iccid_registry',JSON.stringify(SL.iccidRegistry));
+  // Deduct stock
+  SL.chips=Math.max(0,SL.chips-contelIccidCount);
+  SL.env=Math.max(0,SL.env-contelIccidCount);
+  var entry={type:'baixa',chips:contelIccidCount,env:contelIccidCount,iccids:contelIccidCount,date:new Date().toISOString().slice(0,10),obs:document.getElementById('contel-p-obs').value||'Baixa por planilha',responsavel:S.user};
+  SL.log.push(entry);
+  saveContelState();
+  renderContel();
+  closeContelModal('planilha');
+  toast('Baixa de '+contelIccidCount+' chips e envelopes! '+SL.iccidRegistry.length+' ICCIDs registrados no total.');
+  contelIccidCount=0;
+  contelNewIccids=[];
+  setTimeout(function(){
+    if(SL.chips<=SL.chipsMin&&SL.wpp)sendContelAlert('chips');
+    if(SL.env<=SL.envMin&&SL.wpp)sendContelAlert('env');
+  },1000);
+}
+
+function exportContelCSV(){
+  if(!SL.log.length){toast('Nenhum dado para exportar.');return;}
+  var bom='\uFEFF';
+  var cols=['data','tipo','chips','envelopes','iccids_lidos','observacoes','responsavel'];
+  var rows=[cols.join(';')];
+  SL.log.forEach(function(r){
+    rows.push([r.date,r.type,r.chips||0,r.env||0,r.iccids||'',r.obs||'',r.responsavel||''].map(function(v){return '"'+String(v)+'"';}).join(';'));
+  });
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([bom+rows.join('\n')],{type:'application/vnd.ms-excel;charset=utf-8'}));
+  a.download='estoque_contel_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  toast('Exportado!');
+}
+
+/* ── EDIT / DELETE ───────────────────────── */
+var editingId=null;
+function openEditModal(id){
+  var r=S.recs.find(function(x){return String(x.id)===String(id)});
+  if(!r)return;
+  editingId=id;
+  var labels={chip:'Compra de chip',recharge:'Recarga',activation:'Ativação',reactivation:'Reativação'};
+  var fields='';
+  // Common fields per nature
+  if(r.nature==='chip'){
+    fields+=fldRow([
+      fld('ICCID','edit-iccid',r.iccid),
+      fld('Quantidade','edit-qty',r.qty,'number')
+    ]);
+    fields+=fldRow([
+      fld('Nome licenciado','edit-lname',r.licensedName),
+      fld('ID licenciado','edit-lid',r.licensedId)
+    ]);
+    fields+=fld('Evento','edit-event',r.event||'');
+    fields+=fldTa('Observações','edit-obs',r.obs||'');
+  } else {
+    fields+=fldRow([
+      fld('Número','edit-number',r.number||''),
+      fld('Valor (R$)','edit-value',r.value||'','number')
+    ]);
+    fields+=fldRow([
+      fld('Solicitado por','edit-requester',r.requester||''),
+      fld('Setor','edit-sector',r.sector||'')
+    ]);
+    fields+=fldTa('Motivo','edit-reason',r.reason||'');
+  }
+  fields+='<div style="margin-top:10px;padding:8px 10px;background:var(--surface3);border-radius:var(--radius);font-size:11px;color:var(--text3)">Lançamento original por <strong style="color:var(--purple)">'+r.responsavel+'</strong> em '+new Date(r.date).toLocaleString('pt-BR')+'</div>';
+  document.getElementById('edit-fields').innerHTML=fields;
+  document.getElementById('modal-edit').classList.add('open');
+}
+function fld(label,id,val,type){
+  return '<div class="fg"><label>'+label+'</label><input id="'+id+'" value="'+(val||'')+'" type="'+(type||'text')+'"></div>';
+}
+function fldRow(arr){return '<div class="row2">'+arr.join('')+'</div>';}
+function fldTa(label,id,val){
+  return '<div class="fg"><label>'+label+'</label><textarea id="'+id+'" style="min-height:52px">'+(val||'')+'</textarea></div>';
+}
+function closeEditModal(){
+  document.getElementById('modal-edit').classList.remove('open');
+  editingId=null;
+}
+function saveEdit(){
+  var idx=S.recs.findIndex(function(x){return String(x.id)===String(editingId)});
+  if(idx<0)return;
+  var r=S.recs[idx];
+  if(r.nature==='chip'){
+    r.iccid=document.getElementById('edit-iccid').value||r.iccid;
+    r.qty=parseInt(document.getElementById('edit-qty').value)||r.qty;
+    r.licensedName=document.getElementById('edit-lname').value||r.licensedName;
+    r.licensedId=document.getElementById('edit-lid').value||r.licensedId;
+    r.event=document.getElementById('edit-event').value||r.event;
+    r.obs=document.getElementById('edit-obs').value;
+  } else {
+    r.number=document.getElementById('edit-number').value||r.number;
+    r.value=document.getElementById('edit-value').value||r.value;
+    r.requester=document.getElementById('edit-requester').value||r.requester;
+    r.sector=document.getElementById('edit-sector').value||r.sector;
+    r.reason=document.getElementById('edit-reason').value||r.reason;
+  }
+  r.editedBy=S.user;
+  r.editedAt=new Date().toISOString();
+  S.recs[idx]=r;
+  saveToSheets(r);
+  closeEditModal();
+  renderHistory();
+  toast('Lançamento atualizado!');
+}
+function deleteRec(){
+  if(!confirm('Tem certeza que deseja excluir este lançamento? Esta ação não pode ser desfeita.'))return;
+  var idx=S.recs.findIndex(function(x){return String(x.id)===String(editingId)});
+  if(idx<0)return;
+  S.recs.splice(idx,1);
+  closeEditModal();
+  renderHistory();
+  updateSidebar();
+  toast('Lançamento excluído.');
+  // Note: does not delete from Sheets — marks as deleted
+}
+
+/* ── STOCK ALERT (WhatsApp / Email) ──────── */
+function saveAlertConfig(){
+  var wpp=document.getElementById('cfg-wpp').value.replace(/\D/g,'');
+  var email=document.getElementById('cfg-email').value.trim();
+  var msg=document.getElementById('cfg-alert-msg').value.trim();
+  localStorage.setItem('cc_alert_wpp',wpp);
+  localStorage.setItem('cc_alert_email',email);
+  localStorage.setItem('cc_alert_msg',msg);
+  var testEl=document.getElementById('cfg-alert-test');
+  if(wpp||email)testEl.style.display='block';
+  toast('Configuração de alerta salva!');
+}
+function buildAlertMsg(){
+  var custom=localStorage.getItem('cc_alert_msg')||'';
+  var lines=[
+    '⚠️ *ALERTA DE ESTOQUE — Chips Control*',
+    '',
+    'O estoque de chips da unidade está baixo.',
+    '📦 *Restam apenas '+S.stock+' chips*',
+    '🔔 Mínimo configurado: '+S.minStock,
+    '',
+    (custom||'Favor solicitar reposição com urgência.'),
+    '',
+    '_Enviado automaticamente pelo Chips Control_'
+  ];
+  return lines.join('\n');
+}
+function sendAlert(type){
+  var msg=buildAlertMsg();
+  if(type==='wpp'){
+    var wpp=localStorage.getItem('cc_alert_wpp')||'';
+    if(!wpp){toast('Configure um número de WhatsApp primeiro.');return;}
+    var url='https://wa.me/55'+wpp+'?text='+encodeURIComponent(msg);
+    window.open(url,'_blank');
+  } else {
+    var email=localStorage.getItem('cc_alert_email')||'';
+    if(!email){toast('Configure um e-mail primeiro.');return;}
+    var subject=encodeURIComponent('⚠️ Alerta de Estoque Baixo — Chips Control');
+    var body=encodeURIComponent(msg.replace(/\*/g,''));
+    window.open('mailto:'+email+'?subject='+subject+'&body='+body,'_blank');
+  }
+}
+function checkStockAlert(){
+  if(S.stock<=S.minStock){
+    var wpp=localStorage.getItem('cc_alert_wpp')||'';
+    var email=localStorage.getItem('cc_alert_email')||'';
+    var lastAlert=localStorage.getItem('cc_last_alert')||'';
+    var today=new Date().toISOString().slice(0,10);
+    if((wpp||email)&&lastAlert!==today){
+      localStorage.setItem('cc_last_alert',today);
+      showStockAlertBanner();
+    }
+  }
+}
+function showStockAlertBanner(){
+  var banner=document.createElement('div');
+  banner.style.cssText='position:fixed;top:52px;left:50%;transform:translateX(-50%);background:#1a120a;border:1px solid var(--amber-border);border-radius:var(--radius-lg);padding:12px 20px;display:flex;align-items:center;gap:14px;z-index:300;box-shadow:var(--shadow-lg);max-width:480px;width:90%';
+  var icon=document.createElement('span');icon.style.fontSize='18px';icon.textContent='⚠️';
+  var body=document.createElement('div');body.style.flex='1';
+  var t1=document.createElement('div');t1.style.cssText='font-size:13px;font-weight:500;color:var(--amber)';t1.textContent='Estoque baixo — '+S.stock+' chips restantes';
+  var t2=document.createElement('div');t2.style.cssText='font-size:11px;color:var(--text3);margin-top:2px';t2.textContent='Clique para enviar alerta';
+  body.appendChild(t1);body.appendChild(t2);
+  var bWpp=document.createElement('button');
+  bWpp.style.cssText='background:var(--accent);color:#0a0f0a;border:none;border-radius:var(--radius);padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)';
+  bWpp.textContent='📱 WhatsApp';bWpp.onclick=function(){sendAlert('wpp');};
+  var bEmail=document.createElement('button');
+  bEmail.style.cssText='background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font);margin-left:4px';
+  bEmail.textContent='✉️';bEmail.onclick=function(){sendAlert('email');};
+  var bClose=document.createElement('button');
+  bClose.style.cssText='background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 0 0 8px';
+  bClose.textContent='✕';bClose.onclick=function(){banner.remove();};
+  banner.appendChild(icon);banner.appendChild(body);banner.appendChild(bWpp);banner.appendChild(bEmail);banner.appendChild(bClose);
+  document.body.appendChild(banner);
+  setTimeout(function(){if(banner.parentElement)banner.remove();},12000);
+}
 /* ── INIT ────────────────────────────── */
 buildQuickUsers();
 </script>
