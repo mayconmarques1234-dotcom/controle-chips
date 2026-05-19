@@ -322,7 +322,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 /* ── CONFIG PASSWORD ─────────────────── */
 function checkCfgPass(){
   var v=document.getElementById('cfg-pass-input').value;
-  if(v==='conf2026'){
+  var stored=localStorage.getItem('cc_cfg_pass')||btoa('conf2026');
+  if(btoa(v)===stored){
     document.getElementById('cfg-lock').style.display='none';
     document.getElementById('cfg-content').style.display='block';
   }else{
@@ -330,6 +331,19 @@ function checkCfgPass(){
     err.style.display='block';
     setTimeout(function(){err.style.display='none';},2500);
   }
+}
+function updateCfgPass(){
+  var np=document.getElementById('cfg-new-pass').value;
+  var cp=document.getElementById('cfg-confirm-pass').value;
+  if(!np||np.length<4){toast('A senha deve ter pelo menos 4 caracteres.');return;}
+  if(np!==cp){toast('As senhas não coincidem.');return;}
+  changeCfgPass(np);
+  document.getElementById('cfg-new-pass').value='';
+  document.getElementById('cfg-confirm-pass').value='';
+}
+function changeCfgPass(newPass){
+  localStorage.setItem('cc_cfg_pass',btoa(newPass));
+  toast('Senha de configurações atualizada!');
 }
 
 /* ── MODAL ───────────────────────────────── */
@@ -421,6 +435,9 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
     </div>
     <button class="login-btn" onclick="doLogin()">Entrar no sistema</button>
     <div class="login-error" id="login-error">Por favor, digite seu nome antes de entrar.</div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border2);font-size:10px;color:var(--text3);line-height:1.6;text-align:center">
+      🔒 Uso interno iGreen · Os dados inseridos são armazenados de forma segura no Google Sheets da organização
+    </div>
   </div>
   <div class="login-footer" style="margin-top:16px">Chips Control · iGreen · Uso interno</div>
 </div>
@@ -469,6 +486,10 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
       <button class="nav-item" onclick="setPage('contel',this)">
         <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         Contel
+      </button>
+      <button class="nav-item" onclick="setPage('logistica',this)">
+        <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Logística
       </button>
       <button class="nav-item" onclick="setPage('config',this)">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
@@ -752,6 +773,55 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
           <div id="contel-history"></div>
         </div>
 
+
+        <!-- LOGÍSTICA -->
+        <div id="page-logistica" class="page">
+          <!-- METRICS -->
+          <div class="metrics" id="logi-metrics" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+            <div class="mc g"><div class="mc-lbl">Total chips vendidos</div><div class="mc-val" id="logi-total">—</div></div>
+            <div class="mc a"><div class="mc-lbl">Licenças</div><div class="mc-val" id="logi-lic">—</div></div>
+            <div class="mc b"><div class="mc-lbl">Chip avulso</div><div class="mc-val" id="logi-avu">—</div></div>
+            <div class="mc p"><div class="mc-lbl">Último upload</div><div class="mc-val" id="logi-date" style="font-size:14px;margin-top:8px">—</div></div>
+          </div>
+
+          <!-- ACTION -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+            <button class="btn-primary" onclick="openLogiModal()">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#0a0f0a;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Subir nova planilha de vendas
+            </button>
+            <button class="btn-secondary" onclick="exportLogiCSV()">
+              <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar CSV
+            </button>
+            <button class="btn-secondary" onclick="clearLogi()" style="color:var(--red);border-color:var(--red-border);margin-left:auto">Limpar dados</button>
+          </div>
+
+          <div id="logi-empty" class="empty" style="padding:60px 0">
+            <svg viewBox="0 0 24 24" style="width:48px;height:48px;stroke:var(--text3);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;margin:0 auto 16px;display:block"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Nenhuma planilha carregada ainda.<br>
+            <span style="font-size:11px">Suba a planilha de licenciados para começar a análise.</span>
+          </div>
+
+          <div id="logi-content" style="display:none">
+            <div class="divider"></div>
+            <div class="sec-title">Vendas por mês</div>
+            <div id="logi-month-chart" style="margin-bottom:20px"></div>
+
+            <div class="divider"></div>
+            <div class="sec-title">Distribuição por estado (UF)</div>
+            <div id="logi-uf-table" style="margin-bottom:20px"></div>
+
+            <div class="divider"></div>
+            <div class="sec-title">📈 Projeção de compras futuras</div>
+            <div id="logi-projection" style="margin-bottom:20px"></div>
+
+            <div class="divider"></div>
+            <div class="sec-title">Detalhamento por tipo</div>
+            <div id="logi-breakdown"></div>
+          </div>
+        </div>
+
         <!-- CONFIG -->
         <div id="page-config" class="page">
           <div id="cfg-lock" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 0;gap:16px">
@@ -767,11 +837,9 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
           <div id="cfg-content" style="display:none">
           <div class="config-card">
             <h3>Google Sheets — conexão</h3>
-            <p>Cole o ID da planilha e a chave de API. Todos os lançamentos serão salvos e lidos de lá.</p>
-            <div class="fg"><label>ID da planilha</label><input id="cfg-sheet-id" placeholder="Cole o ID (entre /d/ e /edit na URL)"></div>
-            <div class="fg"><label>Chave de API (API Key)</label><input id="cfg-api-key" placeholder="Cole sua Google API Key" type="password"></div>
-            <div style="display:flex;gap:8px;margin-top:4px;align-items:center;flex-wrap:wrap">
-              <button class="btn-primary" onclick="saveConfig()">Salvar e testar conexão</button>
+            <p>Os dados são salvos automaticamente via Google Apps Script. A conexão já está configurada. Clique em "Testar conexão" para verificar o status.</p>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <button class="btn-primary" onclick="saveConfig()">Testar conexão</button>
               <div id="cfg-status" style="display:none;font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);color:var(--text2)">—</div>
             </div>
           </div>
@@ -808,6 +876,23 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
             </div>
           </div>
           <div class="config-card">
+            <h3>Segurança — alterar senha</h3>
+            <p>Altere a senha de acesso às configurações. A senha atual é armazenada de forma criptografada no navegador.</p>
+            <div class="row2">
+              <div class="fg"><label>Nova senha</label><input type="password" id="cfg-new-pass" placeholder="Digite a nova senha"></div>
+              <div class="fg"><label>Confirmar senha</label><input type="password" id="cfg-confirm-pass" placeholder="Repita a nova senha"></div>
+            </div>
+            <button class="btn-primary" style="margin-top:4px" onclick="updateCfgPass()">Atualizar senha</button>
+          </div>
+          <div class="config-card" style="border-color:var(--blue-border)">
+            <h3 style="color:var(--blue)">🔒 Aviso de Privacidade (LGPD)</h3>
+            <p style="line-height:1.8">Este sistema coleta e armazena dados para fins de controle interno operacional:<br>
+            • <strong>Nomes</strong> de usuários e licenciados — identificação de responsáveis<br>
+            • <strong>Números de telefone</strong> — registro de operações de recarga/ativação<br>
+            • <strong>ICCIDs</strong> — rastreamento de chips físicos<br><br>
+            Os dados ficam armazenados no <strong>Google Sheets</strong> da organização e no <strong>navegador local</strong> (localStorage). Nenhum dado é compartilhado com terceiros além dos serviços Google utilizados. O acesso é restrito por senha e destinado exclusivamente ao uso interno da equipe iGreen.</p>
+          </div>
+          <div class="config-card">
             <h3>Instruções de configuração</h3>
             <p style="line-height:1.9">
               1. Crie uma planilha com abas <code>lancamentos</code> e <code>estoque</code><br>
@@ -825,6 +910,37 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
   </div>
 </div>
 
+
+
+<!-- MODAL LOGÍSTICA UPLOAD -->
+<div class="modal-overlay" id="modal-logi">
+  <div class="modal" style="width:520px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title">Upload de planilha de vendas</div>
+      <button onclick="closeLogiModal()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <div class="modal-sub" style="margin-bottom:14px">A planilha deve ter <strong style="color:var(--accent)">3 abas obrigatórias</strong>: <code>licença</code>, <code>chip avulso</code> e <code>Dom</code>.</div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:14px;font-size:11px;color:var(--text3);line-height:1.6">
+      <strong style="color:var(--text2)">Regras de contagem:</strong><br>
+      • <strong>VOUCHER</strong> + EXPERT ou EXPERT+TELECOM + (Integral ou Boleto≠1/4) = <strong style="color:var(--accent)">2 chips</strong><br>
+      • <strong>PAGO</strong> + EXPERT+TELECOM + (Integral ou Boleto≠1/4) = <strong style="color:var(--accent)">2 chips</strong><br>
+      • <strong>PAGO</strong> + TELECOM + (Integral ou Boleto≠1/4) = <strong style="color:var(--accent)">10 chips</strong><br>
+      • <strong>RENOVAÇÃO</strong> e <strong>RENOVAÇÃO VOUCHER</strong> = <strong style="color:var(--red)">não contabiliza</strong><br>
+      • <strong>Chip avulso</strong> só é contado se o ID_TRANSACAO bater com algum payer_name da aba Dom
+    </div>
+    <div id="logi-drop-zone" onclick="document.getElementById('logi-file-input').click()" style="border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:32px;text-align:center;cursor:pointer;margin-bottom:14px">
+      <svg viewBox="0 0 24 24" style="width:32px;height:32px;stroke:var(--text3);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;margin:0 auto 8px;display:block"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div style="font-size:13px;color:var(--text2);font-weight:500">Clique para selecionar a planilha</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">Apenas .xlsx</div>
+    </div>
+    <input type="file" id="logi-file-input" accept=".xlsx" style="display:none" onchange="handleLogiFile(this)">
+    <div id="logi-file-status" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;font-size:13px;color:var(--text2)"></div>
+    <div id="logi-file-error" style="display:none;color:var(--red);font-size:12px;margin-bottom:12px"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeLogiModal()">Fechar</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL EDITAR/EXCLUIR -->
 <div class="modal-overlay" id="modal-edit">
@@ -989,8 +1105,8 @@ var SL={
   envMin:parseInt(localStorage.getItem('contel_env_min')||'100'),
   wpp:localStorage.getItem('contel_wpp')||'',
   msg:localStorage.getItem('contel_msg')||'',
-  callmebotKey:localStorage.getItem('contel_cmb_key')||'8229133',
-  callmebotNum:localStorage.getItem('contel_cmb_num')||'5534920001508',
+  callmebotKey:localStorage.getItem('contel_cmb_key')||'',
+  callmebotNum:localStorage.getItem('contel_cmb_num')||'',
   alertEmail:localStorage.getItem('contel_alert_email')||'',
   iccidRegistry:JSON.parse(localStorage.getItem('contel_iccid_registry')||'[]'),
   log:JSON.parse(localStorage.getItem('contel_log')||'[]')
@@ -1006,8 +1122,8 @@ var S={
   users:JSON.parse(localStorage.getItem('cc_users')||'[]')
 };
 
-var TITLES={launch:'Novo lançamento',stock:'Estoque',ops:'Operações',history:'Histórico',contel:'Logística Contel',config:'Configurações'};
-var SUBS={launch:'Selecione a natureza e preencha os dados',stock:'Visão geral e filtro de saídas de chips',ops:'Recargas, ativações e reativações',history:'Todos os lançamentos registrados',contel:'Chips e envelopes enviados ao Contel do país',config:'Conexão com Google Sheets e preferências'};
+var TITLES={launch:'Novo lançamento',stock:'Estoque',ops:'Operações',history:'Histórico',contel:'Logística Contel',logistica:'Logística — Vendas',config:'Configurações'};
+var SUBS={launch:'Selecione a natureza e preencha os dados',stock:'Visão geral e filtro de saídas de chips',ops:'Recargas, ativações e reativações',history:'Todos os lançamentos registrados',contel:'Chips e envelopes enviados ao Contel do país',logistica:'Análise de vendas e movimento de chips por planilha',config:'Conexão com Google Sheets e preferências'};
 
 /* ── LOGIN ────────────────────────────── */
 function buildQuickUsers(){
@@ -1050,11 +1166,7 @@ function doLogin(){
   if(document.getElementById('cfg-email'))document.getElementById('cfg-email').value=_em;
   if(document.getElementById('cfg-alert-msg'))document.getElementById('cfg-alert-msg').value=_am;
   if((_wpp||_em)&&document.getElementById('cfg-alert-test'))document.getElementById('cfg-alert-test').style.display='block';
-  if(S.sheetId&&S.apiKey){
-    document.getElementById('cfg-sheet-id').value=S.sheetId;
-    document.getElementById('cfg-api-key').value=S.apiKey;
-    loadFromSheets();
-  }
+  if(SCRIPT_URL)loadFromSheets();
   document.getElementById('me-date').value=new Date().toISOString().slice(0,10);
   updateSidebar();
   if(SCRIPT_URL)loadFromSheets();
@@ -1079,6 +1191,7 @@ function setPage(p,btn){
   if(p==='ops')renderOps();
   if(p==='history')renderHistory();
   if(p==='contel')renderContel();
+  if(p==='logistica')renderLogistica();
 }
 
 /* ── FORM ─────────────────────────────── */
@@ -1172,7 +1285,8 @@ function resetForm(){
 /* ── CONFIG PASSWORD ─────────────────── */
 function checkCfgPass(){
   var v=document.getElementById('cfg-pass-input').value;
-  if(v==='conf2026'){
+  var stored=localStorage.getItem('cc_cfg_pass')||btoa('conf2026');
+  if(btoa(v)===stored){
     document.getElementById('cfg-lock').style.display='none';
     document.getElementById('cfg-content').style.display='block';
   }else{
@@ -1180,6 +1294,19 @@ function checkCfgPass(){
     err.style.display='block';
     setTimeout(function(){err.style.display='none';},2500);
   }
+}
+function updateCfgPass(){
+  var np=document.getElementById('cfg-new-pass').value;
+  var cp=document.getElementById('cfg-confirm-pass').value;
+  if(!np||np.length<4){toast('A senha deve ter pelo menos 4 caracteres.');return;}
+  if(np!==cp){toast('As senhas não coincidem.');return;}
+  changeCfgPass(np);
+  document.getElementById('cfg-new-pass').value='';
+  document.getElementById('cfg-confirm-pass').value='';
+}
+function changeCfgPass(newPass){
+  localStorage.setItem('cc_cfg_pass',btoa(newPass));
+  toast('Senha de configurações atualizada!');
 }
 
 /* ── MODAL ────────────────────────────── */
@@ -1260,16 +1387,12 @@ function updateStockInSheets(){
 
 /* ── CONFIG ──────────────────────────── */
 function saveConfig(){
-  S.sheetId=document.getElementById('cfg-sheet-id').value.trim();
-  S.apiKey=document.getElementById('cfg-api-key').value.trim();
-  localStorage.setItem('cc_sheet_id',S.sheetId);
-  localStorage.setItem('cc_api_key',S.apiKey);
   var st=document.getElementById('cfg-status');
   st.style.display='block';st.textContent='Testando...';st.style.color='var(--amber)';
   loadFromSheets();
   setTimeout(function(){
     var ok=document.getElementById('sync-dot').className.includes('ok');
-    st.textContent=ok?'✓ Conectado com sucesso!':'✕ Erro — verifique o ID e a chave';
+    st.textContent=ok?'✓ Conectado com sucesso!':'✕ Erro de conexão';
     st.style.color=ok?'var(--accent)':'var(--red)';
   },2500);
 }
@@ -1592,20 +1715,7 @@ function exportXLSX(type){
   toast((labels[type]||type)+' exportado!');
 }
 
-/* ── CSV ─────────────────────────────── */
-function exportCSV(){
-  var all=S.recs.filter(function(r){return r.nature!=='entry'});
-  if(!all.length){toast('Nenhum dado para exportar.');return;}
-  var cols=['id','natureza','subtipo','data','iccid','quantidade','nome_licenciado','id_licenciado','evento','numero','valor','solicitante','setor','motivo','plano','data_cancelamento','observacoes','responsavel'];
-  var map={id:'id',natureza:'nature',subtipo:'sub',data:'date',iccid:'iccid',quantidade:'qty',nome_licenciado:'licensedName',id_licenciado:'licensedId',evento:'event',numero:'number',valor:'value',solicitante:'requester',setor:'sector',motivo:'reason',plano:'plan',data_cancelamento:'cancelDate',observacoes:'obs',responsavel:'responsavel'};
-  var rows=[cols.join(',')];
-  all.forEach(function(r){rows.push(cols.map(function(c){return '"'+(r[map[c]]||'')+'"'}).join(','))});
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8'}));
-  a.download='controle_chips_'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click();
-  toast('CSV exportado!');
-}
+/* exportCSV removido — use exportXLSX */
 
 
 
@@ -1963,6 +2073,377 @@ function exportContelCSV(){
   var a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([bom+rows.join('\n')],{type:'application/vnd.ms-excel;charset=utf-8'}));
   a.download='estoque_contel_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  toast('Exportado!');
+}
+
+
+/* ── LOGÍSTICA — Análise de planilha de vendas ───── */
+var LG={data:JSON.parse(localStorage.getItem('logi_data')||'null')};
+
+function renderLogistica(){
+  if(!LG.data){
+    document.getElementById('logi-empty').style.display='block';
+    document.getElementById('logi-content').style.display='none';
+    document.getElementById('logi-total').textContent='—';
+    document.getElementById('logi-lic').textContent='—';
+    document.getElementById('logi-avu').textContent='—';
+    document.getElementById('logi-date').textContent='—';
+    return;
+  }
+  var d=LG.data;
+  document.getElementById('logi-empty').style.display='none';
+  document.getElementById('logi-content').style.display='block';
+  document.getElementById('logi-total').textContent=(d.totalLic+d.totalAvu).toLocaleString('pt-BR');
+  document.getElementById('logi-lic').textContent=d.totalLic.toLocaleString('pt-BR');
+  document.getElementById('logi-avu').textContent=d.totalAvu.toLocaleString('pt-BR');
+  document.getElementById('logi-date').textContent=new Date(d.uploadDate).toLocaleDateString('pt-BR');
+
+  // Vendas por mês (combina lic + avu)
+  var allMonths={};
+  Object.keys(d.licByMonth).forEach(function(m){allMonths[m]=(allMonths[m]||0)+d.licByMonth[m];});
+  Object.keys(d.avuByMonth).forEach(function(m){allMonths[m]=(allMonths[m]||0)+d.avuByMonth[m];});
+  var keys=Object.keys(allMonths).sort();
+  var maxVal=Math.max(1,...Object.values(allMonths));
+  var html='<table class="rtable"><thead><tr><th>Mês</th><th>Licenças</th><th>Avulsos</th><th>Total</th><th style="width:30%">Distribuição</th></tr></thead><tbody>';
+  keys.forEach(function(m){
+    var lic=d.licByMonth[m]||0;
+    var avu=d.avuByMonth[m]||0;
+    var total=lic+avu;
+    var pct=Math.round(total/maxVal*100);
+    html+='<tr><td style="font-weight:500">'+m+'</td><td style="color:var(--amber)">'+lic+'</td><td style="color:var(--blue)">'+avu+'</td><td style="color:var(--accent);font-weight:500">'+total+'</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:'+pct+'%"></div></div></td></tr>';
+  });
+  html+='</tbody></table>';
+  document.getElementById('logi-month-chart').innerHTML=html;
+
+  // Por UF
+  var allUFs={};
+  Object.keys(d.licByUF).forEach(function(u){allUFs[u]=(allUFs[u]||0)+d.licByUF[u];});
+  Object.keys(d.avuByUF).forEach(function(u){allUFs[u]=(allUFs[u]||0)+d.avuByUF[u];});
+  var ufKeys=Object.keys(allUFs).sort(function(a,b){return allUFs[b]-allUFs[a];});
+  var maxUF=Math.max(1,...Object.values(allUFs));
+  var ufHtml='<table class="rtable"><thead><tr><th>UF</th><th>Licenças</th><th>Avulsos</th><th>Total</th><th style="width:30%">Distribuição</th></tr></thead><tbody>';
+  ufKeys.forEach(function(uf){
+    var lic=d.licByUF[uf]||0;
+    var avu=d.avuByUF[uf]||0;
+    var total=lic+avu;
+    var pct=Math.round(total/maxUF*100);
+    ufHtml+='<tr><td style="font-weight:500">'+uf+'</td><td style="color:var(--amber)">'+lic+'</td><td style="color:var(--blue)">'+avu+'</td><td style="color:var(--accent);font-weight:500">'+total+'</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:'+pct+'%"></div></div></td></tr>';
+  });
+  ufHtml+='</tbody></table>';
+  document.getElementById('logi-uf-table').innerHTML=ufHtml;
+
+  // Breakdown por tipo
+  var bd=d.breakdown;
+  document.getElementById('logi-breakdown').innerHTML=
+    '<table class="rtable"><thead><tr><th>Categoria</th><th>Linhas</th><th>Chips</th></tr></thead><tbody>'+
+    '<tr><td style="font-weight:500">VOUCHER · EXPERT/EXPERT+TELECOM (2 chips)</td><td>'+bd.voucher.count+'</td><td style="color:var(--accent)">'+bd.voucher.chips+'</td></tr>'+
+    '<tr><td style="font-weight:500">PAGO · EXPERT+TELECOM (2 chips)</td><td>'+bd.pagoExpertTel.count+'</td><td style="color:var(--accent)">'+bd.pagoExpertTel.chips+'</td></tr>'+
+    '<tr><td style="font-weight:500">PAGO · TELECOM (10 chips)</td><td>'+bd.pagoTelecom.count+'</td><td style="color:var(--accent)">'+bd.pagoTelecom.chips+'</td></tr>'+
+    '<tr><td style="font-weight:500;color:var(--text3)">Renovações ignoradas</td><td>'+bd.ignored+'</td><td style="color:var(--text3)">—</td></tr>'+
+    '<tr><td style="font-weight:500">Chip avulso (match Dom)</td><td>'+bd.avuMatch+'</td><td style="color:var(--accent)">'+d.totalAvu+'</td></tr>'+
+    '<tr><td style="font-weight:500;color:var(--text3)">Chip avulso sem match</td><td>'+bd.avuNoMatch+'</td><td style="color:var(--text3)">—</td></tr>'+
+    '</tbody></table>';
+  renderProjection();
+}
+
+function renderProjection(){
+  var d=LG.data;
+  if(!d){return;}
+  // Combina meses de licença + avulso
+  var allMonths={};
+  Object.keys(d.licByMonth).forEach(function(m){allMonths[m]=(allMonths[m]||0)+d.licByMonth[m];});
+  Object.keys(d.avuByMonth).forEach(function(m){allMonths[m]=(allMonths[m]||0)+d.avuByMonth[m];});
+  var sortedKeys=Object.keys(allMonths).sort(function(a,b){
+    var pa=a.split('/');var pb=b.split('/');
+    return new Date(pa[1],parseInt(pa[0])-1,1)-new Date(pb[1],parseInt(pb[0])-1,1);
+  });
+  if(sortedKeys.length<2){
+    document.getElementById('logi-projection').innerHTML='<div class="empty" style="padding:24px;font-size:12px">⚠️ Dados insuficientes para projeção. Suba planilhas com pelo menos 2 meses de histórico.</div>';
+    return;
+  }
+  var values=sortedKeys.map(function(k){return allMonths[k];});
+  // Filtra meses com 0 (pode ser ruído)
+  var validValues=values.filter(function(v){return v>0;});
+  if(!validValues.length){document.getElementById('logi-projection').innerHTML='<div class="empty">Sem dados de vendas.</div>';return;}
+
+  // Média simples e média ponderada (últimos 3 meses pesam mais)
+  var sum=validValues.reduce(function(a,b){return a+b;},0);
+  var media=sum/validValues.length;
+  var last3=validValues.slice(-3);
+  var mediaRecente=last3.reduce(function(a,b){return a+b;},0)/last3.length;
+
+  // Tendência linear (regressão simples)
+  var n=validValues.length;
+  var sumX=0,sumY=0,sumXY=0,sumXX=0;
+  validValues.forEach(function(y,i){var x=i+1;sumX+=x;sumY+=y;sumXY+=x*y;sumXX+=x*x;});
+  var slope=(n*sumXY-sumX*sumY)/(n*sumXX-sumX*sumX);
+  var intercept=(sumY-slope*sumX)/n;
+  var tendencia=slope>0?'crescimento':slope<0?'queda':'estável';
+  var pctChange=validValues.length>1?((validValues[validValues.length-1]-validValues[0])/validValues[0]*100):0;
+
+  // Projeção próximos 3 meses
+  var proj=[];
+  for(var i=1;i<=3;i++){
+    var x=n+i;
+    var linear=Math.max(0,Math.round(intercept+slope*x));
+    // Combina linear com média recente (60/40)
+    var combined=Math.round(linear*0.6+mediaRecente*0.4);
+    proj.push(combined);
+  }
+
+  // Próximos 3 meses
+  var lastMonth=sortedKeys[sortedKeys.length-1];
+  var lp=lastMonth.split('/');
+  var lastDate=new Date(parseInt(lp[1]),parseInt(lp[0])-1,1);
+  var futureMonths=[];
+  for(var i=1;i<=3;i++){
+    var d2=new Date(lastDate);d2.setMonth(d2.getMonth()+i);
+    futureMonths.push(String(d2.getMonth()+1).padStart(2,'0')+'/'+d2.getFullYear());
+  }
+
+  var total3meses=proj.reduce(function(a,b){return a+b;},0);
+  var sugestaoCompra=Math.ceil(total3meses*1.15/100)*100;  // 15% buffer, arredondado para 100
+
+  var color=tendencia==='crescimento'?'var(--accent)':tendencia==='queda'?'var(--red)':'var(--amber)';
+  var icon=tendencia==='crescimento'?'📈':tendencia==='queda'?'📉':'➡️';
+
+  var html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">';
+  html+='<div class="mc g" style="padding:16px"><div class="mc-lbl">Média histórica</div><div class="mc-val" style="font-size:22px">'+Math.round(media).toLocaleString('pt-BR')+'</div><div style="font-size:11px;color:var(--text3);margin-top:4px">chips/mês</div></div>';
+  html+='<div class="mc b" style="padding:16px"><div class="mc-lbl">Média últimos 3 meses</div><div class="mc-val" style="font-size:22px">'+Math.round(mediaRecente).toLocaleString('pt-BR')+'</div><div style="font-size:11px;color:var(--text3);margin-top:4px">chips/mês</div></div>';
+  html+='</div>';
+
+  html+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:14px">';
+  html+='<div style="font-size:12px;color:var(--text2);font-weight:500;margin-bottom:6px">Tendência '+icon+'</div>';
+  html+='<div style="font-size:13px;color:'+color+'">';
+  html+='Vendas em <strong>'+tendencia+'</strong>';
+  if(Math.abs(pctChange)>5)html+=' · '+(pctChange>0?'+':'')+pctChange.toFixed(1)+'% desde o início do período';
+  html+='</div></div>';
+
+  html+='<table class="rtable"><thead><tr><th>Mês projetado</th><th>Compras estimadas</th><th>Confiança</th></tr></thead><tbody>';
+  futureMonths.forEach(function(m,i){
+    var conf=i===0?'Alta':i===1?'Média':'Baixa';
+    var confColor=i===0?'var(--accent)':i===1?'var(--amber)':'var(--text3)';
+    html+='<tr><td style="font-weight:500">'+m+'</td><td style="color:var(--accent);font-weight:500">'+proj[i].toLocaleString('pt-BR')+' chips</td><td style="color:'+confColor+';font-size:11px">'+conf+'</td></tr>';
+  });
+  html+='</tbody></table>';
+
+  html+='<div style="background:linear-gradient(135deg,var(--accent-glow),transparent);border:1px solid var(--accent);border-radius:var(--radius-lg);padding:16px 18px;margin-top:14px">';
+  html+='<div style="font-size:11px;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">💡 Sugestão de compra</div>';
+  html+='<div style="font-size:13px;color:var(--text2);margin-bottom:10px">Com base no histórico e tendência atual, para cobrir os próximos 3 meses com folga de segurança (15%):</div>';
+  html+='<div style="font-size:30px;font-weight:600;color:var(--accent);letter-spacing:-.02em">'+sugestaoCompra.toLocaleString('pt-BR')+' chips</div>';
+  html+='<div style="font-size:11px;color:var(--text3);margin-top:6px">Demanda projetada: '+total3meses.toLocaleString('pt-BR')+' chips · Buffer: '+(sugestaoCompra-total3meses).toLocaleString('pt-BR')+' chips</div>';
+  html+='</div>';
+
+  document.getElementById('logi-projection').innerHTML=html;
+}
+
+function openLogiModal(){
+  document.getElementById('logi-file-status').style.display='none';
+  document.getElementById('logi-file-error').style.display='none';
+  document.getElementById('logi-file-input').value='';
+  document.getElementById('modal-logi').classList.add('open');
+}
+function closeLogiModal(){document.getElementById('modal-logi').classList.remove('open');}
+
+function handleLogiFile(input){
+  var file=input.files[0];
+  if(!file)return;
+  document.getElementById('logi-file-error').style.display='none';
+  document.getElementById('logi-file-status').style.display='block';
+  document.getElementById('logi-file-status').innerHTML='⏳ Processando planilha... isso pode levar alguns segundos.';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    if(typeof XLSX==='undefined'){
+      var s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload=function(){processLogiFile(e.target.result);};
+      s.onerror=function(){showLogiError('Erro ao carregar leitor de Excel.');};
+      document.head.appendChild(s);
+    } else {
+      processLogiFile(e.target.result);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showLogiError(msg){
+  document.getElementById('logi-file-error').textContent=msg;
+  document.getElementById('logi-file-error').style.display='block';
+  document.getElementById('logi-file-status').style.display='none';
+}
+
+function processLogiFile(buffer){
+  try {
+    var wb=XLSX.read(new Uint8Array(buffer),{type:'array'});
+    // Find sheets case-insensitive
+    var sheets={};
+    wb.SheetNames.forEach(function(n){
+      var ln=n.toLowerCase().trim();
+      if(ln==='licença'||ln==='licenca')sheets.lic=n;
+      else if(ln==='chip avulso'||ln==='chip_avulso'||ln==='chipavulso')sheets.avu=n;
+      else if(ln==='dom')sheets.dom=n;
+    });
+    if(!sheets.lic||!sheets.avu||!sheets.dom){
+      showLogiError('Planilha deve conter as 3 abas: licença, chip avulso e Dom. Encontradas: '+wb.SheetNames.join(', '));
+      return;
+    }
+
+    // Process Dom — build set of valid payer_names
+    var domData=XLSX.utils.sheet_to_json(wb.Sheets[sheets.dom],{header:1,defval:''});
+    var domSet={};
+    for(var i=1;i<domData.length;i++){
+      var v=domData[i][0];
+      if(v!==null&&v!==undefined&&v!==''){
+        domSet[String(v).trim()]=true;
+      }
+    }
+
+    // Process Licença
+    var licData=XLSX.utils.sheet_to_json(wb.Sheets[sheets.lic],{header:1,defval:''});
+    var totalLic=0;
+    var licByMonth={};
+    var licByUF={};
+    var breakdown={
+      voucher:{count:0,chips:0},
+      pagoExpertTel:{count:0,chips:0},
+      pagoTelecom:{count:0,chips:0},
+      ignored:0,
+      avuMatch:0,
+      avuNoMatch:0
+    };
+
+    for(var i=1;i<licData.length;i++){
+      var row=licData[i];
+      var uf=String(row[0]||'').trim().toUpperCase();
+      var dataStr=String(row[1]||'').trim();
+      var ativo=String(row[2]||'').trim().toUpperCase();
+      var tipoLic=String(row[3]||'').trim().toUpperCase();
+      var tipoPag=String(row[5]||'').trim();
+      var statusParc=String(row[6]||'').trim();
+
+      if(ativo==='RENOVACAO'||ativo==='RENOVAÇÃO'||ativo==='RENOVACAO VOUCHER'||ativo==='RENOVAÇÃO VOUCHER'){
+        breakdown.ignored++;
+        continue;
+      }
+
+      var paymentOK=(tipoPag.toLowerCase()==='integral')||(tipoPag.toLowerCase()==='boleto'&&statusParc!=='1/4');
+      if(!paymentOK)continue;
+
+      var chips=0;
+      if(ativo==='VOUCHER'){
+        if(tipoLic==='EXPERT'||tipoLic==='EXPERT+TELECOM'||tipoLic==='EXPERT_TELECOM'){
+          chips=2;
+          breakdown.voucher.count++;
+          breakdown.voucher.chips+=2;
+        }
+      } else if(ativo==='PAGO'){
+        if(tipoLic==='TELECOM'){
+          chips=10;
+          breakdown.pagoTelecom.count++;
+          breakdown.pagoTelecom.chips+=10;
+        } else if(tipoLic==='EXPERT+TELECOM'||tipoLic==='EXPERT_TELECOM'){
+          chips=2;
+          breakdown.pagoExpertTel.count++;
+          breakdown.pagoExpertTel.chips+=2;
+        }
+      }
+
+      if(chips>0){
+        totalLic+=chips;
+        // Extract month MM/YYYY from date string
+        var month=extractMonth(dataStr);
+        if(month)licByMonth[month]=(licByMonth[month]||0)+chips;
+        if(uf)licByUF[uf]=(licByUF[uf]||0)+chips;
+      }
+    }
+
+    // Process Chip Avulso with VLOOKUP to Dom
+    var avuData=XLSX.utils.sheet_to_json(wb.Sheets[sheets.avu],{header:1,defval:''});
+    var totalAvu=0;
+    var avuByMonth={};
+    var avuByUF={};
+
+    for(var i=1;i<avuData.length;i++){
+      var row=avuData[i];
+      var dataStr=String(row[0]||'').trim();
+      var qtde=parseInt(row[1])||0;
+      var uf=String(row[3]||'').trim().toUpperCase();
+      var idTrans=String(row[4]||'').trim();
+
+      if(!idTrans){breakdown.avuNoMatch++;continue;}
+      if(!domSet[idTrans]){breakdown.avuNoMatch++;continue;}
+
+      breakdown.avuMatch++;
+      totalAvu+=qtde;
+      var month=extractMonth(dataStr);
+      if(month)avuByMonth[month]=(avuByMonth[month]||0)+qtde;
+      if(uf)avuByUF[uf]=(avuByUF[uf]||0)+qtde;
+    }
+
+    LG.data={
+      totalLic:totalLic,
+      totalAvu:totalAvu,
+      licByMonth:licByMonth,
+      avuByMonth:avuByMonth,
+      licByUF:licByUF,
+      avuByUF:avuByUF,
+      breakdown:breakdown,
+      uploadDate:new Date().toISOString(),
+      uploadBy:S.user
+    };
+    localStorage.setItem('logi_data',JSON.stringify(LG.data));
+
+    document.getElementById('logi-file-status').innerHTML=
+      '✅ <strong style="color:var(--accent)">Planilha processada com sucesso!</strong><br><br>'+
+      '📊 <strong>'+(totalLic+totalAvu).toLocaleString('pt-BR')+'</strong> chips contabilizados no total<br>'+
+      '🟡 Licenças: '+totalLic.toLocaleString('pt-BR')+'<br>'+
+      '🔵 Avulsos: '+totalAvu.toLocaleString('pt-BR')+'<br>'+
+      '⚪ Renovações ignoradas: '+breakdown.ignored+'<br><br>'+
+      '<button class="btn-primary" onclick="closeLogiModal();renderLogistica();" style="margin-top:4px">Ver análise completa →</button>';
+
+  } catch(err){
+    showLogiError('Erro ao processar: '+err.toString());
+  }
+}
+
+function extractMonth(dateStr){
+  if(!dateStr)return null;
+  // Format YYYY-MM-DD or DD/MM/YYYY
+  var m=dateStr.match(/(\d{4})-(\d{2})-\d{2}/);
+  if(m)return m[2]+'/'+m[1];
+  m=dateStr.match(/\d{2}\/(\d{2})\/(\d{4})/);
+  if(m)return m[1]+'/'+m[2];
+  // Excel numeric date
+  var n=parseFloat(dateStr);
+  if(!isNaN(n)&&n>40000&&n<60000){
+    var d=new Date((n-25569)*86400*1000);
+    return String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+  }
+  return null;
+}
+
+function clearLogi(){
+  if(!confirm('Apagar todos os dados de logística carregados?'))return;
+  LG.data=null;
+  localStorage.removeItem('logi_data');
+  renderLogistica();
+  toast('Dados de logística apagados.');
+}
+
+function exportLogiCSV(){
+  if(!LG.data){toast('Nenhum dado para exportar.');return;}
+  var d=LG.data;
+  var bom='\uFEFF';
+  var rows=['Categoria;Mes/UF;Quantidade'];
+  Object.keys(d.licByMonth).sort().forEach(function(m){rows.push('Licencas;'+m+';'+d.licByMonth[m]);});
+  Object.keys(d.avuByMonth).sort().forEach(function(m){rows.push('Avulsos;'+m+';'+d.avuByMonth[m]);});
+  Object.keys(d.licByUF).forEach(function(u){rows.push('Licencas UF;'+u+';'+d.licByUF[u]);});
+  Object.keys(d.avuByUF).forEach(function(u){rows.push('Avulsos UF;'+u+';'+d.avuByUF[u]);});
+  var blob=new Blob([bom+rows.join('\n')],{type:'application/vnd.ms-excel;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='logistica_vendas_'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
   toast('Exportado!');
 }
