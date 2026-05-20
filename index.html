@@ -2913,10 +2913,10 @@ function processLogiFile(buffer){
     var sheets={};
     wb.SheetNames.forEach(function(n){
       var ln=n.toLowerCase().trim();
-      if(ln==='licença'||ln==='licenca')sheets.lic=n;
+      if(ln==='licença'||ln==='licenca'||ln.includes('licen'))sheets.lic=n;
       else if(ln==='chip avulso'||ln==='chip_avulso'||ln==='chipavulso')sheets.avu=n;
       else if(ln==='dom')sheets.dom=n;
-      else if(ln==='ativações'||ln==='ativacoes')sheets.atv=n;
+      else if(ln.includes('ativa')||ln==='ativacoes'||ln==='ativações')sheets.atv=n;
     });
     if(!sheets.lic||!sheets.avu||!sheets.dom){
       showLogiError('Planilha deve conter as 3 abas: licença, chip avulso e Dom. Encontradas: '+wb.SheetNames.join(', '));
@@ -3227,8 +3227,11 @@ function processLogiFile(buffer){
     var logiDataToSave={
       totalLic:LG.data.totalLic,
       totalAvu:LG.data.totalAvu,
+      totalAtv:LG.data.totalAtv,
       licByMonth:LG.data.licByMonth,
       avuByMonth:LG.data.avuByMonth,
+      atvByMonth:LG.data.atvByMonth,
+      atvByMonthTipo:LG.data.atvByMonthTipo,
       licByUF:LG.data.licByUF,
       avuByUF:LG.data.avuByUF,
       breakdown:LG.data.breakdown,
@@ -3236,11 +3239,12 @@ function processLogiFile(buffer){
       uploadBy:LG.data.uploadBy
     };
     fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveLogiData:logiDataToSave})}).catch(function(){});
-    // Salva registries de dedup separadamente na aba config
+    // Salva registries e licenciados separadamente na aba config
     fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveConfig:{
       logi_lic_registry:JSON.stringify(LG.data.licRegistry||{}),
       logi_avu_registry:JSON.stringify(LG.data.avuRegistry||{}),
-      logi_atv_registry:JSON.stringify(LG.data.atvRegistry||{})
+      logi_atv_registry:JSON.stringify(LG.data.atvRegistry||{}),
+      logi_licenciados:JSON.stringify(LG.data.licenciados||[])
     }})}).catch(function(){});
 
     // ── Desconta do estoque de logística ────────────────────
@@ -3319,7 +3323,8 @@ function clearLogi(){
   fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveConfig:{
     logi_lic_registry:'{}',
     logi_avu_registry:'{}',
-    logi_atv_registry:'{}'
+    logi_atv_registry:'{}',
+    logi_licenciados:'[]'
   }})}).catch(function(){});
   renderLogistica();
   toast('Dados de logística apagados.');
