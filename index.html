@@ -497,7 +497,7 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
         Configurações
       </button>
       <div class="sb-footer" style="padding:14px 8px 6px;border-top:1px solid var(--border)">
-        <div style="font-size:9px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Resumo de estoque</div>
+        <div style="font-size:9px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Resumo de estoque <span id="sb-upload-date" style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0"></span></div>
 
         <!-- Chips SEDE -->
         <div style="margin-bottom:8px;padding:8px 10px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border)">
@@ -1519,6 +1519,16 @@ function updateSidebar(){
     if(barLogi&&LS&&LS.qty!==null){
       var maxLogi=Math.max(LS.qty,LS.qty+5000);
       barLogi.style.width=Math.min(100,Math.round(LS.qty/maxLogi*100))+'%';
+    }
+  }
+
+  // Data último upload logística
+  var sbDate=document.getElementById('sb-upload-date');
+  if(sbDate){
+    if(LG.data&&LG.data.uploadDate){
+      sbDate.textContent='(base '+new Date(LG.data.uploadDate).toLocaleDateString('pt-BR')+')';
+    } else {
+      sbDate.textContent='';
     }
   }
 
