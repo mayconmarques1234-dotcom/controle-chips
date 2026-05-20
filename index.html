@@ -1099,17 +1099,17 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
 
 <script>
 var SL={
-  chips:parseInt(localStorage.getItem('contel_chips')||'0'),
-  env:parseInt(localStorage.getItem('contel_env')||'0'),
-  chipsMin:parseInt(localStorage.getItem('contel_chips_min')||'100'),
-  envMin:parseInt(localStorage.getItem('contel_env_min')||'100'),
-  wpp:localStorage.getItem('contel_wpp')||'',
-  msg:localStorage.getItem('contel_msg')||'',
-  callmebotKey:localStorage.getItem('contel_cmb_key')||'',
-  callmebotNum:localStorage.getItem('contel_cmb_num')||'',
-  alertEmail:localStorage.getItem('contel_alert_email')||'',
-  iccidRegistry:JSON.parse(localStorage.getItem('contel_iccid_registry')||'[]'),
-  log:JSON.parse(localStorage.getItem('contel_log')||'[]')
+  chips:0,
+  env:0,
+  chipsMin:100,
+  envMin:100,
+  wpp:'',
+  msg:'',
+  callmebotKey:'',
+  callmebotNum:'',
+  alertEmail:'',
+  iccidRegistry:[],
+  log:[]
 };
 var S={
   nature:null,sub:null,recs:[],
@@ -1119,7 +1119,7 @@ var S={
   sheetId:localStorage.getItem('cc_sheet_id')||'',
   apiKey:localStorage.getItem('cc_api_key')||'',
   user:localStorage.getItem('cc_last_user')||'',
-  users:JSON.parse(localStorage.getItem('cc_users')||'[]')
+  users:[]
 };
 
 var TITLES={launch:'Novo lançamento',stock:'Estoque',ops:'Operações',history:'Histórico',contel:'Logística Contel',logistica:'Logística — Vendas',config:'Configurações'};
@@ -1149,10 +1149,6 @@ function doLogin(){
   }
   S.user=name;
   localStorage.setItem('cc_last_user',name);
-  if(S.users.length&&!S.users.includes(name)){
-    S.users.push(name);
-    localStorage.setItem('cc_users',JSON.stringify(S.users));
-  }
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').classList.add('visible');
   var initials=name.split(' ').map(function(w){return w[0]}).slice(0,2).join('').toUpperCase();
@@ -1160,16 +1156,9 @@ function doLogin(){
   document.getElementById('user-name-display').textContent=name;
   document.getElementById('cfg-stock').value=S.stock;
   document.getElementById('cfg-min').value=S.minStock;
-  document.getElementById('cfg-users').value=S.users.join(', ');
-  var _wpp=localStorage.getItem('cc_alert_wpp')||'';var _em=localStorage.getItem('cc_alert_email')||'';var _am=localStorage.getItem('cc_alert_msg')||'';
-  if(document.getElementById('cfg-wpp'))document.getElementById('cfg-wpp').value=_wpp;
-  if(document.getElementById('cfg-email'))document.getElementById('cfg-email').value=_em;
-  if(document.getElementById('cfg-alert-msg'))document.getElementById('cfg-alert-msg').value=_am;
-  if((_wpp||_em)&&document.getElementById('cfg-alert-test'))document.getElementById('cfg-alert-test').style.display='block';
-  if(SCRIPT_URL)loadFromSheets();
   document.getElementById('me-date').value=new Date().toISOString().slice(0,10);
   updateSidebar();
-  if(SCRIPT_URL)loadFromSheets();
+  if(SCRIPT_URL)loadFromSheets(); // carrega tudo do Sheets (lançamentos, contel, config, logi)
 }
 
 function doLogout(){
@@ -1305,7 +1294,9 @@ function updateCfgPass(){
   document.getElementById('cfg-confirm-pass').value='';
 }
 function changeCfgPass(newPass){
-  localStorage.setItem('cc_cfg_pass',btoa(newPass));
+  var hashed=btoa(newPass);
+  localStorage.setItem('cc_cfg_pass',hashed);
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveConfig:{cc_cfg_pass:hashed}})}).catch(function(){});
   toast('Senha de configurações atualizada!');
 }
 
@@ -1360,12 +1351,55 @@ function loadFromSheets(){
     .then(function(r){return r.json()})
     .then(function(data){
       if(data.error){setSyncStatus('err');return;}
+
+      // ── Lançamentos ─────────────────────────────────────────
       var rows=(data.rows||[]).slice(1);
       S.recs=rows.map(function(row){
         return {id:row[0],nature:row[1],sub:row[2],date:row[3],iccid:row[4],qty:parseInt(row[5])||0,licensedName:row[6],licensedId:row[7],event:row[8],number:row[9],value:row[10],requester:row[11],sector:row[12],reason:row[13],plan:row[14],cancelDate:row[15],obs:row[16],supplier:row[17],responsavel:row[18]||'—'};
       }).filter(function(r){return r.nature}).reverse();
       if(data.stock)S.stock=parseInt(data.stock)||S.stock;
       localStorage.setItem('cc_stock',S.stock);
+
+      // ── Contel state ─────────────────────────────────────────
+      if(data.contelState){
+        var cs=data.contelState;
+        SL.chips=cs.chips||0;
+        SL.env=cs.env||0;
+        SL.chipsMin=cs.chips_min||100;
+        SL.envMin=cs.env_min||100;
+        SL.wpp=cs.wpp||'';
+        SL.msg=cs.msg||'';
+        SL.callmebotKey=cs.cmb_key||'';
+        SL.callmebotNum=cs.cmb_num||'';
+        SL.alertEmail=cs.alert_email||'';
+      }
+
+      // ── Contel log ───────────────────────────────────────────
+      if(data.contelLog)SL.log=data.contelLog;
+
+      // ── ICCIDs registrados ───────────────────────────────────
+      if(data.contelIccids)SL.iccidRegistry=data.contelIccids;
+
+      // ── Config (usuários, alertas cc, senha) ─────────────────
+      if(data.config){
+        var cfg=data.config;
+        if(cfg.cc_users){
+          try{S.users=JSON.parse(cfg.cc_users);}catch(e2){S.users=cfg.cc_users.split(',').map(function(u){return u.trim();}).filter(Boolean);}
+          buildQuickUsers();
+          if(document.getElementById('cfg-users'))document.getElementById('cfg-users').value=S.users.join(', ');
+        }
+        if(cfg.cc_alert_wpp&&document.getElementById('cfg-wpp'))document.getElementById('cfg-wpp').value=cfg.cc_alert_wpp;
+        if(cfg.cc_alert_email&&document.getElementById('cfg-email'))document.getElementById('cfg-email').value=cfg.cc_alert_email;
+        if(cfg.cc_alert_msg&&document.getElementById('cfg-alert-msg'))document.getElementById('cfg-alert-msg').value=cfg.cc_alert_msg;
+        if((cfg.cc_alert_wpp||cfg.cc_alert_email)&&document.getElementById('cfg-alert-test'))document.getElementById('cfg-alert-test').style.display='block';
+        if(cfg.cc_cfg_pass)localStorage.setItem('cc_cfg_pass',cfg.cc_cfg_pass);
+      }
+
+      // ── Logi data ────────────────────────────────────────────
+      if(data.logiData){
+        LG.data=data.logiData;
+      }
+
       updateSidebar();setSyncStatus('ok');
     })
     .catch(function(){setSyncStatus('err');});
@@ -1408,6 +1442,8 @@ function saveUsers(){
   var raw=document.getElementById('cfg-users').value;
   S.users=raw.split(',').map(function(u){return u.trim()}).filter(Boolean);
   localStorage.setItem('cc_users',JSON.stringify(S.users));
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveConfig:{cc_users:JSON.stringify(S.users)}})}).catch(function(){});
+  buildQuickUsers();
   toast('Usuários salvos!');
 }
 
@@ -1776,17 +1812,20 @@ function renderContelHistory(){
 }
 
 function saveContelState(){
-  localStorage.setItem('contel_chips',SL.chips);
-  localStorage.setItem('contel_env',SL.env);
-  localStorage.setItem('contel_cmb_key',SL.callmebotKey||'');
-  localStorage.setItem('contel_cmb_num',SL.callmebotNum||'');
-  localStorage.setItem('contel_alert_email',SL.alertEmail||'');
-  localStorage.setItem('contel_iccid_registry',JSON.stringify(SL.iccidRegistry||[]));
-  localStorage.setItem('contel_chips_min',SL.chipsMin);
-  localStorage.setItem('contel_env_min',SL.envMin);
-  localStorage.setItem('contel_wpp',SL.wpp);
-  localStorage.setItem('contel_msg',SL.msg);
-  localStorage.setItem('contel_log',JSON.stringify(SL.log));
+  // Salva no Sheets (compartilhado com todos)
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({
+    saveContelState:{
+      chips:     SL.chips,
+      env:       SL.env,
+      chips_min: SL.chipsMin,
+      env_min:   SL.envMin,
+      wpp:       SL.wpp,
+      msg:       SL.msg,
+      cmb_key:   SL.callmebotKey||'',
+      cmb_num:   SL.callmebotNum||'',
+      alert_email:SL.alertEmail||''
+    }
+  })}).catch(function(){});
 }
 
 function openContelModal(type){
@@ -1826,6 +1865,8 @@ function submitContelEntrada(){
   var entry={type:'entrada',chips:chips,env:env,date:document.getElementById('contel-e-date').value,obs:document.getElementById('contel-e-obs').value,responsavel:S.user};
   SL.log.push(entry);
   saveContelState();
+  // Salva entrada de log no Sheets
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({appendContelLog:entry})}).catch(function(){});
   renderContel();
   closeContelModal('entrada');
   toast('Envio registrado: '+chips+' chips e '+env+' envelopes ao Contel!');
@@ -1843,6 +1884,7 @@ function applyContelAdjust(){
   var entry={type:'ajuste',chips:SL.chips,env:SL.env,date:new Date().toISOString().slice(0,10),obs:'Ajuste manual de estoque',responsavel:S.user};
   SL.log.push(entry);
   saveContelState();
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({appendContelLog:entry})}).catch(function(){});
   renderContel();
   closeContelModal('config');
   toast('Estoque ajustado: '+SL.chips+' chips e '+SL.env+' envelopes.');
@@ -2044,13 +2086,15 @@ function submitContelPlanilha(){
   if(!contelIccidCount||!contelNewIccids.length){toast('Nenhum ICCID novo para processar.');return;}
   // Register new ICCIDs
   SL.iccidRegistry=(SL.iccidRegistry||[]).concat(contelNewIccids);
-  localStorage.setItem('contel_iccid_registry',JSON.stringify(SL.iccidRegistry));
+  // Salva ICCIDs novos no Sheets
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({appendIccids:contelNewIccids,addedBy:S.user})}).catch(function(){});
   // Deduct stock
   SL.chips=Math.max(0,SL.chips-contelIccidCount);
   SL.env=Math.max(0,SL.env-contelIccidCount);
   var entry={type:'baixa',chips:contelIccidCount,env:contelIccidCount,iccids:contelIccidCount,date:new Date().toISOString().slice(0,10),obs:document.getElementById('contel-p-obs').value||'Baixa por planilha',responsavel:S.user};
   SL.log.push(entry);
   saveContelState();
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({appendContelLog:entry})}).catch(function(){});
   renderContel();
   closeContelModal('planilha');
   toast('Baixa de '+contelIccidCount+' chips e envelopes! '+SL.iccidRegistry.length+' ICCIDs registrados no total.');
@@ -2079,7 +2123,7 @@ function exportContelCSV(){
 
 
 /* ── LOGÍSTICA — Análise de planilha de vendas ───── */
-var LG={data:JSON.parse(localStorage.getItem('logi_data')||'null')};
+var LG={data:null};
 
 function renderLogistica(){
   if(!LG.data){
@@ -2393,6 +2437,8 @@ function processLogiFile(buffer){
       uploadBy:S.user
     };
     localStorage.setItem('logi_data',JSON.stringify(LG.data));
+    // Salva no Sheets para todos verem
+    fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveLogiData:LG.data})}).catch(function(){});
 
     document.getElementById('logi-file-status').innerHTML=
       '✅ <strong style="color:var(--accent)">Planilha processada com sucesso!</strong><br><br>'+
@@ -2427,6 +2473,7 @@ function clearLogi(){
   if(!confirm('Apagar todos os dados de logística carregados?'))return;
   LG.data=null;
   localStorage.removeItem('logi_data');
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({clearLogiData:true})}).catch(function(){});
   renderLogistica();
   toast('Dados de logística apagados.');
 }
@@ -2540,12 +2587,13 @@ function saveAlertConfig(){
   localStorage.setItem('cc_alert_wpp',wpp);
   localStorage.setItem('cc_alert_email',email);
   localStorage.setItem('cc_alert_msg',msg);
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveConfig:{cc_alert_wpp:wpp,cc_alert_email:email,cc_alert_msg:msg}})}).catch(function(){});
   var testEl=document.getElementById('cfg-alert-test');
   if(wpp||email)testEl.style.display='block';
   toast('Configuração de alerta salva!');
 }
 function buildAlertMsg(){
-  var custom=localStorage.getItem('cc_alert_msg')||'';
+  var custom=(document.getElementById('cfg-alert-msg')?document.getElementById('cfg-alert-msg').value.trim():'')||'';
   var lines=[
     '⚠️ *ALERTA DE ESTOQUE — Chips Control*',
     '',
@@ -2562,9 +2610,9 @@ function buildAlertMsg(){
 function sendAlert(type){
   var msg=buildAlertMsg();
   if(type==='wpp'){
-    var wpp=localStorage.getItem('cc_alert_wpp')||'';
-    var cmbKey=localStorage.getItem('cc_cmb_key')||'';
-    var cmbNum=localStorage.getItem('cc_cmb_num')||'';
+    var wpp=(document.getElementById('cfg-wpp')?document.getElementById('cfg-wpp').value.replace(/\D/g,''):'');
+    var cmbKey=SL.callmebotKey||'';
+    var cmbNum=SL.callmebotNum||'';
     if(cmbKey&&cmbNum&&typeof SCRIPT_URL!=='undefined'&&SCRIPT_URL){
       fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({sendWhatsapp:true,phone:cmbNum,apikey:cmbKey,text:msg.replace(/\*/g,'')})})
         .then(function(r){return r.json();}).then(function(d){if(d.ok)toast('📱 WhatsApp enviado automaticamente!');else toast('⚠️ Erro: '+(d.error||''));})
@@ -2575,7 +2623,7 @@ function sendAlert(type){
       toast('Configure um número de WhatsApp primeiro.');
     }
   } else {
-    var email=localStorage.getItem('cc_alert_email')||'';
+    var email=(document.getElementById('cfg-email')?document.getElementById('cfg-email').value.trim():'');
     if(email&&typeof SCRIPT_URL!=='undefined'&&SCRIPT_URL){
       fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({sendEmail:true,to:email,subject:'⚠️ Alerta de Estoque Baixo — Chips Control',body:msg.replace(/\*/g,'')})})
         .then(function(r){return r.json();}).then(function(d){if(d.ok)toast('✉️ E-mail enviado!');});
@@ -2590,8 +2638,8 @@ function sendAlert(type){
 }
 function checkStockAlert(){
   if(S.stock<=S.minStock){
-    var wpp=localStorage.getItem('cc_alert_wpp')||'';
-    var email=localStorage.getItem('cc_alert_email')||'';
+    var wpp=(document.getElementById('cfg-wpp')?document.getElementById('cfg-wpp').value.replace(/\D/g,''):'');
+    var email=(document.getElementById('cfg-email')?document.getElementById('cfg-email').value.trim():'');
     var lastAlert=localStorage.getItem('cc_last_alert')||'';
     var today=new Date().toISOString().slice(0,10);
     if((wpp||email)&&lastAlert!==today){
