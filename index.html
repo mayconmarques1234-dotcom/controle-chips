@@ -725,8 +725,15 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
             <button onclick="sendContelAlert('env')" style="margin-left:auto;background:var(--accent);color:#0a0f0a;border:none;border-radius:var(--radius);padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap">📱 Alertar via WhatsApp</button>
           </div>
 
+          <!-- ALERTA ESIN -->
+          <div id="contel-alert-esin" class="alert-bar" style="display:none">
+            <svg viewBox="0 0 24 24" style="width:15px;height:15px;flex-shrink:0;stroke:var(--amber);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span id="contel-alert-esin-txt"></span>
+            <button onclick="sendContelAlert('esin')" style="margin-left:auto;background:var(--accent);color:#0a0f0a;border:none;border-radius:var(--radius);padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap">📱 Alertar via WhatsApp</button>
+          </div>
+
           <!-- METRICS -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
             <div class="mc g" style="padding:20px">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
                 <div class="mc-lbl" style="margin:0;font-size:12px">CHIPS — CONTEL</div>
@@ -747,6 +754,16 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
                 <div id="contel-env-bar" style="height:100%;border-radius:2px;background:var(--blue);transition:width .5s"></div>
               </div>
             </div>
+            <div class="mc t" style="padding:20px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div class="mc-lbl" style="margin:0;font-size:12px">CHIPS ESIN</div>
+                <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">mín: 700</span>
+              </div>
+              <div class="mc-val" id="contel-esin-val" style="font-size:40px;color:var(--teal)">—</div>
+              <div style="margin-top:12px;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden">
+                <div id="contel-esin-bar" style="height:100%;border-radius:2px;background:var(--teal);transition:width .5s"></div>
+              </div>
+            </div>
           </div>
 
           <!-- ACTIONS -->
@@ -758,6 +775,10 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
             <button class="btn-secondary" onclick="openContelModal('planilha')">
               <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
               Baixar por planilha (ICCID)
+            </button>
+            <button class="btn-secondary" onclick="openContelModal('esin')">
+              <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 7h10v10H7z"/></svg>
+              Lançar Chips Esin
             </button>
             <button class="btn-secondary" onclick="openContelModal('config')">
               <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
@@ -991,6 +1012,43 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
   </div>
 </div>
 
+
+<!-- MODAL ESIN -->
+<div class="modal-overlay" id="modal-contel-esin">
+  <div class="modal" style="width:440px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title">Chips Esin</div>
+      <button onclick="closeContelModal('esin')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <div class="modal-sub" style="margin-bottom:20px">Atualize o estoque atual ou registre uma saída de chips Esin.</div>
+
+    <div style="font-size:11px;font-weight:500;color:var(--teal);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Estoque atual</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px">
+      <span style="font-size:28px;font-weight:600;color:var(--teal)" id="esin-modal-atual">—</span>
+      <span style="font-size:13px;color:var(--text3)">chips em estoque</span>
+    </div>
+
+    <div style="font-size:11px;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Definir estoque inicial / corrigir</div>
+    <div class="row2" style="margin-bottom:16px">
+      <div class="fg" style="margin:0"><label>Quantidade (chips)</label><input type="number" id="esin-set-qty" placeholder="Ex: 2000" min="0"></div>
+      <div class="fg" style="margin:0"><label>Observação</label><input type="text" id="esin-set-obs" placeholder="Ex: contagem física"></div>
+    </div>
+    <button class="btn-primary" onclick="submitEsinSet()" style="margin-bottom:20px;font-size:12px">Definir estoque</button>
+
+    <div class="divider" style="margin:0 0 16px"></div>
+
+    <div style="font-size:11px;font-weight:500;color:var(--amber);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Registrar saída</div>
+    <div class="row2">
+      <div class="fg"><label>Quantidade saída</label><input type="number" id="esin-saida-qty" placeholder="Ex: 150" min="1"></div>
+      <div class="fg"><label>Data</label><input type="date" id="esin-saida-date"></div>
+    </div>
+    <div class="fg"><label>Observação</label><input type="text" id="esin-saida-obs" placeholder="Ex: Semana 20/05 — distribuição SP"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeContelModal('esin')">Cancelar</button>
+      <button class="btn-primary" onclick="submitEsinSaida()">Registrar saída</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL CONTEL ENTRADA -->
 <div class="modal-overlay" id="modal-contel-entrada">
@@ -1469,6 +1527,9 @@ function loadFromSheets(){
         if(cfg.cc_alert_msg&&document.getElementById('cfg-alert-msg'))document.getElementById('cfg-alert-msg').value=cfg.cc_alert_msg;
         if((cfg.cc_alert_wpp||cfg.cc_alert_email)&&document.getElementById('cfg-alert-test'))document.getElementById('cfg-alert-test').style.display='block';
         if(cfg.cc_cfg_pass)localStorage.setItem('cc_cfg_pass',cfg.cc_cfg_pass);
+        // Carrega estoque Esin
+        if(cfg.contel_esin_qty!==undefined&&cfg.contel_esin_qty!=='')SE.qty=parseInt(cfg.contel_esin_qty)||0;
+        if(cfg.contel_esin_log){try{SE.log=JSON.parse(cfg.contel_esin_log);}catch(e2){SE.log=[];}}
         // Carrega estoque de logística
         loadLogiEstoque(cfg);
       }
@@ -1483,6 +1544,7 @@ function loadFromSheets(){
       }
 
       updateSidebar();setSyncStatus('ok');
+      if(document.getElementById('page-contel').classList.contains('active'))renderContel();
     })
     .catch(function(){setSyncStatus('err');});
 }
@@ -1839,18 +1901,21 @@ function exportXLSX(type){
 
 /* ── LOGÍSTICA CONTEL ───────────────────────── */
 function renderContel(){
-  // Update counters
   var cPct=Math.round(SL.chips/Math.max(SL.chips+200,200)*100);
   var ePct=Math.round(SL.env/Math.max(SL.env+200,200)*100);
+  var esiPct=Math.round(SE.qty/Math.max(SE.qty+200,200)*100);
   document.getElementById('contel-chips-val').textContent=SL.chips;
   document.getElementById('contel-env-val').textContent=SL.env;
+  document.getElementById('contel-esin-val').textContent=SE.qty;
   document.getElementById('contel-chips-bar').style.width=Math.min(100,cPct)+'%';
   document.getElementById('contel-env-bar').style.width=Math.min(100,ePct)+'%';
+  document.getElementById('contel-esin-bar').style.width=Math.min(100,esiPct)+'%';
   document.getElementById('contel-chips-min-label').textContent='mín: '+SL.chipsMin;
   document.getElementById('contel-env-min-label').textContent='mín: '+SL.envMin;
-  // Alerts
+  // Alerts chips e env
   var ac=document.getElementById('contel-alert-chips');
   var ae=document.getElementById('contel-alert-env');
+  var aes=document.getElementById('contel-alert-esin');
   if(SL.chips<=SL.chipsMin){
     ac.style.display='flex';
     document.getElementById('contel-alert-chips-txt').textContent='Chips Contel abaixo do mínimo! Restam apenas '+SL.chips+' chips.';
@@ -1859,30 +1924,47 @@ function renderContel(){
     ae.style.display='flex';
     document.getElementById('contel-alert-env-txt').textContent='Envelopes Contel abaixo do mínimo! Restam apenas '+SL.env+' envelopes.';
   } else ae.style.display='none';
+  // Alert esin — mínimo fixo 700
+  if(SE.qty<=700){
+    aes.style.display='flex';
+    document.getElementById('contel-alert-esin-txt').textContent='Chips Esin abaixo do mínimo! Restam apenas '+SE.qty+' chips.';
+  } else aes.style.display='none';
   // History
   renderContelHistory();
 }
 
 function renderContelHistory(){
   var el=document.getElementById('contel-history');
-  if(!SL.log.length){el.innerHTML='<div class="empty">Nenhuma movimentação registrada.</div>';return;}
+  // Combina log contel + log esin num só histórico
+  var combined=[].concat(
+    SL.log.map(function(r){return Object.assign({},r,{_src:'contel'});}),
+    (SE.qtyLog||[]).map(function(r){return Object.assign({},r,{_src:'esin',type:r.tipo});})
+  ).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  if(!combined.length){el.innerHTML='<div class="empty">Nenhuma movimentação registrada.</div>';return;}
   var html='';
-  var reversed=[].concat(SL.log).reverse();
+  var reversed=combined;
   reversed.forEach(function(r){
+    var isEsin=r._src==='esin';
     var isEntry=r.type==='entrada';
     var isBaixa=r.type==='baixa';
-    var isAjuste=r.type==='ajuste';
-    var cor=isEntry?'var(--accent)':isAjuste?'var(--blue)':'var(--amber)';
-    var icon=isEntry?'+':isAjuste?'⚙':'−';
-    var label=isEntry?'Envio ao Contel':isBaixa?'Baixa por planilha':isAjuste?'Ajuste manual':'Movimentação';
+    var isAjuste=r.type==='ajuste'||r.type==='definicao';
+    var isSaida=r.type==='saida';
+    var cor=isEsin?(isSaida?'var(--teal)':'var(--blue)'):isEntry?'var(--accent)':isAjuste?'var(--blue)':'var(--amber)';
+    var icon=isEsin?(isSaida?'−':'✎'):isEntry?'+':isAjuste?'⚙':'−';
+    var label=isEsin?(isSaida?'Saída Esin':'Definição Esin'):isEntry?'Envio ao Contel':isBaixa?'Baixa por planilha':isAjuste?'Ajuste manual':'Movimentação';
     html+='<div class="rec">';
-    html+='<div class="rec-ico" style="background:'+(isEntry?'rgba(52,212,116,.12)':'rgba(240,164,41,.12)')+';color:'+cor+';font-size:16px;font-weight:600">'+icon+'</div>';
+    html+='<div class="rec-ico" style="background:'+(isEsin?'rgba(38,201,179,.12)':isEntry?'rgba(52,212,116,.12)':'rgba(240,164,41,.12)')+';color:'+cor+';font-size:16px;font-weight:600">'+icon+'</div>';
     html+='<div class="rec-body">';
-    html+='<div class="rec-title">'+label+'</div>';
+    html+='<div class="rec-title">'+label+(isEsin?' <span style="font-size:10px;color:var(--teal);background:rgba(38,201,179,.12);padding:1px 7px;border-radius:6px;font-weight:500">ESIN</span>':'')+'</div>';
     html+='<div class="rec-sub">';
-    if(r.chips)html+='🟢 '+Math.abs(r.chips)+' chips  ';
-    if(r.env)html+='🔵 '+Math.abs(r.env)+' envelopes';
-    if(r.iccids)html+=' · '+r.iccids+' ICCIDs lidos';
+    if(isEsin){
+      if(isSaida)html+='− '+Math.abs(r.saida)+' chips · Novo estoque: '+r.novo;
+      else html+='Estoque definido: '+r.novo+' chips';
+    } else {
+      if(r.chips)html+='🟢 '+Math.abs(r.chips)+' chips  ';
+      if(r.env)html+='🔵 '+Math.abs(r.env)+' envelopes';
+      if(r.iccids)html+=' · '+r.iccids+' ICCIDs lidos';
+    }
     html+='</div>';
     if(r.obs)html+='<div class="rec-obs">'+r.obs+'</div>';
     html+='</div>';
@@ -1911,6 +1993,7 @@ function saveContelState(){
 }
 
 function openContelModal(type){
+  if(type==='esin'){openEsinModal();return;}
   if(type==='entrada'){
     document.getElementById('contel-e-date').value=new Date().toISOString().slice(0,10);
     document.getElementById('modal-contel-entrada').classList.add('open');
@@ -1938,6 +2021,74 @@ function openContelModal(type){
   }
 }
 function closeContelModal(type){document.getElementById('modal-contel-'+type).classList.remove('open');}
+
+/* ── CHIPS ESIN ─────────────────────────── */
+var SE={qty:0,log:[]};
+
+function saveEsinToSheets(){
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveConfig:{
+    contel_esin_qty:String(SE.qty),
+    contel_esin_log:JSON.stringify(SE.log)
+  }})}).catch(function(){});
+}
+function openEsinModal(){
+  document.getElementById('esin-modal-atual').textContent=SE.qty.toLocaleString('pt-BR');
+  document.getElementById('esin-set-qty').value='';
+  document.getElementById('esin-set-obs').value='';
+  document.getElementById('esin-saida-qty').value='';
+  document.getElementById('esin-saida-obs').value='';
+  document.getElementById('esin-saida-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('modal-contel-esin').classList.add('open');
+}
+
+function submitEsinSet(){
+  var qty=parseInt(document.getElementById('esin-set-qty').value);
+  if(isNaN(qty)||qty<0){toast('Informe uma quantidade válida.');return;}
+  var obs=document.getElementById('esin-set-obs').value||'Definição de estoque';
+  var anterior=SE.qty;
+  SE.qty=qty;
+  SE.qtyLog.push({tipo:'definicao',anterior:anterior,novo:qty,date:new Date().toISOString().slice(0,10),obs:obs,responsavel:S.user});
+  saveContelState();
+  document.getElementById('esin-modal-atual').textContent=SE.qty.toLocaleString('pt-BR');
+  document.getElementById('esin-set-qty').value='';
+  document.getElementById('esin-set-obs').value='';
+  renderContel();
+  toast('Estoque Esin definido: '+qty.toLocaleString('pt-BR')+' chips');
+  checkEsinAlert();
+}
+
+function submitEsinSaida(){
+  var qty=parseInt(document.getElementById('esin-saida-qty').value);
+  if(isNaN(qty)||qty<1){toast('Informe a quantidade de saída.');return;}
+  var obs=document.getElementById('esin-saida-obs').value||'Saída registrada';
+  var date=document.getElementById('esin-saida-date').value;
+  var anterior=SE.qty;
+  SE.qty=Math.max(0,SE.qty-qty);
+  SE.qtyLog.push({tipo:'saida',anterior:anterior,saida:qty,novo:SE.qty,date:date,obs:obs,responsavel:S.user});
+  saveContelState();
+  document.getElementById('esin-modal-atual').textContent=SE.qty.toLocaleString('pt-BR');
+  document.getElementById('esin-saida-qty').value='';
+  document.getElementById('esin-saida-obs').value='';
+  renderContel();
+  closeContelModal('esin');
+  toast('Saída de '+qty.toLocaleString('pt-BR')+' chips Esin registrada! Novo estoque: '+SE.qty.toLocaleString('pt-BR'));
+  checkEsinAlert();
+}
+
+function checkEsinAlert(){
+  if(SE.qty<=700){
+    var lastAlert=localStorage.getItem('cc_esin_last_alert')||'';
+    var today=new Date().toISOString().slice(0,10);
+    if(lastAlert!==today){
+      localStorage.setItem('cc_esin_last_alert',today);
+      // Disparo automático WhatsApp
+      if(SL.callmebotKey&&SL.callmebotNum){
+        sendContelAlert('esin');
+        toast('⚠️ Estoque Esin abaixo de 700 — alerta enviado!');
+      }
+    }
+  }
+}
 
 function submitContelEntrada(){
   var chips=parseInt(document.getElementById('contel-e-chips').value)||0;
@@ -1988,9 +2139,9 @@ function saveContelConfig(){
 }
 
 function buildAlertLines(type){
-  var item=type==='chips'?'chips':'envelopes';
-  var qtd=type==='chips'?SL.chips:SL.env;
-  var min=type==='chips'?SL.chipsMin:SL.envMin;
+  var item=type==='chips'?'chips':type==='esin'?'chips Esin':'envelopes';
+  var qtd=type==='chips'?SL.chips:type==='esin'?SE.qty:SL.env;
+  var min=type==='chips'?SL.chipsMin:type==='esin'?700:SL.envMin;
   return {
     item:item, qtd:qtd, min:min,
     text:[
