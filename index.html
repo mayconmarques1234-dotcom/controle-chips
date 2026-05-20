@@ -1613,7 +1613,12 @@ function loadFromSheets(){
 
       // ── Logi data ────────────────────────────────────────────
       if(data.logiData){
+        // Preserva registries já carregados do config (podem ter sido carregados antes)
+        var prevLicReg=LG.data&&LG.data.licRegistry?LG.data.licRegistry:{};
+        var prevAvuReg=LG.data&&LG.data.avuRegistry?LG.data.avuRegistry:{};
         LG.data=data.logiData;
+        LG.data.licRegistry=LG.data.licRegistry||prevLicReg;
+        LG.data.avuRegistry=LG.data.avuRegistry||prevAvuReg;
         // Se o usuário já está na aba logística, renderiza agora que os dados chegaram
         if(document.getElementById('page-logistica').classList.contains('active')){
           renderLogistica();
@@ -2471,7 +2476,7 @@ function loadLogiEstoque(cfg){
   if(!cfg)return;
   try{
     if(cfg.logi_estoque_qty!==undefined&&cfg.logi_estoque_qty!=='')LS.qty=parseInt(cfg.logi_estoque_qty)||0;
-    if(cfg.logi_estoque_desde)LS.desde=cfg.logi_estoque_desde;
+    if(cfg.logi_estoque_desde)LS.desde=String(cfg.logi_estoque_desde).slice(0,10);
     if(cfg.logi_estoque_log){try{LS.log=JSON.parse(cfg.logi_estoque_log);}catch(e){LS.log=[];}}
   }catch(e){}
   renderLogiEstoque();
@@ -2802,7 +2807,7 @@ function processLogiFile(buffer){
     };
 
     // Carrega registry de licenças já processadas (chave: codID + mes/ano)
-    var licRegistry=LG.data&&LG.data.licRegistry?LG.data.licRegistry:{};
+    var licRegistry=(LG.data&&LG.data.licRegistry)?LG.data.licRegistry:{};
     var licRegistryNew=Object.assign({},licRegistry);
 
     for(var i=1;i<licData.length;i++){
@@ -2875,7 +2880,7 @@ function processLogiFile(buffer){
     var avuByUF={};
 
     // Carrega registry de avulsos já processados (chave: idTrans)
-    var avuRegistry=LG.data&&LG.data.avuRegistry?LG.data.avuRegistry:{};
+    var avuRegistry=(LG.data&&LG.data.avuRegistry)?LG.data.avuRegistry:{};
     var avuRegistryNew=Object.assign({},avuRegistry);
 
     for(var i=1;i<avuData.length;i++){
@@ -2941,7 +2946,24 @@ function processLogiFile(buffer){
     };
     localStorage.setItem('logi_data',JSON.stringify(LG.data));
     // Salva no Sheets para todos verem
-    fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveLogiData:LG.data})}).catch(function(){});
+    // Separa registries (podem ser grandes) do restante dos dados de exibição
+    var logiDataToSave={
+      totalLic:LG.data.totalLic,
+      totalAvu:LG.data.totalAvu,
+      licByMonth:LG.data.licByMonth,
+      avuByMonth:LG.data.avuByMonth,
+      licByUF:LG.data.licByUF,
+      avuByUF:LG.data.avuByUF,
+      breakdown:LG.data.breakdown,
+      uploadDate:LG.data.uploadDate,
+      uploadBy:LG.data.uploadBy
+    };
+    fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveLogiData:logiDataToSave})}).catch(function(){});
+    // Salva registries de dedup separadamente na aba config
+    fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveConfig:{
+      logi_lic_registry:JSON.stringify(LG.data.licRegistry||{}),
+      logi_avu_registry:JSON.stringify(LG.data.avuRegistry||{})
+    }})}).catch(function(){});
 
     // ── Desconta do estoque de logística ────────────────────
     // Usa apenas os chips NOVOS deste upload (totalLic + totalAvu),
@@ -3015,6 +3037,11 @@ function clearLogi(){
   LG.data=null;
   localStorage.removeItem('logi_data');
   fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({clearLogiData:true})}).catch(function(){});
+  // Limpa também os registries de dedup
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveConfig:{
+    logi_lic_registry:'{}',
+    logi_avu_registry:'{}'
+  }})}).catch(function(){});
   renderLogistica();
   toast('Dados de logística apagados.');
 }
