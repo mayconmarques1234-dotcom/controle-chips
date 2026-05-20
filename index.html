@@ -1529,7 +1529,7 @@ function loadFromSheets(){
         if(cfg.cc_cfg_pass)localStorage.setItem('cc_cfg_pass',cfg.cc_cfg_pass);
         // Carrega estoque Esin
         if(cfg.contel_esin_qty!==undefined&&cfg.contel_esin_qty!=='')SE.qty=parseInt(cfg.contel_esin_qty)||0;
-        if(cfg.contel_esin_log){try{SE.log=JSON.parse(cfg.contel_esin_log);}catch(e2){SE.log=[];}}
+        if(cfg.contel_esin_log){try{var _el=JSON.parse(cfg.contel_esin_log);SE.log=Array.isArray(_el)?_el:[];}catch(e2){SE.log=[];}}
         // Carrega estoque de logística
         loadLogiEstoque(cfg);
       }
@@ -1938,7 +1938,7 @@ function renderContelHistory(){
   // Combina log contel + log esin num só histórico
   var combined=[].concat(
     SL.log.map(function(r){return Object.assign({},r,{_src:'contel'});}),
-    (SE.qtyLog||[]).map(function(r){return Object.assign({},r,{_src:'esin',type:r.tipo});})
+    (SE.log||[]).map(function(r){return Object.assign({},r,{_src:'esin',type:r.tipo});})
   ).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   if(!combined.length){el.innerHTML='<div class="empty">Nenhuma movimentação registrada.</div>';return;}
   var html='';
@@ -2047,8 +2047,9 @@ function submitEsinSet(){
   var obs=document.getElementById('esin-set-obs').value||'Definição de estoque';
   var anterior=SE.qty;
   SE.qty=qty;
-  SE.qtyLog.push({tipo:'definicao',anterior:anterior,novo:qty,date:new Date().toISOString().slice(0,10),obs:obs,responsavel:S.user});
-  saveContelState();
+  if(!Array.isArray(SE.log))SE.log=[];
+  SE.log.push({tipo:'definicao',anterior:anterior,novo:qty,date:new Date().toISOString().slice(0,10),obs:obs,responsavel:S.user});
+  saveEsinToSheets();
   document.getElementById('esin-modal-atual').textContent=SE.qty.toLocaleString('pt-BR');
   document.getElementById('esin-set-qty').value='';
   document.getElementById('esin-set-obs').value='';
@@ -2064,8 +2065,9 @@ function submitEsinSaida(){
   var date=document.getElementById('esin-saida-date').value;
   var anterior=SE.qty;
   SE.qty=Math.max(0,SE.qty-qty);
-  SE.qtyLog.push({tipo:'saida',anterior:anterior,saida:qty,novo:SE.qty,date:date,obs:obs,responsavel:S.user});
-  saveContelState();
+  if(!Array.isArray(SE.log))SE.log=[];
+  SE.log.push({tipo:'saida',anterior:anterior,saida:qty,novo:SE.qty,date:date,obs:obs,responsavel:S.user});
+  saveEsinToSheets();
   document.getElementById('esin-modal-atual').textContent=SE.qty.toLocaleString('pt-BR');
   document.getElementById('esin-saida-qty').value='';
   document.getElementById('esin-saida-obs').value='';
@@ -2076,15 +2078,20 @@ function submitEsinSaida(){
 }
 
 function checkEsinAlert(){
-  if(SE.qty<=700){
+  if(SE.qty<700){
     var lastAlert=localStorage.getItem('cc_esin_last_alert')||'';
     var today=new Date().toISOString().slice(0,10);
     if(lastAlert!==today){
       localStorage.setItem('cc_esin_last_alert',today);
-      // Disparo automático WhatsApp
+      // Disparo automático via CallMeBot
       if(SL.callmebotKey&&SL.callmebotNum){
         sendContelAlert('esin');
-        toast('⚠️ Estoque Esin abaixo de 700 — alerta enviado!');
+        // toast não necessário aqui — sendContelAlert já mostra feedback assíncrono
+      } else if(SL.wpp){
+        // Fallback: abre link do WhatsApp manualmente
+        sendContelAlert('esin');
+      } else {
+        toast('⚠️ Estoque Esin abaixo de 700! Configure o WhatsApp nas configurações do Contel.');
       }
     }
   }
