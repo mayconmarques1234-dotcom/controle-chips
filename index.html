@@ -2624,9 +2624,12 @@ function renderLogistica(){
     '<tr><td style="font-weight:500">PAGO · EXPERT+TELECOM (2 chips)</td><td>'+bd.pagoExpertTel.count+'</td><td style="color:var(--accent)">'+bd.pagoExpertTel.chips+'</td></tr>'+
     '<tr><td style="font-weight:500">PAGO · TELECOM (10 chips)</td><td>'+bd.pagoTelecom.count+'</td><td style="color:var(--accent)">'+bd.pagoTelecom.chips+'</td></tr>'+
     '<tr><td style="font-weight:500;color:var(--text3)">Renovações ignoradas</td><td>'+bd.ignored+'</td><td style="color:var(--text3)">—</td></tr>'+
+    '<tr><td style="font-weight:500;color:var(--text3)">Licenças já processadas (dedup)</td><td>'+(bd.dedupLic||0)+'</td><td style="color:var(--text3)">—</td></tr>'+
     '<tr><td style="font-weight:500">Chip avulso (match Dom)</td><td>'+bd.avuMatch+'</td><td style="color:var(--accent)">'+d.totalAvu+'</td></tr>'+
     '<tr><td style="font-weight:500;color:var(--text3)">Chip avulso sem match</td><td>'+bd.avuNoMatch+'</td><td style="color:var(--text3)">—</td></tr>'+
-    '</tbody></table>';
+    '<tr><td style="font-weight:500;color:var(--text3)">Avulsos já processados (dedup)</td><td>'+(bd.dedupAvu||0)+'</td><td style="color:var(--text3)">—</td></tr>'+
+    '</tbody></table>'+
+    '<div style="margin-top:8px;font-size:11px;color:var(--text3)">Dedup = registros ignorados por já terem sido processados em upload anterior.</div>';
   renderProjection();
 }
 
@@ -2792,9 +2795,15 @@ function processLogiFile(buffer){
       pagoExpertTel:{count:0,chips:0},
       pagoTelecom:{count:0,chips:0},
       ignored:0,
+      dedupLic:0,
       avuMatch:0,
-      avuNoMatch:0
+      avuNoMatch:0,
+      dedupAvu:0
     };
+
+    // Carrega registry de licenças já processadas (chave: codID + mes/ano)
+    var licRegistry=LG.data&&LG.data.licRegistry?LG.data.licRegistry:{};
+    var licRegistryNew=Object.assign({},licRegistry);
 
     for(var i=1;i<licData.length;i++){
       var row=licData[i];
@@ -2802,50 +2811,72 @@ function processLogiFile(buffer){
       var dataStr=String(row[1]||'').trim();
       var ativo=String(row[2]||'').trim().toUpperCase();
       var tipoLic=String(row[3]||'').trim().toUpperCase();
+      // col 4 = Status Licença (ignorar)
       var tipoPag=String(row[5]||'').trim();
       var statusParc=String(row[6]||'').trim();
+      var codId=String(row[7]||'').trim();
 
+      // Ignora renovações
       if(ativo==='RENOVACAO'||ativo==='RENOVAÇÃO'||ativo==='RENOVACAO VOUCHER'||ativo==='RENOVAÇÃO VOUCHER'){
         breakdown.ignored++;
         continue;
       }
 
-      var paymentOK=(tipoPag.toLowerCase()==='integral')||(tipoPag.toLowerCase()==='boleto'&&statusParc!=='1/4');
+      // Regra de parcela: não conta na primeira parcela (1/X), conta em todas as demais
+      var isPrimeiraParcela=false;
+      if(tipoPag.toLowerCase()==='boleto'){
+        var parcMatch=statusParc.match(/^(\d+)\//);
+        if(parcMatch&&parseInt(parcMatch[1])===1)isPrimeiraParcela=true;
+      }
+      if(isPrimeiraParcela)continue;
+
+      // Só processa integral ou boleto após 1ª parcela
+      var paymentOK=(tipoPag.toLowerCase()==='integral')||(tipoPag.toLowerCase()==='boleto'&&!isPrimeiraParcela);
       if(!paymentOK)continue;
 
       var chips=0;
       if(ativo==='VOUCHER'){
         if(tipoLic==='EXPERT'||tipoLic==='EXPERT+TELECOM'||tipoLic==='EXPERT_TELECOM'){
           chips=2;
-          breakdown.voucher.count++;
-          breakdown.voucher.chips+=2;
         }
       } else if(ativo==='PAGO'){
         if(tipoLic==='TELECOM'){
           chips=10;
-          breakdown.pagoTelecom.count++;
-          breakdown.pagoTelecom.chips+=10;
         } else if(tipoLic==='EXPERT+TELECOM'||tipoLic==='EXPERT_TELECOM'){
           chips=2;
-          breakdown.pagoExpertTel.count++;
-          breakdown.pagoExpertTel.chips+=2;
         }
       }
 
       if(chips>0){
-        totalLic+=chips;
-        // Extract month MM/YYYY from date string
+        // Deduplicação: chave = codId + mes/ano (se tiver ID)
         var month=extractMonth(dataStr);
+        var dedupKey=codId?(codId+'|'+(month||dataStr.slice(0,7))):'';
+        if(dedupKey&&licRegistryNew[dedupKey]){
+          breakdown.dedupLic++;
+          continue; // já processado em upload anterior
+        }
+        if(dedupKey)licRegistryNew[dedupKey]=true;
+
+        // Atualiza breakdown
+        if(ativo==='VOUCHER'){breakdown.voucher.count++;breakdown.voucher.chips+=chips;}
+        else if(tipoLic==='TELECOM'){breakdown.pagoTelecom.count++;breakdown.pagoTelecom.chips+=chips;}
+        else{breakdown.pagoExpertTel.count++;breakdown.pagoExpertTel.chips+=chips;}
+
+        totalLic+=chips;
         if(month)licByMonth[month]=(licByMonth[month]||0)+chips;
         if(uf)licByUF[uf]=(licByUF[uf]||0)+chips;
       }
     }
 
-    // Process Chip Avulso with VLOOKUP to Dom
+    // Process Chip Avulso with VLOOKUP to Dom + deduplicação por ID_TRANSACAO
     var avuData=XLSX.utils.sheet_to_json(wb.Sheets[sheets.avu],{header:1,defval:''});
     var totalAvu=0;
     var avuByMonth={};
     var avuByUF={};
+
+    // Carrega registry de avulsos já processados (chave: idTrans)
+    var avuRegistry=LG.data&&LG.data.avuRegistry?LG.data.avuRegistry:{};
+    var avuRegistryNew=Object.assign({},avuRegistry);
 
     for(var i=1;i<avuData.length;i++){
       var row=avuData[i];
@@ -2857,6 +2888,13 @@ function processLogiFile(buffer){
       if(!idTrans){breakdown.avuNoMatch++;continue;}
       if(!domSet[idTrans]){breakdown.avuNoMatch++;continue;}
 
+      // Deduplicação por ID_TRANSACAO
+      if(avuRegistryNew[idTrans]){
+        breakdown.dedupAvu++;
+        continue; // já processado em upload anterior
+      }
+      avuRegistryNew[idTrans]=true;
+
       breakdown.avuMatch++;
       totalAvu+=qtde;
       var month=extractMonth(dataStr);
@@ -2864,14 +2902,40 @@ function processLogiFile(buffer){
       if(uf)avuByUF[uf]=(avuByUF[uf]||0)+qtde;
     }
 
+    // Acumula totais com dados anteriores
+    var prevData=LG.data||{};
+    var prevTotalLic=prevData.totalLic||0;
+    var prevTotalAvu=prevData.totalAvu||0;
+    var prevLicByMonth=prevData.licByMonth||{};
+    var prevAvuByMonth=prevData.avuByMonth||{};
+    var prevLicByUF=prevData.licByUF||{};
+    var prevAvuByUF=prevData.avuByUF||{};
+
+    // Merge meses
+    Object.keys(licByMonth).forEach(function(m){
+      prevLicByMonth[m]=(prevLicByMonth[m]||0)+licByMonth[m];
+    });
+    Object.keys(avuByMonth).forEach(function(m){
+      prevAvuByMonth[m]=(prevAvuByMonth[m]||0)+avuByMonth[m];
+    });
+    // Merge UFs
+    Object.keys(licByUF).forEach(function(u){
+      prevLicByUF[u]=(prevLicByUF[u]||0)+licByUF[u];
+    });
+    Object.keys(avuByUF).forEach(function(u){
+      prevAvuByUF[u]=(prevAvuByUF[u]||0)+avuByUF[u];
+    });
+
     LG.data={
-      totalLic:totalLic,
-      totalAvu:totalAvu,
-      licByMonth:licByMonth,
-      avuByMonth:avuByMonth,
-      licByUF:licByUF,
-      avuByUF:avuByUF,
+      totalLic:prevTotalLic+totalLic,
+      totalAvu:prevTotalAvu+totalAvu,
+      licByMonth:prevLicByMonth,
+      avuByMonth:prevAvuByMonth,
+      licByUF:prevLicByUF,
+      avuByUF:prevAvuByUF,
       breakdown:breakdown,
+      licRegistry:licRegistryNew,
+      avuRegistry:avuRegistryNew,
       uploadDate:new Date().toISOString(),
       uploadBy:S.user
     };
@@ -2909,12 +2973,18 @@ function processLogiFile(buffer){
       }
     }
 
+    var dedupMsg='';
+    if(breakdown.dedupLic>0||breakdown.dedupAvu>0){
+      dedupMsg='<br>⚠️ Ignorados por já processados: '+(breakdown.dedupLic||0)+' licenças + '+(breakdown.dedupAvu||0)+' avulsos';
+    }
+    var acumMsg=(prevTotalLic+prevTotalAvu)>0?'<br>📦 Total acumulado: <strong style="color:var(--accent)">'+(LG.data.totalLic+LG.data.totalAvu).toLocaleString('pt-BR')+'</strong> chips':'';
     document.getElementById('logi-file-status').innerHTML=
       '✅ <strong style="color:var(--accent)">Planilha processada com sucesso!</strong><br><br>'+
-      '📊 <strong>'+(totalLic+totalAvu).toLocaleString('pt-BR')+'</strong> chips contabilizados no total<br>'+
-      '🟡 Licenças: '+totalLic.toLocaleString('pt-BR')+'<br>'+
-      '🔵 Avulsos: '+totalAvu.toLocaleString('pt-BR')+'<br>'+
-      '⚪ Renovações ignoradas: '+breakdown.ignored+'<br><br>'+
+      '📊 <strong>'+(totalLic+totalAvu).toLocaleString('pt-BR')+'</strong> chips novos neste upload<br>'+
+      '🟡 Licenças novas: '+totalLic.toLocaleString('pt-BR')+'<br>'+
+      '🔵 Avulsos novos: '+totalAvu.toLocaleString('pt-BR')+'<br>'+
+      '⚪ Renovações ignoradas: '+breakdown.ignored+
+      dedupMsg+acumMsg+'<br><br>'+
       '<button class="btn-primary" onclick="closeLogiModal();renderLogistica();" style="margin-top:4px">Ver análise completa →</button>';
 
   } catch(err){
