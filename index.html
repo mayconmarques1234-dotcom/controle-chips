@@ -455,7 +455,7 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
     <div class="topnav-sep"></div>
     <span class="topnav-title">iGreen · Controle interno</span>
     <div class="topnav-right">
-      <div class="sync-pill" style="cursor:pointer" onclick="if(S.user&&SCRIPT_URL)loadFromSheets()" title="Clique para atualizar agora"><div class="sdot" id="sync-dot"></div><span id="sync-label">Não configurado</span></div>
+      <div class="sync-pill"><div class="sdot" id="sync-dot"></div><span id="sync-label">Não configurado</span></div>
       <div class="user-pill">
         <div class="user-avatar" id="user-avatar">?</div>
         <span id="user-name-display">—</span>
@@ -491,10 +491,6 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
       <button class="nav-item" onclick="setPage('logistica',this)">
         <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
         Logística
-      </button>
-      <button class="nav-item" onclick="setPage('licenciados',this)">
-        <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Base Licenciados
       </button>
       <button class="nav-item" onclick="setPage('config',this)">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
@@ -901,10 +897,6 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
             <div id="logi-month-chart" style="margin-bottom:20px"></div>
 
             <div class="divider"></div>
-            <div class="sec-title">Ativações por tipo de licença</div>
-            <div id="logi-atv-tipo" style="margin-bottom:20px"></div>
-
-            <div class="divider"></div>
             <div class="sec-title">Distribuição por estado (UF)</div>
             <div id="logi-uf-table" style="margin-bottom:20px"></div>
 
@@ -915,54 +907,6 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
             <div class="divider"></div>
             <div class="sec-title">Detalhamento por tipo</div>
             <div id="logi-breakdown"></div>
-          </div>
-        </div>
-
-        <!-- BASE LICENCIADOS -->
-        <div id="page-licenciados" class="page">
-          <div id="lic-empty" class="empty" style="padding:60px 0">
-            <svg viewBox="0 0 24 24" style="width:48px;height:48px;stroke:var(--text3);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;margin:0 auto 16px;display:block"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Nenhum dado disponível.<br>
-            <span style="font-size:11px">Suba uma planilha na aba Logística para ver a base de licenciados.</span>
-          </div>
-          <div id="lic-content" style="display:none">
-            <!-- Métricas resumo -->
-            <div class="metrics" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:20px">
-              <div class="mc r"><div class="mc-lbl">Com chips pendentes</div><div class="mc-val" id="lic-total-pendentes">—</div></div>
-              <div class="mc a"><div class="mc-lbl">Total chips pendentes</div><div class="mc-val" id="lic-total-chips-pend">—</div></div>
-              <div class="mc t"><div class="mc-lbl">Taxa média de ativação</div><div class="mc-val" id="lic-taxa-media" style="font-size:22px">—</div></div>
-            </div>
-
-            <!-- Filtros -->
-            <div class="filter-bar" style="margin-bottom:14px">
-              <div class="fg" style="margin:0;flex:0 0 120px">
-                <label>Filtrar por UF</label>
-                <select id="lic-filter-uf" style="background:var(--surface3);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 9px;font-size:12px;color:var(--text);font-family:var(--font);outline:none;width:100%">
-                  <option value="">Todas</option>
-                </select>
-              </div>
-              <div class="fg" style="margin:0;flex:0 0 160px">
-                <label>Filtrar por tipo</label>
-                <select id="lic-filter-tipo" style="background:var(--surface3);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 9px;font-size:12px;color:var(--text);font-family:var(--font);outline:none;width:100%">
-                  <option value="">Todos</option>
-                </select>
-              </div>
-              <div class="fg" style="margin:0;flex:1">
-                <label>Buscar ID</label>
-                <input type="text" id="lic-search" placeholder="Digite o ID do licenciado..." style="background:var(--surface3);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 9px;font-size:12px;color:var(--text);font-family:var(--font);outline:none;width:100%" oninput="renderLicenciados()">
-              </div>
-              <button class="btn-secondary" onclick="exportLicenciadosCSV()" style="align-self:flex-end;font-size:12px">
-                <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Exportar tudo
-              </button>
-            </div>
-
-            <!-- Tabela top 15 -->
-            <div class="sec-title">Top 15 com mais chips pendentes</div>
-            <div id="lic-table" style="overflow-x:auto"></div>
-            <div id="lic-show-more" style="display:none;margin-top:10px">
-              <button onclick="toggleLicAll()" id="lic-toggle-btn" class="btn-secondary" style="font-size:11px">Ver todos os licenciados com pendências</button>
-            </div>
           </div>
         </div>
 
@@ -1336,8 +1280,8 @@ var S={
   users:[]
 };
 
-var TITLES={launch:'Novo lançamento',stock:'Estoque',ops:'Operações',history:'Histórico',contel:'Logística Contel',logistica:'Logística — Vendas',licenciados:'Base Licenciados',config:'Configurações'};
-var SUBS={launch:'Selecione a natureza e preencha os dados',stock:'Visão geral e filtro de saídas de chips',ops:'Recargas, ativações e reativações',history:'Todos os lançamentos registrados',contel:'Chips e envelopes enviados ao Contel do país',logistica:'Análise de vendas e movimento de chips por planilha',licenciados:'Licenciados com chips enviados e não ativados',config:'Conexão com Google Sheets e preferências'};
+var TITLES={launch:'Novo lançamento',stock:'Estoque',ops:'Operações',history:'Histórico',contel:'Logística Contel',logistica:'Logística — Vendas',config:'Configurações'};
+var SUBS={launch:'Selecione a natureza e preencha os dados',stock:'Visão geral e filtro de saídas de chips',ops:'Recargas, ativações e reativações',history:'Todos os lançamentos registrados',contel:'Chips e envelopes enviados ao Contel do país',logistica:'Análise de vendas e movimento de chips por planilha',config:'Conexão com Google Sheets e preferências'};
 
 /* ── LOGIN ────────────────────────────── */
 function buildQuickUsers(){
@@ -1394,7 +1338,6 @@ function setPage(p,btn){
   if(p==='ops')renderOps();
   if(p==='history')renderHistory();
   if(p==='contel')renderContel();
-  if(p==='licenciados')renderLicenciados();
   if(p==='logistica'){
     // Mostra loading se o fetch ainda não terminou
     if(!LG.data&&document.getElementById('sync-dot').className.includes('spin')){
@@ -1659,13 +1602,6 @@ function loadFromSheets(){
         if(cfg.cc_users){
           try{S.users=JSON.parse(cfg.cc_users);}catch(e2){S.users=cfg.cc_users.split(',').map(function(u){return u.trim();}).filter(Boolean);}
           buildQuickUsers();
-
-// Auto-refresh a cada 3 minutos para manter dados atualizados em todos os PCs
-setInterval(function(){
-  if(S.user&&SCRIPT_URL){
-    loadFromSheets();
-  }
-}, 3 * 60 * 1000);
           if(document.getElementById('cfg-users'))document.getElementById('cfg-users').value=S.users.join(', ');
         }
         if(cfg.cc_alert_wpp&&document.getElementById('cfg-wpp'))document.getElementById('cfg-wpp').value=cfg.cc_alert_wpp;
@@ -1691,9 +1627,6 @@ setInterval(function(){
         // Se o usuário já está na aba logística, renderiza agora que os dados chegaram
         if(document.getElementById('page-logistica').classList.contains('active')){
           renderLogistica();
-        }
-        if(document.getElementById('page-licenciados').classList.contains('active')){
-          renderLicenciados();
         }
       }
 
@@ -1742,13 +1675,6 @@ function saveUsers(){
   localStorage.setItem('cc_users',JSON.stringify(S.users));
   fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveConfig:{cc_users:JSON.stringify(S.users)}})}).catch(function(){});
   buildQuickUsers();
-
-// Auto-refresh a cada 3 minutos para manter dados atualizados em todos os PCs
-setInterval(function(){
-  if(S.user&&SCRIPT_URL){
-    loadFromSheets();
-  }
-}, 3 * 60 * 1000);
   toast('Usuários salvos!');
 }
 
@@ -2699,53 +2625,6 @@ function renderLogistica(){
   html+='</tbody></table>';
   document.getElementById('logi-month-chart').innerHTML=html;
 
-  // ── Ativações por tipo de licença por mês
-  var atvTipo=d.atvByMonthTipo||{};
-  var tipoKeys=Object.keys(atvTipo).sort();
-  if(tipoKeys.length){
-    var tipoHtml='<table class="rtable"><thead><tr>';
-    tipoHtml+='<th>Mês</th>';
-    tipoHtml+='<th style="color:var(--accent)">Expert</th>';
-    tipoHtml+='<th style="color:var(--blue)">Expert+Telecom</th>';
-    tipoHtml+='<th style="color:var(--teal)">Telecom</th>';
-    tipoHtml+='<th style="color:var(--amber)">Voucher</th>';
-    tipoHtml+='<th style="color:var(--text3)">Outro</th>';
-    tipoHtml+='<th>Total</th>';
-    tipoHtml+='</tr></thead><tbody>';
-    var totTipo={EXPERT:0,EXPERT_TELECOM:0,TELECOM:0,VOUCHER:0,OUTRO:0};
-    tipoKeys.forEach(function(m){
-      var t=atvTipo[m];
-      var tot=(t.EXPERT||0)+(t.EXPERT_TELECOM||0)+(t.TELECOM||0)+(t.VOUCHER||0)+(t.OUTRO||0);
-      Object.keys(totTipo).forEach(function(k){totTipo[k]+=(t[k]||0);});
-      tipoHtml+='<tr>';
-      tipoHtml+='<td style="font-weight:500">'+m+'</td>';
-      tipoHtml+='<td style="color:var(--accent)">'+(t.EXPERT||0)+'</td>';
-      tipoHtml+='<td style="color:var(--blue)">'+(t.EXPERT_TELECOM||0)+'</td>';
-      tipoHtml+='<td style="color:var(--teal)">'+(t.TELECOM||0)+'</td>';
-      tipoHtml+='<td style="color:var(--amber)">'+(t.VOUCHER||0)+'</td>';
-      tipoHtml+='<td style="color:var(--text3)">'+(t.OUTRO||0)+'</td>';
-      tipoHtml+='<td style="font-weight:600">'+tot+'</td>';
-      tipoHtml+='</tr>';
-    });
-    // Total geral
-    var totGeral=Object.values(totTipo).reduce(function(a,b){return a+b;},0);
-    tipoHtml+='<tr style="border-top:1px solid var(--border2);background:var(--surface2)">';
-    tipoHtml+='<td style="font-weight:600;color:var(--text2)">TOTAL</td>';
-    tipoHtml+='<td style="color:var(--accent);font-weight:600">'+totTipo.EXPERT+'</td>';
-    tipoHtml+='<td style="color:var(--blue);font-weight:600">'+totTipo.EXPERT_TELECOM+'</td>';
-    tipoHtml+='<td style="color:var(--teal);font-weight:600">'+totTipo.TELECOM+'</td>';
-    tipoHtml+='<td style="color:var(--amber);font-weight:600">'+totTipo.VOUCHER+'</td>';
-    tipoHtml+='<td style="color:var(--text3);font-weight:600">'+totTipo.OUTRO+'</td>';
-    tipoHtml+='<td style="font-weight:700;color:var(--text)">'+totGeral+'</td>';
-    tipoHtml+='</tr>';
-    tipoHtml+='</tbody></table>';
-    // Insert section before UF table
-    var secDiv='<div class="divider"></div><div class="sec-title">Ativações por tipo de licença</div>'+tipoHtml+'<div class="divider"></div><div class="sec-title">Distribuição por estado (UF)</div>';
-    // We'll inject this via a dedicated element
-    var atvTipoEl=document.getElementById('logi-atv-tipo');
-    if(atvTipoEl)atvTipoEl.innerHTML=tipoHtml;
-  }
-
   // Por UF
   var allUFs={};
   Object.keys(d.licByUF).forEach(function(u){allUFs[u]=(allUFs[u]||0)+d.licByUF[u];});
@@ -3075,7 +2954,6 @@ function processLogiFile(buffer){
     // ── Processa ativações cruzando com licença e avulso
     var totalAtv=0;
     var atvByMonth={};
-    var atvByMonthTipo={};
     var atvByUF={};
     var atvRegistry=(LG.data&&LG.data.atvRegistry)?LG.data.atvRegistry:{};
     var atvRegistryNew=Object.assign({},atvRegistry);
@@ -3099,83 +2977,8 @@ function processLogiFile(buffer){
         atvRegistryNew[atvKey]=true;
         totalAtv++;
         if(month)atvByMonth[month]=(atvByMonth[month]||0)+1;
-        // Conta por tipo de linha
-        var tipoLinha=String(r[1]||'').trim().toUpperCase();
-        var tipoNorm='OUTRO';
-        if(tipoLinha.includes('EXPERT')&&tipoLinha.includes('TELECOM'))tipoNorm='EXPERT_TELECOM';
-        else if(tipoLinha.includes('EXPERT'))tipoNorm='EXPERT';
-        else if(tipoLinha.includes('TELECOM'))tipoNorm='TELECOM';
-        else if(tipoLinha.includes('VOUCHER'))tipoNorm='VOUCHER';
-        if(month){
-          if(!atvByMonthTipo[month])atvByMonthTipo[month]={EXPERT:0,EXPERT_TELECOM:0,TELECOM:0,VOUCHER:0,OUTRO:0};
-          atvByMonthTipo[month][tipoNorm]=(atvByMonthTipo[month][tipoNorm]||0)+1;
-        }
       }
     }
-
-    // ── Monta mapa por licenciado (enviados x ativados)
-    var licMap={};
-    // Processa licenças
-    for(var i=1;i<licData.length;i++){
-      var r=licData[i];
-      var ativo=String(r[2]||'').trim().toUpperCase();
-      if(ativo==='RENOVACAO'||ativo==='RENOVAÇÃO'||ativo==='RENOVACAO VOUCHER'||ativo==='RENOVAÇÃO VOUCHER')continue;
-      var tipoPag2=String(r[5]||'').trim().toLowerCase();
-      var statusParc2=String(r[6]||'').trim();
-      var parcMatch2=statusParc2.match(/(\d+)\//);
-      var isPrimeira2=tipoPag2==='boleto'&&parcMatch2&&parseInt(parcMatch2[1])===1;
-      if(isPrimeira2)continue;
-      var cid=String(r[7]||'').trim();
-      if(!cid)continue;
-      var uf=String(r[0]||'').trim().toUpperCase();
-      var tipoL=String(r[3]||'').trim().toUpperCase();
-      // chips por tipo
-      var chips2=0;
-      if(ativo==='VOUCHER'&&(tipoL==='EXPERT'||tipoL==='EXPERT+TELECOM'||tipoL==='EXPERT_TELECOM'))chips2=2;
-      else if(ativo==='PAGO'&&tipoL==='TELECOM')chips2=10;
-      else if(ativo==='PAGO'&&(tipoL==='EXPERT+TELECOM'||tipoL==='EXPERT_TELECOM'))chips2=2;
-      if(chips2>0){
-        if(!licMap[cid])licMap[cid]={id:cid,uf:uf,tipo:tipoL,enviados:0,ativados:0};
-        licMap[cid].enviados+=chips2;
-      }
-    }
-    // Processa avulso
-    for(var i=1;i<avuData.length;i++){
-      var r=avuData[i];
-      var idT=String(r[4]||'').trim();
-      if(!idT||!domSet[idT])continue;
-      var cid=String(r[5]||'').trim();
-      if(!cid)continue;
-      var qtde=parseInt(r[1])||0;
-      var uf=String(r[3]||'').trim().toUpperCase();
-      if(!licMap[cid])licMap[cid]={id:cid,uf:uf,tipo:'AVULSO',enviados:0,ativados:0};
-      licMap[cid].enviados+=qtde;
-    }
-    // Processa ativações
-    if(sheets.atv){
-      var atvData2=XLSX.utils.sheet_to_json(wb.Sheets[sheets.atv],{header:1,defval:''});
-      for(var i=1;i<atvData2.length;i++){
-        var r=atvData2[i];
-        var cid=String(r[2]||'').trim();
-        var idTel=String(r[3]||'').trim();
-        if(!cid)continue;
-        if(!licMap[cid])continue;
-        // dedup por id+idTelecom para não contar duplicados no mapa
-        var mk=cid+'|'+idTel;
-        if(!licMap[cid]._atvKeys)licMap[cid]._atvKeys={};
-        if(licMap[cid]._atvKeys[mk])continue;
-        licMap[cid]._atvKeys[mk]=true;
-        licMap[cid].ativados++;
-      }
-    }
-    // Converte map em array e calcula pendentes
-    var licArray=Object.values(licMap).map(function(l){
-      delete l._atvKeys;
-      l.pendentes=Math.max(0,l.enviados-l.ativados);
-      l.pct=l.enviados>0?Math.round(l.ativados/l.enviados*100):0;
-      return l;
-    }).filter(function(l){return l.pendentes>0;})
-      .sort(function(a,b){return b.pendentes-a.pendentes;});
 
     // Acumula totais com dados anteriores
     var prevData=LG.data||{};
@@ -3192,13 +2995,6 @@ function processLogiFile(buffer){
     Object.keys(licByMonth).forEach(function(m){prevLicByMonth[m]=(prevLicByMonth[m]||0)+licByMonth[m];});
     Object.keys(avuByMonth).forEach(function(m){prevAvuByMonth[m]=(prevAvuByMonth[m]||0)+avuByMonth[m];});
     Object.keys(atvByMonth).forEach(function(m){prevAtvByMonth[m]=(prevAtvByMonth[m]||0)+atvByMonth[m];});
-    var prevAtvByMonthTipo=prevData.atvByMonthTipo||{};
-    Object.keys(atvByMonthTipo).forEach(function(m){
-      if(!prevAtvByMonthTipo[m])prevAtvByMonthTipo[m]={EXPERT:0,EXPERT_TELECOM:0,TELECOM:0,VOUCHER:0,OUTRO:0};
-      Object.keys(atvByMonthTipo[m]).forEach(function(t){
-        prevAtvByMonthTipo[m][t]=(prevAtvByMonthTipo[m][t]||0)+atvByMonthTipo[m][t];
-      });
-    });
     // Merge UFs
     Object.keys(licByUF).forEach(function(u){prevLicByUF[u]=(prevLicByUF[u]||0)+licByUF[u];});
     Object.keys(avuByUF).forEach(function(u){prevAvuByUF[u]=(prevAvuByUF[u]||0)+avuByUF[u];});
@@ -3216,8 +3012,6 @@ function processLogiFile(buffer){
       licRegistry:licRegistryNew,
       avuRegistry:avuRegistryNew,
       atvRegistry:atvRegistryNew,
-      atvByMonthTipo:prevAtvByMonthTipo,
-      licenciados:licArray,
       uploadDate:new Date().toISOString(),
       uploadBy:S.user
     };
@@ -3323,112 +3117,6 @@ function clearLogi(){
   }})}).catch(function(){});
   renderLogistica();
   toast('Dados de logística apagados.');
-}
-
-/* ── BASE LICENCIADOS ────────────────────── */
-var licShowAll=false;
-
-function renderLicenciados(){
-  var hasData=LG.data&&LG.data.licenciados&&LG.data.licenciados.length;
-  document.getElementById('lic-empty').style.display=hasData?'none':'block';
-  document.getElementById('lic-content').style.display=hasData?'block':'none';
-  if(!hasData)return;
-
-  var data=LG.data.licenciados;
-
-  // Populate UF filter
-  var ufSel=document.getElementById('lic-filter-uf');
-  var curUF=ufSel.value;
-  var ufs=[...new Set(data.map(function(l){return l.uf;}).filter(Boolean))].sort();
-  ufSel.innerHTML='<option value="">Todas</option>'+ufs.map(function(u){return '<option value="'+u+'"'+(u===curUF?' selected':'')+'>'+u+'</option>';}).join('');
-
-  // Populate tipo filter
-  var tipoSel=document.getElementById('lic-filter-tipo');
-  var curTipo=tipoSel.value;
-  var tipos=[...new Set(data.map(function(l){return l.tipo;}).filter(Boolean))].sort();
-  tipoSel.innerHTML='<option value="">Todos</option>'+tipos.map(function(t){return '<option value="'+t+'"'+(t===curTipo?' selected':'')+'>'+t+'</option>';}).join('');
-
-  // Apply filters
-  var uf=ufSel.value;
-  var tipo=tipoSel.value;
-  var search=(document.getElementById('lic-search').value||'').toLowerCase();
-  var filtered=data.filter(function(l){
-    return (!uf||l.uf===uf)&&(!tipo||l.tipo===tipo)&&(!search||String(l.id).toLowerCase().includes(search));
-  });
-
-  // Metrics
-  var totalPend=filtered.length;
-  var totalChipsPend=filtered.reduce(function(a,l){return a+l.pendentes;},0);
-  var somaAtv=filtered.reduce(function(a,l){return a+l.ativados;},0);
-  var somaEnv=filtered.reduce(function(a,l){return a+l.enviados;},0);
-  var taxaMedia=somaEnv>0?Math.round(somaAtv/somaEnv*100):0;
-  document.getElementById('lic-total-pendentes').textContent=totalPend.toLocaleString('pt-BR');
-  document.getElementById('lic-total-chips-pend').textContent=totalChipsPend.toLocaleString('pt-BR');
-  document.getElementById('lic-taxa-media').textContent=taxaMedia+'%';
-
-  // Table
-  var display=licShowAll?filtered:filtered.slice(0,15);
-  var showMore=document.getElementById('lic-show-more');
-  showMore.style.display=filtered.length>15?'block':'none';
-  var btn=document.getElementById('lic-toggle-btn');
-  if(btn)btn.textContent=licShowAll?'Ver apenas top 15':'Ver todos os '+filtered.length+' licenciados com pendências';
-
-  if(!display.length){
-    document.getElementById('lic-table').innerHTML='<div class="empty">Nenhum licenciado com chips pendentes para os filtros selecionados.</div>';
-    return;
-  }
-
-  var html='<table class="rtable"><thead><tr>';
-  html+='<th>#</th><th>ID</th><th>UF</th><th>Tipo</th>';
-  html+='<th style="color:var(--accent)">Enviados</th>';
-  html+='<th style="color:var(--teal)">Ativados</th>';
-  html+='<th style="color:var(--red)">Pendentes</th>';
-  html+='<th>% Ativação</th>';
-  html+='</tr></thead><tbody>';
-
-  display.forEach(function(l,i){
-    var pctColor=l.pct>=80?'var(--accent)':l.pct>=50?'var(--amber)':'var(--red)';
-    var rank=i+1;
-    var rankStyle=rank<=3?'font-weight:700;color:var(--accent)':'color:var(--text3)';
-    html+='<tr>';
-    html+='<td style="'+rankStyle+'">'+rank+'</td>';
-    html+='<td style="font-family:var(--mono);color:var(--text)">'+l.id+'</td>';
-    html+='<td><span style="background:var(--surface3);padding:2px 7px;border-radius:4px;font-size:11px">'+l.uf+'</span></td>';
-    html+='<td style="font-size:11px;color:var(--text2)">'+l.tipo+'</td>';
-    html+='<td style="color:var(--accent);font-weight:500">'+l.enviados+'</td>';
-    html+='<td style="color:var(--teal)">'+l.ativados+'</td>';
-    html+='<td style="color:var(--red);font-weight:600">'+l.pendentes+'</td>';
-    html+='<td><div style="display:flex;align-items:center;gap:8px"><div style="width:60px;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden"><div style="width:'+l.pct+'%;height:100%;background:'+pctColor+';border-radius:3px"></div></div><span style="font-size:11px;color:'+pctColor+'">'+l.pct+'%</span></div></td>';
-    html+='</tr>';
-  });
-  html+='</tbody></table>';
-  document.getElementById('lic-table').innerHTML=html;
-}
-
-function toggleLicAll(){
-  licShowAll=!licShowAll;
-  renderLicenciados();
-}
-
-function exportLicenciadosCSV(){
-  if(!LG.data||!LG.data.licenciados||!LG.data.licenciados.length){toast('Nenhum dado para exportar.');return;}
-  var uf=document.getElementById('lic-filter-uf').value;
-  var tipo=document.getElementById('lic-filter-tipo').value;
-  var search=(document.getElementById('lic-search').value||'').toLowerCase();
-  var data=LG.data.licenciados.filter(function(l){
-    return (!uf||l.uf===uf)&&(!tipo||l.tipo===tipo)&&(!search||String(l.id).toLowerCase().includes(search));
-  });
-  var bom='﻿';
-  var rows=['ID;UF;Tipo;Enviados;Ativados;Pendentes;% Ativação'];
-  data.forEach(function(l){
-    rows.push([l.id,l.uf,l.tipo,l.enviados,l.ativados,l.pendentes,l.pct+'%'].join(';'));
-  });
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([bom+rows.join('
-')],{type:'application/vnd.ms-excel;charset=utf-8'}));
-  a.download='licenciados_pendentes_'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click();
-  toast('Exportado: '+data.length+' licenciados');
 }
 
 function exportLogiCSV(){
@@ -3624,13 +3312,6 @@ function showStockAlertBanner(){
 }
 /* ── INIT ────────────────────────────── */
 buildQuickUsers();
-
-// Auto-refresh a cada 3 minutos para manter dados atualizados em todos os PCs
-setInterval(function(){
-  if(S.user&&SCRIPT_URL){
-    loadFromSheets();
-  }
-}, 3 * 60 * 1000);
 </script>
 </body>
 </html>
