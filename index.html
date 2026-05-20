@@ -1180,7 +1180,28 @@ function setPage(p,btn){
   if(p==='ops')renderOps();
   if(p==='history')renderHistory();
   if(p==='contel')renderContel();
-  if(p==='logistica')renderLogistica();
+  if(p==='logistica'){
+    // Mostra loading se o fetch ainda não terminou
+    if(!LG.data&&document.getElementById('sync-dot').className.includes('spin')){
+      document.getElementById('logi-empty').style.display='none';
+      document.getElementById('logi-content').style.display='none';
+      var logiLoading=document.getElementById('logi-loading');
+      if(!logiLoading){
+        logiLoading=document.createElement('div');
+        logiLoading.id='logi-loading';
+        logiLoading.className='empty';
+        logiLoading.style.padding='60px 0';
+        logiLoading.innerHTML='⏳ Carregando dados do servidor...';
+        document.getElementById('page-logistica').appendChild(logiLoading);
+      } else {
+        logiLoading.style.display='block';
+      }
+    } else {
+      var ll=document.getElementById('logi-loading');
+      if(ll)ll.style.display='none';
+      renderLogistica();
+    }
+  }
 }
 
 /* ── FORM ─────────────────────────────── */
@@ -1398,6 +1419,10 @@ function loadFromSheets(){
       // ── Logi data ────────────────────────────────────────────
       if(data.logiData){
         LG.data=data.logiData;
+        // Se o usuário já está na aba logística, renderiza agora que os dados chegaram
+        if(document.getElementById('page-logistica').classList.contains('active')){
+          renderLogistica();
+        }
       }
 
       updateSidebar();setSyncStatus('ok');
