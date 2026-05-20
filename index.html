@@ -863,10 +863,12 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
           </div>
 
           <!-- METRICS -->
-          <div class="metrics" id="logi-metrics" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
-            <div class="mc g"><div class="mc-lbl">Total chips vendidos</div><div class="mc-val" id="logi-total">—</div></div>
+          <div class="metrics" id="logi-metrics" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+            <div class="mc g"><div class="mc-lbl">Total enviados</div><div class="mc-val" id="logi-total">—</div></div>
             <div class="mc a"><div class="mc-lbl">Licenças</div><div class="mc-val" id="logi-lic">—</div></div>
             <div class="mc b"><div class="mc-lbl">Chip avulso</div><div class="mc-val" id="logi-avu">—</div></div>
+            <div class="mc t"><div class="mc-lbl">Ativados</div><div class="mc-val" id="logi-atv">—</div></div>
+            <div class="mc r"><div class="mc-lbl">Não ativados</div><div class="mc-val" id="logi-naotv">—</div></div>
             <div class="mc p"><div class="mc-lbl">Último upload</div><div class="mc-val" id="logi-date" style="font-size:14px;margin-top:8px">—</div></div>
           </div>
 
@@ -2585,9 +2587,14 @@ function renderLogistica(){
   var d=LG.data;
   document.getElementById('logi-empty').style.display='none';
   document.getElementById('logi-content').style.display='block';
-  document.getElementById('logi-total').textContent=(d.totalLic+d.totalAvu).toLocaleString('pt-BR');
+  var totalEnviados=d.totalLic+d.totalAvu;
+  var totalAtv=d.totalAtv||0;
+  var totalNaoAtv=Math.max(0,totalEnviados-totalAtv);
+  document.getElementById('logi-total').textContent=totalEnviados.toLocaleString('pt-BR');
   document.getElementById('logi-lic').textContent=d.totalLic.toLocaleString('pt-BR');
   document.getElementById('logi-avu').textContent=d.totalAvu.toLocaleString('pt-BR');
+  document.getElementById('logi-atv').textContent=totalAtv.toLocaleString('pt-BR');
+  document.getElementById('logi-naotv').textContent=totalNaoAtv.toLocaleString('pt-BR');
   document.getElementById('logi-date').textContent=new Date(d.uploadDate).toLocaleDateString('pt-BR');
 
   // Vendas por mês (combina lic + avu)
@@ -2596,13 +2603,24 @@ function renderLogistica(){
   Object.keys(d.avuByMonth).forEach(function(m){allMonths[m]=(allMonths[m]||0)+d.avuByMonth[m];});
   var keys=Object.keys(allMonths).sort();
   var maxVal=Math.max(1,...Object.values(allMonths));
-  var html='<table class="rtable"><thead><tr><th>Mês</th><th>Licenças</th><th>Avulsos</th><th>Total</th><th style="width:30%">Distribuição</th></tr></thead><tbody>';
+  var html='<table class="rtable"><thead><tr><th>Mês</th><th>Licenças</th><th>Avulsos</th><th>Total enviados</th><th style="color:var(--teal)">Ativados</th><th style="color:var(--red)">Não ativados</th><th style="width:20%">Distribuição</th></tr></thead><tbody>';
   keys.forEach(function(m){
     var lic=d.licByMonth[m]||0;
     var avu=d.avuByMonth[m]||0;
+    var atv=(d.atvByMonth&&d.atvByMonth[m])||0;
     var total=lic+avu;
+    var naoAtv=Math.max(0,total-atv);
     var pct=Math.round(total/maxVal*100);
-    html+='<tr><td style="font-weight:500">'+m+'</td><td style="color:var(--amber)">'+lic+'</td><td style="color:var(--blue)">'+avu+'</td><td style="color:var(--accent);font-weight:500">'+total+'</td><td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:'+pct+'%"></div></div></td></tr>';
+    var pctAtv=total>0?Math.round(atv/total*100):0;
+    html+='<tr>';
+    html+='<td style="font-weight:500">'+m+'</td>';
+    html+='<td style="color:var(--amber)">'+lic+'</td>';
+    html+='<td style="color:var(--blue)">'+avu+'</td>';
+    html+='<td style="color:var(--accent);font-weight:500">'+total+'</td>';
+    html+='<td style="color:var(--teal);font-weight:500">'+atv+' <span style="font-size:10px;color:var(--text3)">('+pctAtv+'%)</span></td>';
+    html+='<td style="color:var(--red)">'+naoAtv+'</td>';
+    html+='<td><div class="bar-track" style="width:100%"><div class="bar-fill" style="width:'+pct+'%"></div></div></td>';
+    html+='</tr>';
   });
   html+='</tbody></table>';
   document.getElementById('logi-month-chart').innerHTML=html;
@@ -2777,6 +2795,7 @@ function processLogiFile(buffer){
       if(ln==='licença'||ln==='licenca')sheets.lic=n;
       else if(ln==='chip avulso'||ln==='chip_avulso'||ln==='chipavulso')sheets.avu=n;
       else if(ln==='dom')sheets.dom=n;
+      else if(ln==='ativações'||ln==='ativacoes')sheets.atv=n;
     });
     if(!sheets.lic||!sheets.avu||!sheets.dom){
       showLogiError('Planilha deve conter as 3 abas: licença, chip avulso e Dom. Encontradas: '+wb.SheetNames.join(', '));
@@ -2892,6 +2911,7 @@ function processLogiFile(buffer){
       var qtde=parseInt(row[1])||0;
       var uf=String(row[3]||'').trim().toUpperCase();
       var idTrans=String(row[4]||'').trim();
+      var codIdAvu=String(row[5]||'').trim();
 
       if(!idTrans){breakdown.avuNoMatch++;continue;}
       if(!domSet[idTrans]){breakdown.avuNoMatch++;continue;}
@@ -2910,40 +2930,88 @@ function processLogiFile(buffer){
       if(uf)avuByUF[uf]=(avuByUF[uf]||0)+qtde;
     }
 
+    // ── Coleta IDs válidos de licença e avulso (para cruzar com ativações)
+    var licIdSet={};
+    for(var i=1;i<licData.length;i++){
+      var r=licData[i];
+      var ativo=String(r[2]||'').trim().toUpperCase();
+      if(ativo==='RENOVACAO'||ativo==='RENOVAÇÃO'||ativo==='RENOVACAO VOUCHER'||ativo==='RENOVAÇÃO VOUCHER')continue;
+      var tipoPag=String(r[5]||'').trim().toLowerCase();
+      var statusParc=String(r[6]||'').trim();
+      var parcMatch=statusParc.match(/^(\d+)\//);
+      var isPrimeira=tipoPag==='boleto'&&parcMatch&&parseInt(parcMatch[1])===1;
+      if(isPrimeira)continue;
+      var cid=String(r[7]||'').trim();
+      if(cid)licIdSet[cid]=true;
+    }
+    var avuIdSet={};
+    for(var i=1;i<avuData.length;i++){
+      var r=avuData[i];
+      var cid=String(r[5]||'').trim();
+      if(cid)avuIdSet[cid]=true;
+    }
+
+    // ── Processa ativações cruzando com licença e avulso
+    var totalAtv=0;
+    var atvByMonth={};
+    var atvByUF={};
+    var atvRegistry=(LG.data&&LG.data.atvRegistry)?LG.data.atvRegistry:{};
+    var atvRegistryNew=Object.assign({},atvRegistry);
+
+    if(sheets.atv){
+      var atvData=XLSX.utils.sheet_to_json(wb.Sheets[sheets.atv],{header:1,defval:''});
+      for(var i=1;i<atvData.length;i++){
+        var r=atvData[i];
+        var dataStr=String(r[0]||'').trim();
+        var tipoLinha=String(r[1]||'').trim();
+        var codId=String(r[2]||'').trim();
+        var idTelecom=String(r[3]||'').trim();
+        if(!codId)continue;
+        // Verifica se ID existe em licença ou avulso
+        if(!licIdSet[codId]&&!avuIdSet[codId])continue;
+        // Deduplicação por codId + ID Telecom (cada linha telefônica é única)
+        // O mesmo licenciado pode ter vários chips — contabiliza todos
+        var month=extractMonth(dataStr);
+        var atvKey=codId+'|'+idTelecom;
+        if(atvRegistryNew[atvKey])continue;
+        atvRegistryNew[atvKey]=true;
+        totalAtv++;
+        if(month)atvByMonth[month]=(atvByMonth[month]||0)+1;
+      }
+    }
+
     // Acumula totais com dados anteriores
     var prevData=LG.data||{};
     var prevTotalLic=prevData.totalLic||0;
     var prevTotalAvu=prevData.totalAvu||0;
+    var prevTotalAtv=prevData.totalAtv||0;
     var prevLicByMonth=prevData.licByMonth||{};
     var prevAvuByMonth=prevData.avuByMonth||{};
+    var prevAtvByMonth=prevData.atvByMonth||{};
     var prevLicByUF=prevData.licByUF||{};
     var prevAvuByUF=prevData.avuByUF||{};
 
     // Merge meses
-    Object.keys(licByMonth).forEach(function(m){
-      prevLicByMonth[m]=(prevLicByMonth[m]||0)+licByMonth[m];
-    });
-    Object.keys(avuByMonth).forEach(function(m){
-      prevAvuByMonth[m]=(prevAvuByMonth[m]||0)+avuByMonth[m];
-    });
+    Object.keys(licByMonth).forEach(function(m){prevLicByMonth[m]=(prevLicByMonth[m]||0)+licByMonth[m];});
+    Object.keys(avuByMonth).forEach(function(m){prevAvuByMonth[m]=(prevAvuByMonth[m]||0)+avuByMonth[m];});
+    Object.keys(atvByMonth).forEach(function(m){prevAtvByMonth[m]=(prevAtvByMonth[m]||0)+atvByMonth[m];});
     // Merge UFs
-    Object.keys(licByUF).forEach(function(u){
-      prevLicByUF[u]=(prevLicByUF[u]||0)+licByUF[u];
-    });
-    Object.keys(avuByUF).forEach(function(u){
-      prevAvuByUF[u]=(prevAvuByUF[u]||0)+avuByUF[u];
-    });
+    Object.keys(licByUF).forEach(function(u){prevLicByUF[u]=(prevLicByUF[u]||0)+licByUF[u];});
+    Object.keys(avuByUF).forEach(function(u){prevAvuByUF[u]=(prevAvuByUF[u]||0)+avuByUF[u];});
 
     LG.data={
       totalLic:prevTotalLic+totalLic,
       totalAvu:prevTotalAvu+totalAvu,
+      totalAtv:prevTotalAtv+totalAtv,
       licByMonth:prevLicByMonth,
       avuByMonth:prevAvuByMonth,
+      atvByMonth:prevAtvByMonth,
       licByUF:prevLicByUF,
       avuByUF:prevAvuByUF,
       breakdown:breakdown,
       licRegistry:licRegistryNew,
       avuRegistry:avuRegistryNew,
+      atvRegistry:atvRegistryNew,
       uploadDate:new Date().toISOString(),
       uploadBy:S.user
     };
@@ -2965,7 +3033,8 @@ function processLogiFile(buffer){
     // Salva registries de dedup separadamente na aba config
     fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveConfig:{
       logi_lic_registry:JSON.stringify(LG.data.licRegistry||{}),
-      logi_avu_registry:JSON.stringify(LG.data.avuRegistry||{})
+      logi_avu_registry:JSON.stringify(LG.data.avuRegistry||{}),
+      logi_atv_registry:JSON.stringify(LG.data.atvRegistry||{})
     }})}).catch(function(){});
 
     // ── Desconta do estoque de logística ────────────────────
@@ -3043,7 +3112,8 @@ function clearLogi(){
   // Limpa também os registries de dedup
   fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveConfig:{
     logi_lic_registry:'{}',
-    logi_avu_registry:'{}'
+    logi_avu_registry:'{}',
+    logi_atv_registry:'{}'
   }})}).catch(function(){});
   renderLogistica();
   toast('Dados de logística apagados.');
