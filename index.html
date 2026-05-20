@@ -1690,26 +1690,44 @@ function renderStockMonthly(){
     var d=new Date(r.date);
     var ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     var key=ms[d.getMonth()]+'/'+d.getFullYear();
-    if(!months[key])months[key]={out:0,in:0};
+    if(!months[key])months[key]={out:0,in:0,_sort:d.getFullYear()*100+(d.getMonth()+1)};
     months[key].out+=(r.qty||0);
   });
   entries.forEach(function(r){
     var d=new Date(r.date);
     var ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     var key=ms[d.getMonth()]+'/'+d.getFullYear();
-    if(!months[key])months[key]={out:0,in:0};
+    if(!months[key])months[key]={out:0,in:0,_sort:d.getFullYear()*100+(d.getMonth()+1)};
     months[key].in+=(r.qty||0);
   });
-  var keys=Object.keys(months);
+  var keys=Object.keys(months).sort(function(a,b){return months[a]._sort-months[b]._sort;});
   if(!keys.length){document.getElementById('stk-monthly').innerHTML='<div class="empty">Nenhum dado mensal ainda.</div>';return;}
-  var html='<table class="rtable"><thead><tr><th>Mês</th><th>Entradas</th><th>Saídas</th><th>Saldo</th></tr></thead><tbody>';
+
+  // Calcula estoque acumulado mês a mês partindo do estoque atual
+  // Soma todos os movimentos futuros ao estoque atual para encontrar o ponto de partida
+  var totalIn=0,totalOut=0;
+  keys.forEach(function(k){totalIn+=months[k].in;totalOut+=months[k].out;});
+  // Estoque no início = estoque atual - (totalIn acumulado) + (totalOut acumulado)
+  var estoqueInicio=S.stock-totalIn+totalOut;
+  var acumulado=estoqueInicio;
+
+  var html='<table class="rtable"><thead><tr><th>Mês</th><th>Entradas</th><th>Saídas</th><th>Movimento do mês</th><th>Estoque final</th></tr></thead><tbody>';
   keys.forEach(function(k){
     var m=months[k];
-    var saldo=m.in-m.out;
-    var cor=saldo>=0?'var(--accent)':'var(--red)';
-    html+='<tr><td style="font-weight:500">'+k+'</td><td style="color:var(--teal)">+'+m.in+'</td><td style="color:var(--amber)">-'+m.out+'</td><td style="color:'+cor+';font-weight:500">'+(saldo>=0?'+':'')+saldo+'</td></tr>';
+    var mov=m.in-m.out;
+    acumulado+=mov;
+    var corMov=mov>=0?'var(--accent)':'var(--red)';
+    var corEst=acumulado>=S.minStock?'var(--text)':'var(--red)';
+    html+='<tr>';
+    html+='<td style="font-weight:500">'+k+'</td>';
+    html+='<td style="color:var(--teal)">+'+(m.in||0)+'</td>';
+    html+='<td style="color:var(--amber)">-'+(m.out||0)+'</td>';
+    html+='<td style="color:'+corMov+';font-weight:500">'+(mov>=0?'+':'')+mov+'</td>';
+    html+='<td style="color:'+corEst+';font-weight:600">'+acumulado+'</td>';
+    html+='</tr>';
   });
   html+='</tbody></table>';
+  html+='<div style="font-size:11px;color:var(--text3);margin-top:8px">* Estoque final calculado com base no estoque atual ('+S.stock+' chips) e no histórico de movimentos registrados.</div>';
   document.getElementById('stk-monthly').innerHTML=html;
 }
 
