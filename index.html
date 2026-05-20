@@ -776,6 +776,28 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
 
         <!-- LOGÍSTICA -->
         <div id="page-logistica" class="page">
+          <!-- ESTOQUE LOGÍSTICA -->
+          <div class="config-card" style="margin-bottom:16px;border-color:var(--accent-dark)">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div>
+                <div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Estoque atual — Logística</div>
+                <div style="display:flex;align-items:baseline;gap:10px">
+                  <span style="font-size:36px;font-weight:600;color:var(--accent);letter-spacing:-.02em" id="logi-estoque-val">—</span>
+                  <span style="font-size:13px;color:var(--text3)">chips</span>
+                </div>
+                <div style="font-size:11px;color:var(--text3);margin-top:4px">Contagem desde: <span id="logi-estoque-desde" style="color:var(--text2)">—</span></div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn-primary" onclick="openLogiEstoqueModal()" style="font-size:12px;padding:8px 16px">
+                  <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:#0d1a0d;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Editar estoque
+                </button>
+                <button class="btn-secondary" onclick="openLogiEstoqueHistorico()" style="font-size:12px">Histórico de ajustes</button>
+              </div>
+            </div>
+            <div id="logi-estoque-alert" style="display:none;margin-top:10px;padding:8px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius);font-size:12px;color:var(--amber)"></div>
+          </div>
+
           <!-- METRICS -->
           <div class="metrics" id="logi-metrics" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
             <div class="mc g"><div class="mc-lbl">Total chips vendidos</div><div class="mc-val" id="logi-total">—</div></div>
@@ -1092,6 +1114,39 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
         Registrar entrada
       </button>
     </div>
+  </div>
+</div>
+
+
+<!-- MODAL ESTOQUE LOGÍSTICA -->
+<div class="modal-overlay" id="modal-logi-estoque">
+  <div class="modal" style="width:440px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title">Editar estoque de logística</div>
+      <button onclick="closeLogiEstoqueModal()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <div class="modal-sub" style="margin-bottom:20px">O valor será salvo e descontado automaticamente a cada nova planilha subida.</div>
+    <div class="row2">
+      <div class="fg"><label>Estoque atual (chips)</label><input type="number" id="logi-est-qty" placeholder="Ex: 5000" min="0"></div>
+      <div class="fg"><label>Contar descontos a partir de</label><input type="date" id="logi-est-desde"></div>
+    </div>
+    <div class="fg"><label>Justificativa da edição</label><textarea id="logi-est-motivo" placeholder="Ex: Recontagem física realizada em 20/05/2026..." style="min-height:64px"></textarea></div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Estoque atual registrado: <strong id="logi-est-atual" style="color:var(--accent)">—</strong></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeLogiEstoqueModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveLogiEstoque()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL HISTÓRICO ESTOQUE LOGÍSTICA -->
+<div class="modal-overlay" id="modal-logi-historico">
+  <div class="modal" style="width:520px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="modal-title">Histórico de ajustes — Estoque Logística</div>
+      <button onclick="document.getElementById('modal-logi-historico').classList.remove('open')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <div id="logi-historico-list"></div>
   </div>
 </div>
 
@@ -1414,6 +1469,8 @@ function loadFromSheets(){
         if(cfg.cc_alert_msg&&document.getElementById('cfg-alert-msg'))document.getElementById('cfg-alert-msg').value=cfg.cc_alert_msg;
         if((cfg.cc_alert_wpp||cfg.cc_alert_email)&&document.getElementById('cfg-alert-test'))document.getElementById('cfg-alert-test').style.display='block';
         if(cfg.cc_cfg_pass)localStorage.setItem('cc_cfg_pass',cfg.cc_cfg_pass);
+        // Carrega estoque de logística
+        loadLogiEstoque(cfg);
       }
 
       // ── Logi data ────────────────────────────────────────────
@@ -2149,8 +2206,109 @@ function exportContelCSV(){
 
 /* ── LOGÍSTICA — Análise de planilha de vendas ───── */
 var LG={data:null};
+var LS={
+  qty:null,
+  desde:null,
+  log:[]
+};
+
+function loadLogiEstoque(cfg){
+  if(!cfg)return;
+  try{
+    if(cfg.logi_estoque_qty!==undefined&&cfg.logi_estoque_qty!=='')LS.qty=parseInt(cfg.logi_estoque_qty)||0;
+    if(cfg.logi_estoque_desde)LS.desde=cfg.logi_estoque_desde;
+    if(cfg.logi_estoque_log){try{LS.log=JSON.parse(cfg.logi_estoque_log);}catch(e){LS.log=[];}}
+  }catch(e){}
+  renderLogiEstoque();
+}
+
+function renderLogiEstoque(){
+  var el=document.getElementById('logi-estoque-val');
+  var elD=document.getElementById('logi-estoque-desde');
+  var elA=document.getElementById('logi-estoque-alert');
+  if(LS.qty===null){
+    if(el)el.textContent='—';
+    if(elD)elD.textContent='não definido';
+    return;
+  }
+  if(el)el.textContent=LS.qty.toLocaleString('pt-BR');
+  if(elD)elD.textContent=LS.desde?new Date(LS.desde+'T12:00:00').toLocaleDateString('pt-BR'):'—';
+  if(elA){
+    if(LS.qty<500){
+      elA.style.display='block';
+      elA.textContent='⚠️ Estoque baixo: apenas '+LS.qty.toLocaleString('pt-BR')+' chips disponíveis.';
+    } else {
+      elA.style.display='none';
+    }
+  }
+}
+
+function saveLogiEstoqueSheets(){
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveConfig:{
+    logi_estoque_qty:String(LS.qty),
+    logi_estoque_desde:LS.desde||'',
+    logi_estoque_log:JSON.stringify(LS.log)
+  }})}).catch(function(){});
+}
+
+function openLogiEstoqueModal(){
+  document.getElementById('logi-est-qty').value=LS.qty!==null?LS.qty:'';
+  document.getElementById('logi-est-desde').value=LS.desde||new Date().toISOString().slice(0,10);
+  document.getElementById('logi-est-motivo').value='';
+  document.getElementById('logi-est-atual').textContent=LS.qty!==null?LS.qty.toLocaleString('pt-BR')+' chips':'não definido';
+  document.getElementById('modal-logi-estoque').classList.add('open');
+}
+function closeLogiEstoqueModal(){document.getElementById('modal-logi-estoque').classList.remove('open');}
+
+function saveLogiEstoque(){
+  var qty=parseInt(document.getElementById('logi-est-qty').value);
+  var desde=document.getElementById('logi-est-desde').value;
+  var motivo=document.getElementById('logi-est-motivo').value.trim();
+  if(isNaN(qty)||qty<0){toast('Informe uma quantidade válida.');return;}
+  if(!desde){toast('Informe a data de início dos descontos.');return;}
+  if(!motivo){toast('Informe a justificativa da edição.');return;}
+  var anterior=LS.qty;
+  LS.qty=qty;
+  LS.desde=desde;
+  LS.log.push({
+    data:new Date().toISOString(),
+    anterior:anterior,
+    novo:qty,
+    desde:desde,
+    motivo:motivo,
+    responsavel:S.user
+  });
+  saveLogiEstoqueSheets();
+  renderLogiEstoque();
+  closeLogiEstoqueModal();
+  toast('Estoque de logística atualizado: '+qty.toLocaleString('pt-BR')+' chips');
+}
+
+function openLogiEstoqueHistorico(){
+  var el=document.getElementById('logi-historico-list');
+  if(!LS.log.length){
+    el.innerHTML='<div class="empty">Nenhum ajuste manual registrado ainda.</div>';
+  } else {
+    var html='<table class="rtable"><thead><tr><th>Data</th><th>Anterior</th><th>Novo</th><th>Desde</th><th>Motivo</th><th>Responsável</th></tr></thead><tbody>';
+    var reversed=[].concat(LS.log).reverse();
+    reversed.forEach(function(r){
+      html+='<tr>';
+      html+='<td class="mono">'+new Date(r.data).toLocaleDateString('pt-BR')+'</td>';
+      html+='<td style="color:var(--red)">'+(r.anterior!==null?r.anterior.toLocaleString('pt-BR'):'—')+'</td>';
+      html+='<td style="color:var(--accent)">'+r.novo.toLocaleString('pt-BR')+'</td>';
+      html+='<td class="mono">'+new Date(r.desde+'T12:00:00').toLocaleDateString('pt-BR')+'</td>';
+      html+='<td style="color:var(--text2);max-width:160px;white-space:normal">'+r.motivo+'</td>';
+      html+='<td style="color:var(--purple)">'+r.responsavel+'</td>';
+      html+='</tr>';
+    });
+    html+='</tbody></table>';
+    el.innerHTML=html;
+  }
+  document.getElementById('modal-logi-historico').classList.add('open');
+}
 
 function renderLogistica(){
+  renderLogiEstoque();
   if(!LG.data){
     document.getElementById('logi-empty').style.display='block';
     document.getElementById('logi-content').style.display='none';
@@ -2464,6 +2622,36 @@ function processLogiFile(buffer){
     localStorage.setItem('logi_data',JSON.stringify(LG.data));
     // Salva no Sheets para todos verem
     fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveLogiData:LG.data})}).catch(function(){});
+
+    // ── Desconta do estoque de logística ────────────────────
+    if(LS.qty!==null&&LS.desde){
+      // Conta apenas chips de meses a partir da data de início
+      var desdeMs=new Date(LS.desde+'T00:00:00').getTime();
+      var chipsNoPeriodo=0;
+      var allM={};
+      Object.keys(licByMonth).forEach(function(m){allM[m]=(allM[m]||0)+licByMonth[m];});
+      Object.keys(avuByMonth).forEach(function(m){allM[m]=(allM[m]||0)+avuByMonth[m];});
+      Object.keys(allM).forEach(function(m){
+        var parts=m.split('/');
+        var mesDate=new Date(parseInt(parts[1]),parseInt(parts[0])-1,1).getTime();
+        if(mesDate>=desdeMs)chipsNoPeriodo+=allM[m];
+      });
+      var anterior=LS.qty;
+      var novoEstoque=Math.max(0,LS.qty-chipsNoPeriodo);
+      if(chipsNoPeriodo>0){
+        LS.qty=novoEstoque;
+        LS.log.push({
+          data:new Date().toISOString(),
+          anterior:anterior,
+          novo:novoEstoque,
+          desde:LS.desde,
+          motivo:'Desconto automático por upload de planilha: -'+chipsNoPeriodo.toLocaleString('pt-BR')+' chips (período a partir de '+new Date(LS.desde+'T12:00:00').toLocaleDateString('pt-BR')+')',
+          responsavel:S.user
+        });
+        saveLogiEstoqueSheets();
+        renderLogiEstoque();
+      }
+    }
 
     document.getElementById('logi-file-status').innerHTML=
       '✅ <strong style="color:var(--accent)">Planilha processada com sucesso!</strong><br><br>'+
