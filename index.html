@@ -2944,28 +2944,30 @@ function processLogiFile(buffer){
     fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveLogiData:LG.data})}).catch(function(){});
 
     // ── Desconta do estoque de logística ────────────────────
+    // Usa apenas os chips NOVOS deste upload (totalLic + totalAvu),
+    // filtrados pelos meses a partir da data de início configurada
     if(LS.qty!==null&&LS.desde){
-      // Conta apenas chips de meses a partir da data de início
       var desdeMs=new Date(LS.desde+'T00:00:00').getTime();
-      var chipsNoPeriodo=0;
-      var allM={};
-      Object.keys(licByMonth).forEach(function(m){allM[m]=(allM[m]||0)+licByMonth[m];});
-      Object.keys(avuByMonth).forEach(function(m){allM[m]=(allM[m]||0)+avuByMonth[m];});
-      Object.keys(allM).forEach(function(m){
+      var chipsNovosNoPeriodo=0;
+      // Soma apenas meses novos deste upload que estejam dentro do período
+      var allMNovos={};
+      Object.keys(licByMonth).forEach(function(m){allMNovos[m]=(allMNovos[m]||0)+licByMonth[m];});
+      Object.keys(avuByMonth).forEach(function(m){allMNovos[m]=(allMNovos[m]||0)+avuByMonth[m];});
+      Object.keys(allMNovos).forEach(function(m){
         var parts=m.split('/');
         var mesDate=new Date(parseInt(parts[1]),parseInt(parts[0])-1,1).getTime();
-        if(mesDate>=desdeMs)chipsNoPeriodo+=allM[m];
+        if(mesDate>=desdeMs)chipsNovosNoPeriodo+=allMNovos[m];
       });
       var anterior=LS.qty;
-      var novoEstoque=Math.max(0,LS.qty-chipsNoPeriodo);
-      if(chipsNoPeriodo>0){
+      var novoEstoque=Math.max(0,LS.qty-chipsNovosNoPeriodo);
+      if(chipsNovosNoPeriodo>0){
         LS.qty=novoEstoque;
         LS.log.push({
           data:new Date().toISOString(),
           anterior:anterior,
           novo:novoEstoque,
           desde:LS.desde,
-          motivo:'Desconto automático por upload de planilha: -'+chipsNoPeriodo.toLocaleString('pt-BR')+' chips (período a partir de '+new Date(LS.desde+'T12:00:00').toLocaleDateString('pt-BR')+')',
+          motivo:'Desconto automático: -'+chipsNovosNoPeriodo.toLocaleString('pt-BR')+' chips novos neste upload (a partir de '+new Date(LS.desde+'T12:00:00').toLocaleDateString('pt-BR')+')',
           responsavel:S.user
         });
         saveLogiEstoqueSheets();
