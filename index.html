@@ -3132,6 +3132,30 @@ function processLogiFile(arrayBuffer, fileName){
 
     function getCol(row, candidates){
       var keys = Object.keys(row);
+      // Primeiro: match exato (case-insensitive)
+      for(var i=0;i<candidates.length;i++){
+        var c = candidates[i].toLowerCase();
+        for(var j=0;j<keys.length;j++){
+          if(keys[j].toLowerCase() === c) return row[keys[j]];
+        }
+      }
+      // Segundo: match por substring, mas exige que o candidato seja uma palavra completa
+      for(var i=0;i<candidates.length;i++){
+        var c = candidates[i].toLowerCase();
+        for(var j=0;j<keys.length;j++){
+          var kl = keys[j].toLowerCase();
+          // Verifica se c aparece como palavra separada (não como substring de outra)
+          var idx = kl.indexOf(c);
+          if(idx >= 0){
+            var antes = idx > 0 ? kl[idx-1] : ' ';
+            var depois = (idx+c.length < kl.length) ? kl[idx+c.length] : ' ';
+            var sepAntes = antes === ' ' || antes === '_' || antes === '(' || idx === 0;
+            var sepDepois = depois === ' ' || depois === '_' || depois === ')' || (idx+c.length) === kl.length;
+            if(sepAntes && sepDepois) return row[keys[j]];
+          }
+        }
+      }
+      // Último recurso: substring simples
       for(var i=0;i<candidates.length;i++){
         var c = candidates[i].toLowerCase();
         for(var j=0;j<keys.length;j++){
