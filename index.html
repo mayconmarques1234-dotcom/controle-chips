@@ -1676,15 +1676,40 @@ function loadFromSheets(){
         loadLogiEstoque(cfg);
       }
 
-      // Logística data (registries preservados)
+      // Logística data (registries preservados do localStorage)
       if(data.logiData){
         var prevLicReg = (LG.data && LG.data.licRegistry) ? LG.data.licRegistry : {};
         var prevAvuReg = (LG.data && LG.data.avuRegistry) ? LG.data.avuRegistry : {};
+        var prevIdMap = (LG.data && LG.data._licIdTipoMap) ? LG.data._licIdTipoMap : {};
         LG.data = data.logiData;
+        // Restaura registries: primeiro de memória, depois de localStorage
         LG.data.licRegistry = LG.data.licRegistry || prevLicReg;
         LG.data.avuRegistry = LG.data.avuRegistry || prevAvuReg;
+        LG.data._licIdTipoMap = LG.data._licIdTipoMap || prevIdMap;
+        if(!Object.keys(LG.data.licRegistry).length){
+          try { var lr = localStorage.getItem('cc_logi_licRegistry'); if(lr) LG.data.licRegistry = JSON.parse(lr); } catch(e){}
+        }
+        if(!Object.keys(LG.data.avuRegistry).length){
+          try { var ar = localStorage.getItem('cc_logi_avuRegistry'); if(ar) LG.data.avuRegistry = JSON.parse(ar); } catch(e){}
+        }
+        if(!LG.data._licIdTipoMap || !Object.keys(LG.data._licIdTipoMap).length){
+          try { var im = localStorage.getItem('cc_logi_licIdTipoMap'); if(im) LG.data._licIdTipoMap = JSON.parse(im); } catch(e){}
+        }
         if(document.getElementById('page-logistica').classList.contains('active'))    renderLogistica();
         if(document.getElementById('page-licenciados').classList.contains('active')) renderLicenciados();
+      } else {
+        // Sem dados no Sheets — tenta restaurar tudo do localStorage
+        try {
+          var lr = localStorage.getItem('cc_logi_licRegistry');
+          var ar = localStorage.getItem('cc_logi_avuRegistry');
+          if(lr && ar){
+            if(!LG.data) LG.data = {};
+            LG.data.licRegistry = JSON.parse(lr);
+            LG.data.avuRegistry = JSON.parse(ar);
+            var im = localStorage.getItem('cc_logi_licIdTipoMap');
+            if(im) LG.data._licIdTipoMap = JSON.parse(im);
+          }
+        } catch(e){}
       }
 
       updateSidebar();
@@ -3448,10 +3473,27 @@ function processLogiFile(arrayBuffer, fileName){
       fileName:      fileName
     };
 
+    // Salva dados resumidos no Sheets (sem registries grandes que excedem limite de célula)
+    var logiSummary = {
+      totalChips:LG.data.totalChips, licChips:LG.data.licChips, avuChips:LG.data.avuChips,
+      ativados:LG.data.ativados, naoAtivados:LG.data.naoAtivados, totalAtv:LG.data.totalAtv,
+      monthlyChips:LG.data.monthlyChips, monthlyByType:LG.data.monthlyByType,
+      atvByMonth:LG.data.atvByMonth, atvByMonthTipo:LG.data.atvByMonthTipo,
+      byType:LG.data.byType, byUf:LG.data.byUf, ufDetailed:LG.data.ufDetailed,
+      breakdown:LG.data.breakdown,
+      uploadDate:LG.data.uploadDate, fileName:LG.data.fileName
+    };
     fetch(SCRIPT_URL, {
       method:'POST', headers:{'Content-Type':'text/plain'},
-      body: JSON.stringify({ logiData: LG.data })
+      body: JSON.stringify({ logiData: logiSummary })
     }).catch(function(){});
+
+    // Salva registries grandes em localStorage (persistem no browser)
+    try {
+      localStorage.setItem('cc_logi_licRegistry', JSON.stringify(LG.data.licRegistry || {}));
+      localStorage.setItem('cc_logi_avuRegistry', JSON.stringify(LG.data.avuRegistry || {}));
+      localStorage.setItem('cc_logi_licIdTipoMap', JSON.stringify(LG.data._licIdTipoMap || {}));
+    } catch(e){ console.warn('localStorage cheio, registries não salvos:', e); }
 
     document.getElementById('logi-file-status').innerHTML =
       '✅ <strong>Planilha processada com sucesso!</strong><br>'+
@@ -3469,6 +3511,11 @@ function processLogiFile(arrayBuffer, fileName){
 function clearLogi(){
   if(!confirm('Remover todos os dados da planilha? Esta ação não pode ser desfeita.')) return;
   LG.data = null;
+  try {
+    localStorage.removeItem('cc_logi_licRegistry');
+    localStorage.removeItem('cc_logi_avuRegistry');
+    localStorage.removeItem('cc_logi_licIdTipoMap');
+  } catch(e){}
   fetch(SCRIPT_URL, {
     method:'POST', headers:{'Content-Type':'text/plain'},
     body: JSON.stringify({ logiData: null, clearLogi: true })
