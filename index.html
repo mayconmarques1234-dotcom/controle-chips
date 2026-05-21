@@ -3325,6 +3325,11 @@ function processLogiFile(arrayBuffer, fileName){
           responsavel: S.user || 'sistema'
         });
         saveLogiEstoqueSheets();
+        renderLogiEstoque();
+        updateSidebar();
+        console.log('[Logística] Desconto aplicado: -'+contNovos+' chips. Novo estoque: '+LS.qty);
+      } else {
+        console.log('[Logística] Nenhum desconto: contNovos=0, LS.desde='+LS.desde+', meses='+Object.keys(monthlyChips).join(','));
       }
     }
 
@@ -3371,13 +3376,13 @@ function processLogiFile(arrayBuffer, fileName){
             var mk = dObj.getFullYear()+'-'+String(dObj.getMonth()+1).padStart(2,'0');
             atvByMonth[mk] = (atvByMonth[mk]||0) + 1;
             // Por tipo
-            var tipoNorm = licIdTipoMap[codId] || 'OUTRO';
+            var tipoNorm = (licIdTipoMap[codId] || 'OUTRO').toUpperCase();
             var tn = 'OUTRO';
             if(tipoNorm.indexOf('EXPERT')>=0 && tipoNorm.indexOf('TELECOM')>=0) tn='EXPERT_TELECOM';
             else if(tipoNorm.indexOf('EXPERT')>=0) tn='EXPERT';
             else if(tipoNorm.indexOf('TELECOM')>=0) tn='TELECOM';
             else if(tipoNorm.indexOf('VOUCHER')>=0) tn='VOUCHER';
-            else if(tipoNorm.indexOf('avulso')>=0 || tipoNorm.indexOf('Chip')>=0) tn='AVULSO';
+            else if(tipoNorm.indexOf('AVULSO')>=0 || tipoNorm.indexOf('CHIP')>=0) tn='AVULSO';
             if(!atvByMonthTipo[mk]) atvByMonthTipo[mk] = {EXPERT:0,EXPERT_TELECOM:0,TELECOM:0,VOUCHER:0,AVULSO:0,OUTRO:0};
             atvByMonthTipo[mk][tn] = (atvByMonthTipo[mk][tn]||0) + 1;
           }
@@ -3387,11 +3392,18 @@ function processLogiFile(arrayBuffer, fileName){
     // Atualiza contadores gerais
     ativados = totalAtv;
     naoAtivados = Math.max(0, totalChips - totalAtv);
-    // Atualiza byType com ativações
+    // Reseta ativados no byType e recalcula a partir do registry
+    Object.keys(byType).forEach(function(t){ byType[t].ativados = 0; });
     Object.keys(licRegistry).forEach(function(id){
       var l = licRegistry[id];
-      if(l.ativados && byType[l.tipo]){
-        byType[l.tipo].ativados = (byType[l.tipo].ativados||0);
+      if(l.ativados && l.tipo && byType[l.tipo]){
+        byType[l.tipo].ativados += l.ativados;
+      }
+    });
+    Object.keys(avuRegistry).forEach(function(id){
+      var l = avuRegistry[id];
+      if(l.ativados && byType['Chip avulso']){
+        byType['Chip avulso'].ativados += l.ativados;
       }
     });
 
