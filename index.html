@@ -1679,51 +1679,78 @@ function loadFromSheets(){
       // Logística data (registries preservados do localStorage)
       if(data.logiData){
         console.log('[LoadSheets] logiData recebido. Keys:', Object.keys(data.logiData));
-        console.log('[LoadSheets] tem licRegistry?', !!(data.logiData.licRegistry && Object.keys(data.logiData.licRegistry).length));
-        console.log('[LoadSheets] LG.data local tem licRegistry?', !!(LG.data && LG.data.licRegistry && Object.keys(LG.data.licRegistry).length));
-        var prevLicReg = (LG.data && LG.data.licRegistry) ? LG.data.licRegistry : {};
-        var prevAvuReg = (LG.data && LG.data.avuRegistry) ? LG.data.avuRegistry : {};
-        var prevIdMap = (LG.data && LG.data._licIdTipoMap) ? LG.data._licIdTipoMap : {};
-        var prevAtvTipo = (LG.data && LG.data.atvByMonthTipo) ? LG.data.atvByMonthTipo : null;
-        var prevAtvMonth = (LG.data && LG.data.atvByMonth) ? LG.data.atvByMonth : null;
-        var prevTotalAtv = (LG.data && LG.data.totalAtv) ? LG.data.totalAtv : 0;
-        LG.data = data.logiData;
-        // Restaura registries: primeiro de memória, depois de localStorage
-        LG.data.licRegistry = LG.data.licRegistry || prevLicReg;
-        LG.data.avuRegistry = LG.data.avuRegistry || prevAvuReg;
-        LG.data._licIdTipoMap = LG.data._licIdTipoMap || prevIdMap;
-        // Restaura ativações se o Sheets não as tinha
-        if(!LG.data.atvByMonthTipo && prevAtvTipo) LG.data.atvByMonthTipo = prevAtvTipo;
-        if(!LG.data.atvByMonth && prevAtvMonth) LG.data.atvByMonth = prevAtvMonth;
-        if(!LG.data.totalAtv && prevTotalAtv){ LG.data.totalAtv = prevTotalAtv; LG.data.ativados = prevTotalAtv; LG.data.naoAtivados = Math.max(0, (LG.data.totalChips||0) - prevTotalAtv); }
-        // Restaura registries: primeiro de memória, depois de localStorage
-        LG.data.licRegistry = LG.data.licRegistry || prevLicReg;
-        LG.data.avuRegistry = LG.data.avuRegistry || prevAvuReg;
-        LG.data._licIdTipoMap = LG.data._licIdTipoMap || prevIdMap;
-        if(!Object.keys(LG.data.licRegistry).length){
-          try { var lr = localStorage.getItem('cc_logi_licRegistry'); if(lr) LG.data.licRegistry = JSON.parse(lr); } catch(e){}
+        
+        // Se já temos dados locais mais completos (com registries), MESCLA em vez de substituir
+        var sheetsData = data.logiData;
+        var localData = LG.data || {};
+        var localHasRegistries = localData.licRegistry && Object.keys(localData.licRegistry).length > 0;
+        
+        if(localHasRegistries){
+          // Dados locais são mais completos — atualiza apenas campos resumidos do Sheets
+          console.log('[LoadSheets] Mantendo dados locais (têm registries). Atualizando resumos do Sheets.');
+          // Atualiza campos de resumo que o Sheets pode ter mais recente (de outro PC)
+          if(sheetsData.uploadDate && (!localData.uploadDate || new Date(sheetsData.uploadDate) > new Date(localData.uploadDate))){
+            // Sheets tem upload mais recente de outro PC — atualiza tudo
+            var savedReg = localData.licRegistry;
+            var savedAvu = localData.avuRegistry;
+            var savedMap = localData._licIdTipoMap;
+            var savedAtv = localData.atvByMonthTipo;
+            var savedAtvM = localData.atvByMonth;
+            var savedTotAtv = localData.totalAtv;
+            LG.data = sheetsData;
+            LG.data.licRegistry = savedReg;
+            LG.data.avuRegistry = savedAvu;
+            LG.data._licIdTipoMap = savedMap;
+            if(!LG.data.atvByMonthTipo) LG.data.atvByMonthTipo = savedAtv;
+            if(!LG.data.atvByMonth) LG.data.atvByMonth = savedAtvM;
+            if(!LG.data.totalAtv && savedTotAtv){ LG.data.totalAtv = savedTotAtv; LG.data.ativados = savedTotAtv; }
+          }
+          // Senão, mantém dados locais intactos
+        } else {
+          // Sem dados locais — usa dados do Sheets + restaura registries do localStorage
+          console.log('[LoadSheets] Sem dados locais, carregando do Sheets + localStorage');
+          LG.data = sheetsData;
+          // Compatibilidade formato antigo → novo
+          if(LG.data.totalLic !== undefined && LG.data.totalChips === undefined){
+            LG.data.totalChips = (LG.data.totalLic||0) + (LG.data.totalAvu||0);
+            LG.data.licChips = LG.data.totalLic || 0;
+            LG.data.avuChips = LG.data.totalAvu || 0;
+          }
+          // Restaura registries do localStorage
+          try {
+            var lr = localStorage.getItem('cc_logi_licRegistry');
+            if(lr){ LG.data.licRegistry = JSON.parse(lr); console.log('[LoadSheets] licRegistry restaurado do localStorage:', Object.keys(LG.data.licRegistry).length); }
+          } catch(e){}
+          try {
+            var ar = localStorage.getItem('cc_logi_avuRegistry');
+            if(ar) LG.data.avuRegistry = JSON.parse(ar);
+          } catch(e){}
+          try {
+            var im = localStorage.getItem('cc_logi_licIdTipoMap');
+            if(im) LG.data._licIdTipoMap = JSON.parse(im);
+          } catch(e){}
+          if(!LG.data.licRegistry) LG.data.licRegistry = {};
+          if(!LG.data.avuRegistry) LG.data.avuRegistry = {};
         }
-        if(!Object.keys(LG.data.avuRegistry).length){
-          try { var ar = localStorage.getItem('cc_logi_avuRegistry'); if(ar) LG.data.avuRegistry = JSON.parse(ar); } catch(e){}
-        }
-        if(!LG.data._licIdTipoMap || !Object.keys(LG.data._licIdTipoMap).length){
-          try { var im = localStorage.getItem('cc_logi_licIdTipoMap'); if(im) LG.data._licIdTipoMap = JSON.parse(im); } catch(e){}
-        }
+        
         if(document.getElementById('page-logistica').classList.contains('active'))    renderLogistica();
         if(document.getElementById('page-licenciados').classList.contains('active')) renderLicenciados();
       } else {
         // Sem dados no Sheets — tenta restaurar tudo do localStorage
-        try {
-          var lr = localStorage.getItem('cc_logi_licRegistry');
-          var ar = localStorage.getItem('cc_logi_avuRegistry');
-          if(lr && ar){
-            if(!LG.data) LG.data = {};
-            LG.data.licRegistry = JSON.parse(lr);
-            LG.data.avuRegistry = JSON.parse(ar);
-            var im = localStorage.getItem('cc_logi_licIdTipoMap');
-            if(im) LG.data._licIdTipoMap = JSON.parse(im);
-          }
-        } catch(e){}
+        if(!LG.data || !LG.data.licRegistry){
+          try {
+            var lr = localStorage.getItem('cc_logi_licRegistry');
+            var ar = localStorage.getItem('cc_logi_avuRegistry');
+            if(lr && ar){
+              if(!LG.data) LG.data = {};
+              LG.data.licRegistry = JSON.parse(lr);
+              LG.data.avuRegistry = JSON.parse(ar);
+              var im = localStorage.getItem('cc_logi_licIdTipoMap');
+              if(im) LG.data._licIdTipoMap = JSON.parse(im);
+              console.log('[LoadSheets] Sem logiData no Sheets, restaurado do localStorage');
+            }
+          } catch(e){}
+        }
       }
 
       updateSidebar();
