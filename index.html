@@ -1678,10 +1678,24 @@ function loadFromSheets(){
 
       // Logística data (registries preservados do localStorage)
       if(data.logiData){
+        console.log('[LoadSheets] logiData recebido. Keys:', Object.keys(data.logiData));
+        console.log('[LoadSheets] tem licRegistry?', !!(data.logiData.licRegistry && Object.keys(data.logiData.licRegistry).length));
+        console.log('[LoadSheets] LG.data local tem licRegistry?', !!(LG.data && LG.data.licRegistry && Object.keys(LG.data.licRegistry).length));
         var prevLicReg = (LG.data && LG.data.licRegistry) ? LG.data.licRegistry : {};
         var prevAvuReg = (LG.data && LG.data.avuRegistry) ? LG.data.avuRegistry : {};
         var prevIdMap = (LG.data && LG.data._licIdTipoMap) ? LG.data._licIdTipoMap : {};
+        var prevAtvTipo = (LG.data && LG.data.atvByMonthTipo) ? LG.data.atvByMonthTipo : null;
+        var prevAtvMonth = (LG.data && LG.data.atvByMonth) ? LG.data.atvByMonth : null;
+        var prevTotalAtv = (LG.data && LG.data.totalAtv) ? LG.data.totalAtv : 0;
         LG.data = data.logiData;
+        // Restaura registries: primeiro de memória, depois de localStorage
+        LG.data.licRegistry = LG.data.licRegistry || prevLicReg;
+        LG.data.avuRegistry = LG.data.avuRegistry || prevAvuReg;
+        LG.data._licIdTipoMap = LG.data._licIdTipoMap || prevIdMap;
+        // Restaura ativações se o Sheets não as tinha
+        if(!LG.data.atvByMonthTipo && prevAtvTipo) LG.data.atvByMonthTipo = prevAtvTipo;
+        if(!LG.data.atvByMonth && prevAtvMonth) LG.data.atvByMonth = prevAtvMonth;
+        if(!LG.data.totalAtv && prevTotalAtv){ LG.data.totalAtv = prevTotalAtv; LG.data.ativados = prevTotalAtv; LG.data.naoAtivados = Math.max(0, (LG.data.totalChips||0) - prevTotalAtv); }
         // Restaura registries: primeiro de memória, depois de localStorage
         LG.data.licRegistry = LG.data.licRegistry || prevLicReg;
         LG.data.avuRegistry = LG.data.avuRegistry || prevAvuReg;
@@ -3377,7 +3391,14 @@ function processLogiFile(arrayBuffer, fileName){
       if(!licIdTipoMap[id]) licIdTipoMap[id] = prevLicIdTipoMap[id];
     });
 
+    console.log('[Logística] licRegistry:', Object.keys(licRegistry).length, 'entries');
+    console.log('[Logística] avuRegistry:', Object.keys(avuRegistry).length, 'entries');
+    console.log('[Logística] licChips:', licChips, 'avuChips:', avuChips, 'total:', totalChips);
+    console.log('[Logística] sAtv encontrada?', !!sAtv);
+    console.log('[Logística] Abas do workbook:', wb.SheetNames);
+
     if(sAtv){
+      console.log('[Logística] Processando aba ativações...');
       var rowsAtv = XLSX.utils.sheet_to_json(sAtv, { defval:'' });
       var atvSeen = {};
       rowsAtv.forEach(function(r){
@@ -3416,6 +3437,7 @@ function processLogiFile(arrayBuffer, fileName){
     }
     // Atualiza contadores gerais
     ativados = totalAtv;
+    console.log('[Logística] totalAtv:', totalAtv, 'atvByMonthTipo:', JSON.stringify(atvByMonthTipo).slice(0,200));
     naoAtivados = Math.max(0, totalChips - totalAtv);
     // Reseta ativados no byType e recalcula a partir do registry
     Object.keys(byType).forEach(function(t){ byType[t].ativados = 0; });
@@ -3559,6 +3581,12 @@ function exportLogiCSV(){
 var _licShowAll = false;
 
 function renderLicenciados(){
+  console.log('[BaseLic] LG.data existe?', !!LG.data);
+  if(LG.data){
+    console.log('[BaseLic] licenciados:', (LG.data.licenciados||[]).length);
+    console.log('[BaseLic] licRegistry:', Object.keys(LG.data.licRegistry||{}).length);
+    console.log('[BaseLic] avuRegistry:', Object.keys(LG.data.avuRegistry||{}).length);
+  }
   if(!LG.data){
     document.getElementById('lic-empty').style.display = 'block';
     document.getElementById('lic-content').style.display = 'none';
