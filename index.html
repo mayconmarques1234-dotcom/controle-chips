@@ -2673,7 +2673,7 @@ function exportContelCSV(){
 function loadLogiEstoque(cfg){
   if(cfg.logi_estoque_qty !== undefined && cfg.logi_estoque_qty !== '')
     LS.qty = parseInt(cfg.logi_estoque_qty);
-  if(cfg.logi_estoque_desde) LS.desde = cfg.logi_estoque_desde;
+  if(cfg.logi_estoque_desde) LS.desde = String(cfg.logi_estoque_desde).slice(0,10);
   if(cfg.logi_estoque_log){
     try { var ll = JSON.parse(cfg.logi_estoque_log); LS.log = Array.isArray(ll) ? ll : []; }
     catch(e){ LS.log = []; }
@@ -3108,10 +3108,23 @@ function processLogiFile(arrayBuffer, fileName){
       var idx = sheetNames.findIndex(function(n){ return n === target || n.indexOf(target) >= 0; });
       return idx >= 0 ? wb.Sheets[wb.SheetNames[idx]] : null;
     }
-    var sLic  = findSheet('licença') || findSheet('licenca') || findSheet('licença');
+    var sLic  = findSheet('licença') || findSheet('licenca');
+    if(!sLic){
+      for(var si=0;si<wb.SheetNames.length;si++){
+        var sn=wb.SheetNames[si].toLowerCase().replace(/[çã]/g,function(c){return c==='ç'?'c':'a';});
+        if(sn.indexOf('licenc')>=0){ sLic=wb.Sheets[wb.SheetNames[si]]; break; }
+      }
+    }
     var sAvu  = findSheet('chip avulso') || findSheet('avulso');
     var sDom  = findSheet('dom');
-    var sAtv  = findSheet('ativações') || findSheet('ativacoes');
+    var sAtv  = findSheet('ativações') || findSheet('ativacoes') || findSheet('ativa');
+    // Fallback extra: busca manual sem depender de acento
+    if(!sAtv){
+      for(var si=0;si<wb.SheetNames.length;si++){
+        var sn=wb.SheetNames[si].toLowerCase().replace(/[çã]/g,function(c){return c==='ç'?'c':'a';});
+        if(sn.indexOf('ativac')>=0){ sAtv=wb.Sheets[wb.SheetNames[si]]; break; }
+      }
+    }
     if(!sLic) return showLogiError('Aba "licença" não encontrada.');
     if(!sAvu) return showLogiError('Aba "chip avulso" não encontrada.');
     if(!sDom) return showLogiError('Aba "Dom" não encontrada.');
@@ -3537,8 +3550,37 @@ function renderLicenciados(){
   }
 
   // ── Ativações por tipo de licença — por mês ──
-  var monthlyByType = LG.data.monthlyByType || {};
-  var mesKeys = Object.keys(monthlyByType).sort();
+  // Prefere atvByMonthTipo (dados reais de ativação), fallback para monthlyByType (envios por tipo)
+  var atvTipoMes = LG.data.atvByMonthTipo || {};
+  var atvTipoKeys = Object.keys(atvTipoMes).sort();
+  if(atvTipoKeys.length){
+    // Formato original: {EXPERT:0, EXPERT_TELECOM:0, TELECOM:0, VOUCHER:0, AVULSO:0, OUTRO:0}
+    var tipoLabels = ['EXPERT','EXPERT_TELECOM','TELECOM','VOUCHER','AVULSO','OUTRO'];
+    var tipoCoresAtv = {'EXPERT':'var(--accent)','EXPERT_TELECOM':'var(--blue)','TELECOM':'var(--amber)','VOUCHER':'var(--purple)','AVULSO':'var(--teal)','OUTRO':'var(--text3)'};
+    var tipoNames = {'EXPERT':'Expert','EXPERT_TELECOM':'Expert+Telecom','TELECOM':'Telecom','VOUCHER':'Voucher','AVULSO':'Chip avulso','OUTRO':'Outro'};
+    var mhtml = '<table class="rtable"><thead><tr><th>MÊS</th>';
+    tipoLabels.forEach(function(t){ mhtml += '<th style="color:'+(tipoCoresAtv[t]||'var(--text2)')+'">'+tipoNames[t]+'</th>'; });
+    mhtml += '<th style="font-weight:600">TOTAL</th></tr></thead><tbody>';
+    var gT = {}; tipoLabels.forEach(function(t){ gT[t]=0; }); var gTotal=0;
+    atvTipoKeys.forEach(function(m){
+      var d2=new Date(m+'-01'); var lbl=String(d2.getMonth()+1).padStart(2,'0')+'/'+d2.getFullYear();
+      var rowT=0;
+      mhtml += '<tr><td style="font-weight:500">'+lbl+'</td>';
+      tipoLabels.forEach(function(t){
+        var v=(atvTipoMes[m]&&atvTipoMes[m][t])||0; gT[t]+=v; rowT+=v;
+        mhtml += '<td style="color:'+(v>0?(tipoCoresAtv[t]||'var(--text)'):'var(--text3)')+';font-weight:'+(v>0?'500':'400')+'">'+v+'</td>';
+      });
+      gTotal+=rowT;
+      mhtml += '<td style="font-weight:600;color:var(--accent)">'+rowT+'</td></tr>';
+    });
+    mhtml += '<tr style="background:var(--surface3)"><td style="font-weight:600;color:var(--accent)">TOTAL</td>';
+    tipoLabels.forEach(function(t){ mhtml += '<td style="font-weight:600;color:'+(tipoCoresAtv[t]||'var(--text)')+'">'+gT[t]+'</td>'; });
+    mhtml += '<td style="font-weight:700;color:var(--accent)">'+gTotal+'</td></tr></tbody></table>';
+    document.getElementById('lic-atv-tipo-mes').innerHTML = mhtml;
+  } else {
+    // Fallback: usa monthlyByType (envios por tipo de licença)
+    var monthlyByType = LG.data.monthlyByType || {};
+    var mesKeys = Object.keys(monthlyByType).sort();
   var allTipos = [];
   mesKeys.forEach(function(m){
     Object.keys(monthlyByType[m]).forEach(function(t){
@@ -3578,6 +3620,7 @@ function renderLicenciados(){
   } else {
     document.getElementById('lic-atv-tipo-mes').innerHTML = '<div class="empty">Sem dados mensais por tipo.</div>';
   }
+  } // fecha o else do fallback monthlyByType
 
   // Filtros
   var ufSel  = document.getElementById('lic-filter-uf').value;
