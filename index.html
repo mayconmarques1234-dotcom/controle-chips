@@ -3424,8 +3424,7 @@ function exportLicenciadosCSV(){
     rows.push([l.id,l.uf,l.tipo,l.enviados,l.ativados,l.pendentes,l.pct+'%'].join(';'));
   });
   var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([bom+rows.join('
-')],{type:'application/vnd.ms-excel;charset=utf-8'}));
+  a.href=URL.createObjectURL(new Blob([bom+rows.join('\n')],{type:'application/vnd.ms-excel;charset=utf-8'}));
   a.download='licenciados_pendentes_'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
   toast('Exportado: '+data.length+' licenciados');
