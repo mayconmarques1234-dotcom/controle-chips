@@ -3174,7 +3174,7 @@ function processLogiFile(arrayBuffer, fileName){
         var parcMatch = parcelas.match(/^(\d+)\//);
         if(parcMatch && parseInt(parcMatch[1]) === 1) isPrimeiraParcela = true;
       }
-      if(isPrimeiraParcela) continue;
+      if(isPrimeiraParcela) return;
       var isBoletoOk = pagto.indexOf('BOLETO') >= 0;
       var elegivel = isIntegral || isBoletoOk;
       if(!elegivel) return;
