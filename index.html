@@ -876,9 +876,9 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
           </div>
           <div id="lic-content" style="display:none">
             <div class="metrics" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:20px">
-              <div class="mc r"><div class="mc-lbl">Com chips pendentes</div><div class="mc-val" id="lic-total-pendentes">—</div></div>
-              <div class="mc a"><div class="mc-lbl">Total chips pendentes</div><div class="mc-val" id="lic-total-chips-pend">—</div></div>
-              <div class="mc t"><div class="mc-lbl">Taxa média de ativação</div><div class="mc-val" id="lic-taxa-media" style="font-size:22px">—</div></div>
+              <div class="mc r"><div class="mc-lbl">Licenciados com chips não ativos</div><div class="mc-val" id="lic-total-pendentes">—</div></div>
+              <div class="mc a"><div class="mc-lbl">Quantidade de chips não ativos</div><div class="mc-val" id="lic-total-chips-pend">—</div></div>
+              <div class="mc t"><div class="mc-lbl">% em relação ao total ativo</div><div class="mc-val" id="lic-taxa-media" style="font-size:22px">—</div></div>
             </div>
             <div class="filter-bar" style="margin-bottom:14px">
               <div class="fg" style="margin:0;flex:0 0 120px">
@@ -1728,6 +1728,10 @@ function loadFromSheets(){
           try {
             var im = localStorage.getItem('cc_logi_licIdTipoMap');
             if(im) LG.data._licIdTipoMap = JSON.parse(im);
+          } catch(e){}
+          try {
+            var as2 = localStorage.getItem('cc_logi_atvSeen');
+            if(as2) LG.data._atvSeen = JSON.parse(as2);
           } catch(e){}
           if(!LG.data.licRegistry) LG.data.licRegistry = {};
           if(!LG.data.avuRegistry) LG.data.avuRegistry = {};
@@ -3242,13 +3246,25 @@ function processLogiFile(arrayBuffer, fileName){
       return '';
     }
 
-    var totalChips = 0, licChips = 0, avuChips = 0, ativados = 0, naoAtivados = 0;
-    var monthlyChips = {};
-    var monthlyByType = {};
-    var byType = {};
-    var byUf = {};
+    // Acumula com dados de uploads anteriores
+    var prev = LG.data || {};
+    var totalChips = prev.totalChips || 0, licChips = prev.licChips || 0, avuChips = prev.avuChips || 0, ativados = 0, naoAtivados = 0;
+    var monthlyChips = prev.monthlyChips || {};
+    var monthlyByType = prev.monthlyByType || {};
+    var byType = prev.byType || {};
+    var byUf = prev.byUf || {};
     var breakdown = {};
+    // Acumula com dados de uploads anteriores (localStorage ou memória)
     var licRegistry = {};
+    try {
+      var prevLR = (LG.data && LG.data.licRegistry) ? LG.data.licRegistry : null;
+      if(!prevLR){
+        var lrStr = localStorage.getItem('cc_logi_licRegistry');
+        if(lrStr) prevLR = JSON.parse(lrStr);
+      }
+      if(prevLR) licRegistry = prevLR;
+    } catch(e){}
+    console.log('[Logística] licRegistry inicial (acumulado):', Object.keys(licRegistry).length);
 
     function addBreakdown(regra, chipsCada){
       if(!breakdown[regra]) breakdown[regra] = { regra:regra, qtd:0, chipsCada:chipsCada, total:0 };
@@ -3331,7 +3347,16 @@ function processLogiFile(arrayBuffer, fileName){
     });
 
     // Avulsos: 1 chip por linha cujo ID_TRANSACAO bata com algum payer_name de Dom
+    // Acumula avulsos com dados de uploads anteriores
     var avuRegistry = {};
+    try {
+      var prevAR = (LG.data && LG.data.avuRegistry) ? LG.data.avuRegistry : null;
+      if(!prevAR){
+        var arStr = localStorage.getItem('cc_logi_avuRegistry');
+        if(arStr) prevAR = JSON.parse(arStr);
+      }
+      if(prevAR) avuRegistry = prevAR;
+    } catch(e){}
     rowsAvu.forEach(function(r){
       var trans = String(getCol(r, ['id transacao','id_transacao','transacao','idtransacao'])).trim();
       if(!trans || !domPayers[trans]) return;
@@ -3398,9 +3423,9 @@ function processLogiFile(arrayBuffer, fileName){
     }
 
     // ── Processa aba ATIVAÇÕES (cruzamento com licenças + avulsos) ──
-    var totalAtv = 0;
-    var atvByMonth = {};
-    var atvByMonthTipo = {};
+    var totalAtv = prev.totalAtv || 0;
+    var atvByMonth = prev.atvByMonth || {};
+    var atvByMonthTipo = prev.atvByMonthTipo || {};
     // Mapa de codId -> tipo de licença (para classificar ativações)
     var licIdTipoMap = {};
     Object.keys(licRegistry).forEach(function(id){
@@ -3424,8 +3449,25 @@ function processLogiFile(arrayBuffer, fileName){
 
     if(sAtv){
       console.log('[Logística] Processando aba ativações...');
+      // Reseta ativados nos registries para reprocessar (evitar contagem dupla entre uploads)
+      Object.keys(licRegistry).forEach(function(id){ licRegistry[id].ativados = 0; });
+      Object.keys(avuRegistry).forEach(function(id){ avuRegistry[id].ativados = 0; });
+      // Reseta contadores de ativação para recalcular
+      totalAtv = 0;
+      atvByMonth = {};
+      atvByMonthTipo = {};
       var rowsAtv = XLSX.utils.sheet_to_json(sAtv, { defval:'' });
       var atvSeen = {};
+      // Carrega ativações já processadas em uploads anteriores
+      try {
+        var prevSeen = (LG.data && LG.data._atvSeen) ? LG.data._atvSeen : null;
+        if(!prevSeen){
+          var asStr = localStorage.getItem('cc_logi_atvSeen');
+          if(asStr) prevSeen = JSON.parse(asStr);
+        }
+        if(prevSeen) atvSeen = prevSeen;
+      } catch(e){}
+      console.log('[Logística] atvSeen inicial (dedup):', Object.keys(atvSeen).length);
       rowsAtv.forEach(function(r){
         var codId = String(getCol(r, ['código (id)','codigo (id)','codigo_id','id_licenciado']) || '').trim();
         var idTelecom = String(getCol(r, ['id telecom','id_telecom','idtelecom']) || '').trim();
@@ -3516,6 +3558,7 @@ function processLogiFile(arrayBuffer, fileName){
       licRegistry:   licRegistry,
       avuRegistry:   avuRegistry,
       _licIdTipoMap: licIdTipoMap,
+      _atvSeen:     atvSeen,
       uploadDate:    new Date().toISOString(),
       fileName:      fileName
     };
@@ -3540,6 +3583,7 @@ function processLogiFile(arrayBuffer, fileName){
       localStorage.setItem('cc_logi_licRegistry', JSON.stringify(LG.data.licRegistry || {}));
       localStorage.setItem('cc_logi_avuRegistry', JSON.stringify(LG.data.avuRegistry || {}));
       localStorage.setItem('cc_logi_licIdTipoMap', JSON.stringify(LG.data._licIdTipoMap || {}));
+      localStorage.setItem('cc_logi_atvSeen', JSON.stringify(LG.data._atvSeen || {}));
     } catch(e){ console.warn('localStorage cheio, registries não salvos:', e); }
 
     document.getElementById('logi-file-status').innerHTML =
@@ -3562,6 +3606,7 @@ function clearLogi(){
     localStorage.removeItem('cc_logi_licRegistry');
     localStorage.removeItem('cc_logi_avuRegistry');
     localStorage.removeItem('cc_logi_licIdTipoMap');
+    localStorage.removeItem('cc_logi_atvSeen');
   } catch(e){}
   fetch(SCRIPT_URL, {
     method:'POST', headers:{'Content-Type':'text/plain'},
