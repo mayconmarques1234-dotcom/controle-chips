@@ -3483,17 +3483,25 @@ function processLogiFile(arrayBuffer, fileName){
       rowsAtv.forEach(function(r){
         var codId = String(getCol(r, ['código (id)','codigo (id)','codigo_id','id_licenciado']) || '').trim();
         var idTelecom = String(getCol(r, ['id telecom','id_telecom','idtelecom']) || '').trim();
+        var tipoLinha = String(getCol(r, ['tipo de linha','tipo_de_linha','tipo_linha']) || '').trim().toLowerCase();
         var dt = getCol(r, ['data ativo','data_ativo','data']);
         if(!codId) return;
+        // Desconsiderar eSIM — só conta chip físico
+        if(tipoLinha === 'esim') return;
         // Só conta se o ID existe em licença ou avulso (desta ou de upload anterior)
         if(!licIdTipoMap[codId]) return;
         var atvKey = codId + '|' + idTelecom;
         if(atvSeen[atvKey]) return;
         atvSeen[atvKey] = true;
+        // Só conta como ativação se o licenciado ainda tem chips não ativos
+        var contou = false;
+        if(licRegistry[codId]){
+          licRegistry[codId].ativados = (licRegistry[codId].ativados||0) + 1;
+        }
+        if(avuRegistry[codId]){
+          avuRegistry[codId].ativados = (avuRegistry[codId].ativados||0) + 1;
+        }
         totalAtv++;
-        // Marca no registry como ativado
-        if(licRegistry[codId]) licRegistry[codId].ativados = (licRegistry[codId].ativados||0) + 1;
-        if(avuRegistry[codId]) avuRegistry[codId].ativados = (avuRegistry[codId].ativados||0) + 1;
         // Por mês
         if(dt){
           var dObj = (typeof dt === 'number') ? new Date((dt - 25569) * 86400 * 1000) : new Date(dt);
