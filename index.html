@@ -3394,14 +3394,20 @@ function processLogiFile(arrayBuffer, fileName){
       }
     });
 
-    // Descontar do estoque desde a data configurada
-    var totalParaDescontar = totalChips;
+    // Descontar do estoque apenas os chips NOVOS deste upload
     if(LS.qty !== null && LS.desde){
       var desdeDate = new Date(LS.desde + 'T00:00:00').getTime();
+      // Calcula chips novos deste upload no período (não o acumulado total)
+      var prevMonthly = prev.monthlyChips || {};
       var contNovos = 0;
       Object.keys(monthlyChips).forEach(function(mk){
         var firstDay = new Date(mk + '-01T00:00:00').getTime();
-        if(firstDay >= desdeDate) contNovos += monthlyChips[mk];
+        if(firstDay >= desdeDate){
+          var atual = monthlyChips[mk] || 0;
+          var anterior = prevMonthly[mk] || 0;
+          var diff = atual - anterior;
+          if(diff > 0) contNovos += diff;
+        }
       });
       if(contNovos > 0){
         LS.qty = Math.max(0, LS.qty - contNovos);
@@ -3410,15 +3416,15 @@ function processLogiFile(arrayBuffer, fileName){
           date:new Date().toISOString(),
           de: LS.qty + contNovos,
           para: LS.qty,
-          motivo: 'Desconto automático ao subir planilha ('+contNovos+' chips desde '+new Date(LS.desde+'T00:00:00').toLocaleDateString('pt-BR')+')',
+          motivo: 'Desconto automático ao subir planilha ('+contNovos+' chips novos desde '+new Date(LS.desde+'T00:00:00').toLocaleDateString('pt-BR')+')',
           responsavel: S.user || 'sistema'
         });
         saveLogiEstoqueSheets();
         renderLogiEstoque();
         updateSidebar();
-        console.log('[Logística] Desconto aplicado: -'+contNovos+' chips. Novo estoque: '+LS.qty);
+        console.log('[Logística] Desconto aplicado: -'+contNovos+' chips novos. Novo estoque: '+LS.qty);
       } else {
-        console.log('[Logística] Nenhum desconto: contNovos=0, LS.desde='+LS.desde+', meses='+Object.keys(monthlyChips).join(','));
+        console.log('[Logística] Nenhum desconto novo: contNovos=0, LS.desde='+LS.desde);
       }
     }
 
@@ -3449,13 +3455,9 @@ function processLogiFile(arrayBuffer, fileName){
 
     if(sAtv){
       console.log('[Logística] Processando aba ativações...');
-      // Reseta ativados nos registries para reprocessar (evitar contagem dupla entre uploads)
-      Object.keys(licRegistry).forEach(function(id){ licRegistry[id].ativados = 0; });
-      Object.keys(avuRegistry).forEach(function(id){ avuRegistry[id].ativados = 0; });
-      // Reseta contadores de ativação para recalcular
-      totalAtv = 0;
-      atvByMonth = {};
-      atvByMonthTipo = {};
+      // Reseta ativados nos registries para reprocessar a partir do atvSeen acumulado
+      // NÃO reseta totalAtv/atvByMonth/atvByMonthTipo — o atvSeen evita duplicação
+      // e novos são somados ao total existente
       var rowsAtv = XLSX.utils.sheet_to_json(sAtv, { defval:'' });
       var atvSeen = {};
       // Carrega ativações já processadas em uploads anteriores
