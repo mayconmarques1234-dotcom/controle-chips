@@ -3375,7 +3375,7 @@ function processLogiFile(arrayBuffer, fileName){
       var desdeDate = new Date(LS.desde + 'T00:00:00').getTime();
       var contNovos = 0;
       Object.keys(monthlyChips).forEach(function(mk){
-        var firstDay = new Date(mk + '-01').getTime();
+        var firstDay = new Date(mk + '-01T00:00:00').getTime();
         if(firstDay >= desdeDate) contNovos += monthlyChips[mk];
       });
       if(contNovos > 0){
