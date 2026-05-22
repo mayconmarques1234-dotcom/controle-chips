@@ -2276,7 +2276,7 @@ function saveContelState(){
     method:'POST',
     headers:{'Content-Type':'text/plain'},
     body: JSON.stringify({
-      contelState:{
+      saveContelState:{
         chips:       SL.chips,
         env:         SL.env,
         chips_min:   SL.chipsMin,
@@ -2287,9 +2287,7 @@ function saveContelState(){
         cmb_key:     SL.cmbContacts.length ? SL.cmbContacts[0].key : '',
         cmb_num:     SL.cmbContacts.length ? SL.cmbContacts[0].num : '',
         alert_email: SL.alertEmail
-      },
-      contelLog:    SL.log,
-      contelIccids: SL.iccidRegistry
+      }
     })
   }).catch(function(){});
 }
@@ -2382,10 +2380,10 @@ function checkEsinAlert(){
     var msg = 'Estoque Esin baixo! Restam '+SE.qty+' chips (mín: 700). Solicitar reposição.';
     sendToAllCmb(msg);
     if(SL.alertEmail){
-      fetch(WPP_URL, {
+      fetch(SCRIPT_URL, {
         method:'POST',
         headers:{'Content-Type':'text/plain'},
-        body: JSON.stringify({ type:'email', to:SL.alertEmail, subject:'Alerta — Chips Esin', message:msg })
+        body: JSON.stringify({ sendEmail:true, to:SL.alertEmail, subject:'Alerta — Chips Esin', body:msg })
       }).catch(function(){});
     }
   }
@@ -2517,9 +2515,9 @@ function sendContelAlert(tipo){
     sent = true;
   }
   if(SL.alertEmail){
-    fetch(WPP_URL, {
+    fetch(SCRIPT_URL, {
       method:'POST', headers:{'Content-Type':'text/plain'},
-      body: JSON.stringify({ type:'email', to:SL.alertEmail, subject:'Alerta — Estoque Contel/Esin', message:msg })
+      body: JSON.stringify({ sendEmail:true, to:SL.alertEmail, subject:'Alerta — Estoque Contel/Esin', body:msg })
     }).catch(function(){});
     sent = true;
   }
@@ -3534,7 +3532,7 @@ function processLogiFile(arrayBuffer, fileName){
     };
     fetch(SCRIPT_URL, {
       method:'POST', headers:{'Content-Type':'text/plain'},
-      body: JSON.stringify({ logiData: logiSummary })
+      body: JSON.stringify({ saveLogiData: logiSummary })
     }).catch(function(){});
 
     // Salva registries grandes em localStorage (persistem no browser)
@@ -3567,7 +3565,7 @@ function clearLogi(){
   } catch(e){}
   fetch(SCRIPT_URL, {
     method:'POST', headers:{'Content-Type':'text/plain'},
-    body: JSON.stringify({ logiData: null, clearLogi: true })
+    body: JSON.stringify({ clearLogiData: true })
   }).catch(function(){});
   renderLogistica();
   updateSidebar();
@@ -3949,9 +3947,9 @@ function sendAlert(via){
   } else if(via === 'email'){
     var email = (localStorage.getItem('cc_alert_email') || '').trim();
     if(!email){ toast('Configure o e-mail primeiro.'); return; }
-    fetch(WPP_URL, {
+    fetch(SCRIPT_URL, {
       method:'POST', headers:{'Content-Type':'text/plain'},
-      body: JSON.stringify({ type:'email', to:email, subject:'Alerta — Estoque baixo de chips', message:msg })
+      body: JSON.stringify({ sendEmail:true, to:email, subject:'Alerta — Estoque baixo de chips', body:msg })
     }).catch(function(){});
     toast('E-mail de alerta enviado!');
   }
@@ -3972,9 +3970,9 @@ function showStockAlertBanner(){
   }
   // Disparo automático por e-mail
   if(email){
-    fetch(WPP_URL, {
+    fetch(SCRIPT_URL, {
       method:'POST', headers:{'Content-Type':'text/plain'},
-      body: JSON.stringify({ type:'email', to:email, subject:'Alerta — Estoque baixo de chips SEDE', message:msg })
+      body: JSON.stringify({ sendEmail:true, to:email, subject:'Alerta — Estoque baixo de chips SEDE', body:msg })
     }).catch(function(){});
   }
   // Fallback manual por WhatsApp link
