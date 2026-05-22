@@ -2437,6 +2437,9 @@ function submitContelEntrada(){
   SL.env   += env;
   SL.log.unshift({ id:Date.now(), type:'entrada', chips:chips, env:env, date:date+'T'+new Date().toTimeString().slice(0,8), source:'Manual', obs:obs, responsavel:S.user });
   saveContelState();
+  // Salva log no Sheets
+  var logEntry = SL.log[0];
+  fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ appendContelLog:{ date:logEntry.date, type:logEntry.type, chips:logEntry.chips||0, env:logEntry.env||0, iccids:'', obs:logEntry.obs||'', responsavel:logEntry.responsavel||'' }}) }).catch(function(){});
   closeContelModal('entrada');
   renderContel();
   updateSidebar();
@@ -2456,6 +2459,9 @@ function applyContelAdjust(){
   if(!isNaN(newEnv))   SL.env   = newEnv;
   SL.log.unshift({ id:Date.now(), type:'ajuste', chips:diffChips, env:diffEnv, date:new Date().toISOString(), source:'Ajuste manual', obs:'Ajuste para chips='+(isNaN(newChips)?'—':newChips)+', env='+(isNaN(newEnv)?'—':newEnv), responsavel:S.user });
   saveContelState();
+  // Salva log no Sheets
+  var logEntry = SL.log[0];
+  fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ appendContelLog:{ date:logEntry.date, type:logEntry.type, chips:logEntry.chips||0, env:logEntry.env||0, iccids:'', obs:logEntry.obs||'', responsavel:logEntry.responsavel||'' }}) }).catch(function(){});
   document.getElementById('contel-adj-chips').value = '';
   document.getElementById('contel-adj-env').value   = '';
   renderContel();
@@ -2702,6 +2708,10 @@ function submitContelPlanilha(){
     responsavel:S.user
   });
   saveContelState();
+  // Salva log e ICCIDs no Sheets
+  var logEntry = SL.log[0];
+  fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ appendContelLog:{ date:logEntry.date, type:logEntry.type, chips:logEntry.chips||0, env:logEntry.env||0, iccids:qty, obs:logEntry.obs||'', responsavel:logEntry.responsavel||'' }}) }).catch(function(){});
+  fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ appendIccids:_contelParsed.novos, addedBy:S.user }) }).catch(function(){});
   closeContelModal('planilha');
   renderContel();
   updateSidebar();
