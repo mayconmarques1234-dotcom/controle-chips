@@ -3168,6 +3168,15 @@ function renderProjection(){
 
   var sum = validValues.reduce(function(a,b){ return a+b; }, 0);
   var media = sum / validValues.length;
+
+  // Descarta primeiro mês se for muito discrepante (< 10% da média) — indica início de operação
+  if(validValues.length > 2 && validValues[0] < media * 0.1){
+    validValues = validValues.slice(1);
+    sortedKeys = sortedKeys.slice(1);
+    sum = validValues.reduce(function(a,b){ return a+b; }, 0);
+    media = sum / validValues.length;
+  }
+
   var last3 = validValues.slice(-3);
   var mediaRecente = last3.reduce(function(a,b){ return a+b; }, 0) / last3.length;
 
