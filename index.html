@@ -380,6 +380,7 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
   color:var(--purple);font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500;
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
 </head>
 <body>
 
@@ -1248,6 +1249,68 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
 <div class="toast" id="toast"><div class="toast-dot"></div><span id="toast-msg"></span></div>
 
 <script>
+/* ── COMPRESSÃO: salvar/carregar registries grandes no Sheets via chunks ── */
+var CHUNK_SIZE = 45000;
+
+function compressAndEncode(obj){
+  var json = JSON.stringify(obj);
+  var compressed = pako.deflate(json);
+  var binary = '';
+  for(var i=0;i<compressed.length;i++) binary += String.fromCharCode(compressed[i]);
+  return btoa(binary);
+}
+
+function decodeAndDecompress(b64){
+  var binary = atob(b64);
+  var bytes = new Uint8Array(binary.length);
+  for(var i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+  var json = pako.inflate(bytes, {to:'string'});
+  return JSON.parse(json);
+}
+
+function saveRegistriesToSheets(){
+  if(!LG.data) return;
+  var allReg = {
+    licRegistry:  LG.data.licRegistry || {},
+    avuRegistry:  LG.data.avuRegistry || {},
+    licIdTipoMap: LG.data._licIdTipoMap || {},
+    atvSeen:      LG.data._atvSeen || {},
+    licLinesSeen: LG.data._licLinesSeen || {},
+    avuLinesSeen: LG.data._avuLinesSeen || {}
+  };
+  try {
+    var b64 = compressAndEncode(allReg);
+    var numChunks = Math.ceil(b64.length / CHUNK_SIZE);
+    var config = { logi_reg_chunks: String(numChunks) };
+    for(var i=0;i<numChunks;i++){
+      config['logi_reg_'+i] = b64.substr(i*CHUNK_SIZE, CHUNK_SIZE);
+    }
+    for(var j=numChunks;j<20;j++) config['logi_reg_'+j] = '';
+    fetch(SCRIPT_URL, {
+      method:'POST', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({ saveConfig: config })
+    }).catch(function(){});
+    console.log('[Registries] Salvo no Sheets: '+Math.round(b64.length/1024)+'KB em '+numChunks+' chunks');
+  } catch(e){ console.warn('[Registries] Erro ao salvar:', e); }
+}
+
+function loadRegistriesFromSheets(cfg){
+  try {
+    var numChunks = parseInt(cfg.logi_reg_chunks) || 0;
+    if(!numChunks) return null;
+    var b64 = '';
+    for(var i=0;i<numChunks;i++){
+      var chunk = cfg['logi_reg_'+i] || '';
+      if(!chunk) break;
+      b64 += chunk;
+    }
+    if(!b64) return null;
+    var allReg = decodeAndDecompress(b64);
+    console.log('[Registries] Carregado do Sheets: '+Object.keys(allReg.licRegistry||{}).length+' licenças');
+    return allReg;
+  } catch(e){ console.warn('[Registries] Erro ao carregar:', e); return null; }
+}
+
 /* ── ENDPOINTS ───────────────────────────────────────── */
 var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7Pu0_sw_5sOELLhakmJzWr92Uf28TzVZ2R8LVk9d-gIgraVoZcr47kO3KkdWtS3yO/exec';
 var WPP_URL    = 'https://script.google.com/macros/s/AKfycbxnlBQdTexHC0TolhdL7AsJ-oHDrHIaqR17YtM57KuHPg2Rxasb7LsdJUz__geapUQ/exec';
@@ -1707,8 +1770,8 @@ function loadFromSheets(){
           }
           // Senão, mantém dados locais intactos
         } else {
-          // Sem dados locais — usa dados do Sheets + restaura registries do localStorage
-          console.log('[LoadSheets] Sem dados locais, carregando do Sheets + localStorage');
+          // Sem dados locais — usa dados do Sheets + restaura registries
+          console.log('[LoadSheets] Sem dados locais, carregando do Sheets + localStorage/chunks');
           LG.data = sheetsData;
           // Compatibilidade formato antigo → novo
           if(LG.data.totalLic !== undefined && LG.data.totalChips === undefined){
@@ -1716,23 +1779,40 @@ function loadFromSheets(){
             LG.data.licChips = LG.data.totalLic || 0;
             LG.data.avuChips = LG.data.totalAvu || 0;
           }
-          // Restaura registries do localStorage
+          // 1. Tenta restaurar do localStorage (mais rápido)
+          var restoredFromLocal = false;
           try {
             var lr = localStorage.getItem('cc_logi_licRegistry');
-            if(lr){ LG.data.licRegistry = JSON.parse(lr); console.log('[LoadSheets] licRegistry restaurado do localStorage:', Object.keys(LG.data.licRegistry).length); }
+            if(lr){ LG.data.licRegistry = JSON.parse(lr); restoredFromLocal = true; console.log('[LoadSheets] licRegistry restaurado do localStorage:', Object.keys(LG.data.licRegistry).length); }
           } catch(e){}
-          try {
-            var ar = localStorage.getItem('cc_logi_avuRegistry');
-            if(ar) LG.data.avuRegistry = JSON.parse(ar);
-          } catch(e){}
-          try {
-            var im = localStorage.getItem('cc_logi_licIdTipoMap');
-            if(im) LG.data._licIdTipoMap = JSON.parse(im);
-          } catch(e){}
-          try {
-            var as2 = localStorage.getItem('cc_logi_atvSeen');
-            if(as2) LG.data._atvSeen = JSON.parse(as2);
-          } catch(e){}
+          try { var ar = localStorage.getItem('cc_logi_avuRegistry'); if(ar) LG.data.avuRegistry = JSON.parse(ar); } catch(e){}
+          try { var im = localStorage.getItem('cc_logi_licIdTipoMap'); if(im) LG.data._licIdTipoMap = JSON.parse(im); } catch(e){}
+          try { var as2 = localStorage.getItem('cc_logi_atvSeen'); if(as2) LG.data._atvSeen = JSON.parse(as2); } catch(e){}
+          try { var ls2 = localStorage.getItem('cc_logi_licLinesSeen'); if(ls2) LG.data._licLinesSeen = JSON.parse(ls2); } catch(e){}
+          try { var avs = localStorage.getItem('cc_logi_avuLinesSeen'); if(avs) LG.data._avuLinesSeen = JSON.parse(avs); } catch(e){}
+
+          // 2. Se localStorage vazio, tenta carregar dos chunks comprimidos no Sheets
+          if(!restoredFromLocal && data.config){
+            var sheetsReg = loadRegistriesFromSheets(data.config);
+            if(sheetsReg){
+              LG.data.licRegistry = sheetsReg.licRegistry || {};
+              LG.data.avuRegistry = sheetsReg.avuRegistry || {};
+              LG.data._licIdTipoMap = sheetsReg.licIdTipoMap || {};
+              LG.data._atvSeen = sheetsReg.atvSeen || {};
+              LG.data._licLinesSeen = sheetsReg.licLinesSeen || {};
+              LG.data._avuLinesSeen = sheetsReg.avuLinesSeen || {};
+              // Salva no localStorage local para cache
+              try {
+                localStorage.setItem('cc_logi_licRegistry', JSON.stringify(LG.data.licRegistry));
+                localStorage.setItem('cc_logi_avuRegistry', JSON.stringify(LG.data.avuRegistry));
+                localStorage.setItem('cc_logi_licIdTipoMap', JSON.stringify(LG.data._licIdTipoMap));
+                localStorage.setItem('cc_logi_atvSeen', JSON.stringify(LG.data._atvSeen));
+                localStorage.setItem('cc_logi_licLinesSeen', JSON.stringify(LG.data._licLinesSeen));
+                localStorage.setItem('cc_logi_avuLinesSeen', JSON.stringify(LG.data._avuLinesSeen));
+              } catch(e){}
+              console.log('[LoadSheets] Registries restaurados do Sheets (chunks comprimidos)');
+            }
+          }
           if(!LG.data.licRegistry) LG.data.licRegistry = {};
           if(!LG.data.avuRegistry) LG.data.avuRegistry = {};
         }
@@ -3282,6 +3362,21 @@ function processLogiFile(arrayBuffer, fileName){
       breakdown[regra].total += chipsCada;
     }
 
+    // Deduplicação de linhas já processadas em uploads anteriores
+    var licLinesSeen = {};
+    try {
+      var prevLS = (LG.data && LG.data._licLinesSeen) ? LG.data._licLinesSeen : null;
+      if(!prevLS){ var lsStr = localStorage.getItem('cc_logi_licLinesSeen'); if(lsStr) prevLS = JSON.parse(lsStr); }
+      if(prevLS) licLinesSeen = prevLS;
+    } catch(e){}
+    var avuLinesSeen = {};
+    try {
+      var prevAS = (LG.data && LG.data._avuLinesSeen) ? LG.data._avuLinesSeen : null;
+      if(!prevAS){ var asStr2 = localStorage.getItem('cc_logi_avuLinesSeen'); if(asStr2) prevAS = JSON.parse(asStr2); }
+      if(prevAS) avuLinesSeen = prevAS;
+    } catch(e){}
+    console.log('[Logística] licLinesSeen:', Object.keys(licLinesSeen).length, 'avuLinesSeen:', Object.keys(avuLinesSeen).length);
+
     rowsLic.forEach(function(r){
       var status   = String(getCol(r, ['ativo','status'])).trim().toUpperCase();
       var produto  = String(getCol(r, ['tipo licenca','tipo_licenca','tipo licença','produto','plano'])).trim().toUpperCase();
@@ -3305,6 +3400,11 @@ function processLogiFile(arrayBuffer, fileName){
       var isBoletoOk = pagto.indexOf('BOLETO') >= 0;
       var elegivel = isIntegral || isBoletoOk;
       if(!elegivel) return;
+
+      // Deduplicação: chave = ID + Data + Status (evita contar mesma linha 2x entre uploads)
+      var dedupKey = idLic + '|' + String(dt||'') + '|' + status + '|' + produto;
+      if(licLinesSeen[dedupKey]) return;
+      licLinesSeen[dedupKey] = true;
 
       var chips = 0, regra = '';
       var isVoucher = status === 'VOUCHER';
@@ -3376,6 +3476,11 @@ function processLogiFile(arrayBuffer, fileName){
       var qty  = parseInt(getCol(r, ['qtde','quantidade','qty'])) || 1;
       var idLic   = String(getCol(r, ['código (id)','codigo (id)','codigo_id','id_licenciado','id_lic'])).trim();
       var nomeLic = String(getCol(r, ['nome_licenciado','nome_lic','licenciado_nome','licenciado','nome'])).trim();
+
+      // Deduplicação: chave = transação + ID (evita contar mesma linha 2x)
+      var avuDedupKey = trans + '|' + idLic;
+      if(avuLinesSeen[avuDedupKey]) return;
+      avuLinesSeen[avuDedupKey] = true;
 
       totalChips += qty; avuChips += qty;
       addBreakdown('Chip avulso (Dom match)', 1);
@@ -3579,6 +3684,8 @@ function processLogiFile(arrayBuffer, fileName){
       avuRegistry:   avuRegistry,
       _licIdTipoMap: licIdTipoMap,
       _atvSeen:     atvSeen,
+      _licLinesSeen: licLinesSeen,
+      _avuLinesSeen: avuLinesSeen,
       uploadDate:    new Date().toISOString(),
       fileName:      fileName
     };
@@ -3604,7 +3711,12 @@ function processLogiFile(arrayBuffer, fileName){
       localStorage.setItem('cc_logi_avuRegistry', JSON.stringify(LG.data.avuRegistry || {}));
       localStorage.setItem('cc_logi_licIdTipoMap', JSON.stringify(LG.data._licIdTipoMap || {}));
       localStorage.setItem('cc_logi_atvSeen', JSON.stringify(LG.data._atvSeen || {}));
+      localStorage.setItem('cc_logi_licLinesSeen', JSON.stringify(LG.data._licLinesSeen || {}));
+      localStorage.setItem('cc_logi_avuLinesSeen', JSON.stringify(LG.data._avuLinesSeen || {}));
     } catch(e){ console.warn('localStorage cheio, registries não salvos:', e); }
+
+    // Salva registries comprimidos no Sheets (compartilhado com outros PCs)
+    saveRegistriesToSheets();
 
     document.getElementById('logi-file-status').innerHTML =
       '✅ <strong>Planilha processada com sucesso!</strong><br>'+
@@ -3627,10 +3739,20 @@ function clearLogi(){
     localStorage.removeItem('cc_logi_avuRegistry');
     localStorage.removeItem('cc_logi_licIdTipoMap');
     localStorage.removeItem('cc_logi_atvSeen');
+    localStorage.removeItem('cc_logi_licLinesSeen');
+    localStorage.removeItem('cc_logi_avuLinesSeen');
   } catch(e){}
+  // Limpa dados e chunks de registries no Sheets
   fetch(SCRIPT_URL, {
     method:'POST', headers:{'Content-Type':'text/plain'},
     body: JSON.stringify({ clearLogiData: true })
+  }).catch(function(){});
+  // Limpa chunks de registries
+  var clearChunks = { logi_reg_chunks: '0' };
+  for(var i=0;i<20;i++) clearChunks['logi_reg_'+i] = '';
+  fetch(SCRIPT_URL, {
+    method:'POST', headers:{'Content-Type':'text/plain'},
+    body: JSON.stringify({ saveConfig: clearChunks })
   }).catch(function(){});
   renderLogistica();
   updateSidebar();
@@ -3686,27 +3808,45 @@ function renderLicenciados(){
   document.getElementById('lic-content').style.display = 'block';
 
   // Compatível com ambos formatos: licenciados[] (original) ou licRegistry/avuRegistry (simplificado)
-  var all = [];
+  // Unifica registries por ID — mesmo licenciado pode ter licença + avulso
+  var allMap = {};
   if(LG.data.licenciados && LG.data.licenciados.length){
-    all = LG.data.licenciados;
+    LG.data.licenciados.forEach(function(l){ allMap[l.id] = {id:l.id, nome:l.nome||'—', uf:l.uf||'—', tipo:l.tipo||'—', enviados:l.enviados||0, ativados:l.ativados||0}; });
   } else {
-    Object.keys(LG.data.licRegistry||{}).forEach(function(id){ all.push(LG.data.licRegistry[id]); });
-    Object.keys(LG.data.avuRegistry||{}).forEach(function(id){ all.push(LG.data.avuRegistry[id]); });
+    Object.keys(LG.data.licRegistry||{}).forEach(function(id){
+      var l = LG.data.licRegistry[id];
+      if(!allMap[id]) allMap[id] = {id:id, nome:l.nome||'—', uf:l.uf||'—', tipo:l.tipo||'—', enviados:0, ativados:0};
+      allMap[id].enviados += l.enviados||0;
+      allMap[id].ativados += l.ativados||0;
+    });
+    Object.keys(LG.data.avuRegistry||{}).forEach(function(id){
+      var l = LG.data.avuRegistry[id];
+      if(!allMap[id]) allMap[id] = {id:id, nome:l.nome||'—', uf:l.uf||'—', tipo:l.tipo||'Chip avulso', enviados:0, ativados:0};
+      allMap[id].enviados += l.enviados||0;
+      allMap[id].ativados += l.ativados||0;
+      // Se tem licença E avulso, marca tipo como misto
+      if(LG.data.licRegistry && LG.data.licRegistry[id]) allMap[id].tipo += ' + Avulso';
+    });
   }
+  var all = Object.keys(allMap).map(function(id){ return allMap[id]; });
   if(!all.length){
     document.getElementById('lic-empty').style.display = 'block';
     document.getElementById('lic-content').style.display = 'none';
     return;
   }
 
-  var pendentes = all.filter(function(l){ return (l.pendentes || (l.enviados - l.ativados)) > 0; });
+  // Limita ativados ao máximo de enviados por licenciado (excedentes = transferências)
+  all.forEach(function(l){ l.ativados = Math.min(l.ativados||0, l.enviados||0); });
+
+  var pendentes = all.filter(function(l){ return (l.enviados||0) - (l.ativados||0) > 0; });
   document.getElementById('lic-total-pendentes').textContent = pendentes.length;
-  var totalChipsPend = pendentes.reduce(function(a,l){ return a + (l.enviados - l.ativados); }, 0);
+  var totalChipsPend = pendentes.reduce(function(a,l){ return a + ((l.enviados||0) - (l.ativados||0)); }, 0);
   document.getElementById('lic-total-chips-pend').textContent = totalChipsPend;
 
-  var totalEnv = all.reduce(function(a,l){ return a + l.enviados; }, 0);
-  var totalAtv = all.reduce(function(a,l){ return a + l.ativados; }, 0);
-  var taxa = totalEnv > 0 ? Math.round(totalAtv / totalEnv * 100) : 0;
+  // Usa totalAtv global para consistência com a aba Logística
+  var totalEnvGlobal = (LG.data.totalChips || ((LG.data.licChips||0) + (LG.data.avuChips||0))) || 0;
+  var totalAtvGlobal = LG.data.totalAtv || LG.data.ativados || 0;
+  var taxa = totalEnvGlobal > 0 ? Math.round(totalAtvGlobal / totalEnvGlobal * 100) : 0;
   document.getElementById('lic-taxa-media').textContent = taxa + '%';
 
   // ── Ativações por tipo de licença (tabela resumo) ──
