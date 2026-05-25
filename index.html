@@ -3148,9 +3148,15 @@ function renderProjection(){
     allMonths = d.monthlyChips || {};
   }
   
+  // Parseia chave de mês (suporta YYYY-MM e MM/YYYY)
+  function parseMonthKey(k){
+    if(k.indexOf('-')>=0){ var p=k.split('-'); return {year:parseInt(p[0]), month:parseInt(p[1])}; }
+    if(k.indexOf('/')>=0){ var p=k.split('/'); return {year:parseInt(p[1]), month:parseInt(p[0])}; }
+    return {year:2026, month:1};
+  }
   var sortedKeys = Object.keys(allMonths).sort(function(a,b){
-    var pa = a.split('/'); var pb = b.split('/');
-    return new Date(pa[1]||pa[0], parseInt(pa[0])-1, 1) - new Date(pb[1]||pb[0], parseInt(pb[0])-1, 1);
+    var pa = parseMonthKey(a), pb = parseMonthKey(b);
+    return (pa.year*12+pa.month) - (pb.year*12+pb.month);
   });
   if(sortedKeys.length < 2){
     document.getElementById('logi-projection').innerHTML = '<div class="empty" style="padding:24px;font-size:12px">⚠️ Dados insuficientes para projeção. Necessário pelo menos 2 meses.</div>';
@@ -3182,8 +3188,8 @@ function renderProjection(){
   }
 
   var lastMonth = sortedKeys[sortedKeys.length-1];
-  var lp = lastMonth.split('/');
-  var lastDate = new Date(parseInt(lp[1]||lp[0]), parseInt(lp[0])-1, 1);
+  var lp = parseMonthKey(lastMonth);
+  var lastDate = new Date(lp.year, lp.month-1, 1);
   var futureMonths = [];
   for(var i=1; i<=3; i++){
     var d2 = new Date(lastDate); d2.setMonth(d2.getMonth()+i);
