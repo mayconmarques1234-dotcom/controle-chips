@@ -862,6 +862,7 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
             <div class="divider"></div>
             <div class="sec-title">📈 Projeção de compras futuras</div>
             <div id="logi-projection" style="margin-bottom:20px"></div>
+            <div id="logi-upload-history" style="margin-bottom:20px"></div>
             <div class="divider"></div>
             <div class="sec-title">Detalhamento por tipo</div>
             <div id="logi-breakdown"></div>
@@ -880,6 +881,21 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
               <div class="mc r"><div class="mc-lbl">Licenciados com chips não ativos</div><div class="mc-val" id="lic-total-pendentes">—</div></div>
               <div class="mc a"><div class="mc-lbl">Quantidade de chips não ativos</div><div class="mc-val" id="lic-total-chips-pend">—</div></div>
               <div class="mc t"><div class="mc-lbl">% em relação ao total ativo</div><div class="mc-val" id="lic-taxa-media" style="font-size:22px">—</div></div>
+            </div>
+            <!-- Semáforo de saúde dos licenciados -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="width:12px;height:12px;border-radius:50%;background:#4ade80;display:inline-block"></span><span style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Saudável (&gt;70%)</span></div>
+                <div style="font-size:24px;font-weight:600;color:#4ade80" id="lic-health-green">—</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="width:12px;height:12px;border-radius:50%;background:var(--amber);display:inline-block"></span><span style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Atenção (30–70%)</span></div>
+                <div style="font-size:24px;font-weight:600;color:var(--amber)" id="lic-health-yellow">—</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="width:12px;height:12px;border-radius:50%;background:var(--red);display:inline-block"></span><span style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Crítico (&lt;30%)</span></div>
+                <div style="font-size:24px;font-weight:600;color:var(--red)" id="lic-health-red">—</div>
+              </div>
             </div>
             <div class="filter-bar" style="margin-bottom:14px">
               <div class="fg" style="margin:0;flex:0 0 120px">
@@ -2496,13 +2512,19 @@ function renderCmbContacts(){
       '<div class="fg" style="margin:0"><label>Nome ('+( i+1)+')</label><input class="cmb-nome" value="'+(c.nome||'')+'" placeholder="Ex: Maycon"></div>'+
       '<div class="fg" style="margin:0"><label>Número (com código país)</label><input class="cmb-num" type="tel" value="'+(c.num||'')+'" placeholder="Ex: 5534999990000"></div>'+
       '<div class="fg" style="margin:0"><label>API Key</label><input class="cmb-key" value="'+(c.key||'')+'" placeholder="Ex: 1234567"></div>'+
-      '<button onclick="this.parentElement.remove()" style="background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);border-radius:var(--radius);padding:6px 10px;cursor:pointer;font-size:11px;font-family:var(--font);margin-bottom:0;height:34px" title="Remover">✕</button>';
+      '<button onclick="removeCmbContact('+i+')" style="background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);border-radius:var(--radius);padding:6px 10px;cursor:pointer;font-size:11px;font-family:var(--font);margin-bottom:0;height:34px" title="Remover">✕</button>';
     list.appendChild(row);
   });
 }
 
 function addCmbContact(){
   SL.cmbContacts.push({ num:'', key:'', nome:'' });
+  renderCmbContacts();
+}
+
+function removeCmbContact(idx){
+  if(SL.cmbContacts.length <= 1){ toast('Necessário ao menos 1 contato.'); return; }
+  SL.cmbContacts.splice(idx, 1);
   renderCmbContacts();
 }
 
@@ -3103,6 +3125,34 @@ function renderLogistica(){
 
   renderProjection();
 
+  // ── Histórico de uploads ──
+  var hist = d.uploadHistory || [];
+  var histEl = document.getElementById('logi-upload-history');
+  if(hist.length){
+    var hhtml = '<div class="sec-title" style="margin-bottom:12px">📋 HISTÓRICO DE UPLOADS</div>';
+    hhtml += '<table class="rtable"><thead><tr><th>DATA</th><th>ARQUIVO</th><th>RESPONSÁVEL</th><th>LICENCIADOS</th><th>TOTAL CHIPS</th><th>ATIVAÇÕES</th></tr></thead><tbody>';
+    hist.slice().reverse().forEach(function(h){
+      var dt = new Date(h.date);
+      var dtStr = String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear()+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+      var licDiff = (h.licAfter||0) - (h.licBefore||0);
+      var totalDiff = (h.totalAfter||0) - (h.totalBefore||0);
+      var atvDiff = (h.atvAfter||0) - (h.atvBefore||0);
+      function diffStr(v){ return v > 0 ? '<span style="color:var(--accent)">+'+v+'</span>' : v < 0 ? '<span style="color:var(--red)">'+v+'</span>' : '<span style="color:var(--text3)">0</span>'; }
+      hhtml += '<tr>';
+      hhtml += '<td style="font-size:11px;white-space:nowrap">'+dtStr+'</td>';
+      hhtml += '<td style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis" title="'+(h.fileName||'')+'">'+(h.fileName||'—')+'</td>';
+      hhtml += '<td style="font-size:11px">'+(h.user||'—')+'</td>';
+      hhtml += '<td style="font-size:11px">'+(h.licAfter||0)+' ('+diffStr(licDiff)+')</td>';
+      hhtml += '<td style="font-size:11px">'+(h.totalAfter||0)+' ('+diffStr(totalDiff)+')</td>';
+      hhtml += '<td style="font-size:11px">'+(h.atvAfter||0)+' ('+diffStr(atvDiff)+')</td>';
+      hhtml += '</tr>';
+    });
+    hhtml += '</tbody></table>';
+    histEl.innerHTML = hhtml;
+  } else {
+    histEl.innerHTML = '';
+  }
+
   // Breakdown (compatível com ambos formatos)
   var bd = d.breakdown;
   if(bd){
@@ -3305,6 +3355,30 @@ function processLogiFile(arrayBuffer, fileName){
     var rowsLic = XLSX.utils.sheet_to_json(sLic, { defval:'' });
     var rowsAvu = XLSX.utils.sheet_to_json(sAvu, { defval:'' });
     var rowsDom = XLSX.utils.sheet_to_json(sDom, { defval:'' });
+
+    // ── VALIDAÇÃO DE COLUNAS OBRIGATÓRIAS ──
+    var validationErrors = [];
+    function checkCols(rows, sheetName, required){
+      if(!rows.length){ validationErrors.push(sheetName+': planilha vazia'); return; }
+      var keys = Object.keys(rows[0]).map(function(k){ return k.toLowerCase(); });
+      required.forEach(function(req){
+        var found = false;
+        for(var i=0;i<keys.length;i++){
+          if(keys[i].indexOf(req.toLowerCase()) >= 0){ found = true; break; }
+        }
+        if(!found) validationErrors.push(sheetName+': coluna "'+req+'" não encontrada');
+      });
+    }
+    checkCols(rowsLic, 'Licença', ['Ativo', 'Tipo Licenca', 'Tipo De Pagamento', 'Status Do Parcelamento', 'Código']);
+    checkCols(rowsAvu, 'Chip avulso', ['Id Transacao', 'Qtde', 'Código']);
+    if(validationErrors.length){
+      var msg = '⚠️ Problemas encontrados na planilha:\n\n• ' + validationErrors.join('\n• ') + '\n\nOs dados podem ficar incompletos. Deseja continuar mesmo assim?';
+      if(!confirm(msg)) return showLogiError('Upload cancelado. Corrija a planilha e tente novamente.\n\nProblemas:\n' + validationErrors.join('\n'));
+    }
+    if(!sAtv){
+      if(!confirm('⚠️ Aba "ativações" não encontrada.\n\nSem ela, o sistema não consegue calcular ativações. Deseja continuar?'))
+        return showLogiError('Upload cancelado. A planilha deve conter a aba "ativações".');
+    }
 
     var domPayers = {};
     rowsDom.forEach(function(r){
@@ -3680,6 +3754,22 @@ function processLogiFile(arrayBuffer, fileName){
       ufDetailed[uf].ativados += l.ativados || 0;
     });
 
+    // Registra upload no histórico
+    var uploadHistory = (prev.uploadHistory || []).slice();
+    uploadHistory.push({
+      date: new Date().toISOString(),
+      fileName: fileName,
+      user: S.user || 'sistema',
+      licBefore: Object.keys(prev.licRegistry||{}).length,
+      licAfter: Object.keys(licRegistry).length,
+      totalBefore: prev.totalChips || 0,
+      totalAfter: totalChips,
+      atvBefore: prev.totalAtv || 0,
+      atvAfter: totalAtv
+    });
+    // Mantém apenas os últimos 50 uploads
+    if(uploadHistory.length > 50) uploadHistory = uploadHistory.slice(-50);
+
     LG.data = {
       totalChips:    totalChips,
       licChips:      licChips,
@@ -3713,7 +3803,8 @@ function processLogiFile(arrayBuffer, fileName){
       atvByMonth:LG.data.atvByMonth, atvByMonthTipo:LG.data.atvByMonthTipo,
       byType:LG.data.byType, byUf:LG.data.byUf, ufDetailed:LG.data.ufDetailed,
       breakdown:LG.data.breakdown,
-      uploadDate:LG.data.uploadDate, fileName:LG.data.fileName
+      uploadDate:LG.data.uploadDate, fileName:LG.data.fileName,
+      uploadHistory: LG.data.uploadHistory
     };
     fetch(SCRIPT_URL, {
       method:'POST', headers:{'Content-Type':'text/plain'},
@@ -3864,6 +3955,18 @@ function renderLicenciados(){
   var taxa = totalEnvGlobal > 0 ? Math.round(totalAtvGlobal / totalEnvGlobal * 100) : 0;
   document.getElementById('lic-taxa-media').textContent = taxa + '%';
 
+  // Semáforo de saúde: classifica licenciados por % de ativação
+  var green = 0, yellow = 0, red = 0;
+  all.forEach(function(l){
+    var pct = (l.enviados > 0) ? (l.ativados / l.enviados * 100) : 0;
+    if(pct >= 70) green++;
+    else if(pct >= 30) yellow++;
+    else red++;
+  });
+  document.getElementById('lic-health-green').textContent = green;
+  document.getElementById('lic-health-yellow').textContent = yellow;
+  document.getElementById('lic-health-red').textContent = red;
+
   // ── Ativações por tipo de licença (tabela resumo) ──
   var byType = LG.data.byType || {};
   var typeKeys = Object.keys(byType);
@@ -3996,12 +4099,14 @@ function renderLicenciados(){
     document.getElementById('lic-show-more').style.display = 'none';
     return;
   }
-  var html = '<table class="rtable"><thead><tr><th>ID</th><th>Nome</th><th>UF</th><th>Tipo</th><th>Enviados</th><th>Ativados</th><th>Pendentes</th><th>% Ativação</th></tr></thead><tbody>';
+  var html = '<table class="rtable"><thead><tr><th>ID</th><th>Nome</th><th>UF</th><th>Tipo</th><th>Enviados</th><th>Ativados</th><th>Pendentes</th><th>% Ativação</th><th>Status</th></tr></thead><tbody>';
   visible.forEach(function(l){
     var pend = l.enviados - l.ativados;
     var pct  = l.enviados > 0 ? Math.round(l.ativados / l.enviados * 100) : 0;
     var cor  = pct >= 70 ? 'var(--accent)' : (pct >= 40 ? 'var(--amber)' : 'var(--red)');
-    html += '<tr><td class="mono">'+l.id+'</td><td>'+l.nome+'</td><td>'+l.uf+'</td><td>'+l.tipo+'</td><td>'+l.enviados+'</td><td style="color:var(--accent)">'+l.ativados+'</td><td style="color:var(--red);font-weight:500">'+pend+'</td><td style="color:'+cor+';font-weight:500">'+pct+'%</td></tr>';
+    var statusCor = pct >= 70 ? '#4ade80' : (pct >= 30 ? 'var(--amber)' : 'var(--red)');
+    var statusLbl = pct >= 70 ? 'Saudável' : (pct >= 30 ? 'Atenção' : 'Crítico');
+    html += '<tr><td class="mono">'+l.id+'</td><td>'+l.nome+'</td><td>'+l.uf+'</td><td>'+l.tipo+'</td><td>'+l.enviados+'</td><td style="color:var(--accent)">'+l.ativados+'</td><td style="color:var(--red);font-weight:500">'+pend+'</td><td style="color:'+cor+';font-weight:500">'+pct+'%</td><td><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:'+statusCor+'"><span style="width:8px;height:8px;border-radius:50%;background:'+statusCor+';display:inline-block"></span>'+statusLbl+'</span></td></tr>';
   });
   html += '</tbody></table>';
   document.getElementById('lic-table').innerHTML = html;
