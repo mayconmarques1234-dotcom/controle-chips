@@ -3936,7 +3936,7 @@ function processLogiFile(arrayBuffer, fileName){
         if(!avuRegistry[idLic]){
           avuRegistry[idLic] = { id:idLic, nome:nomeLic||'—', uf:uf||'—', tipo:'Chip avulso', enviados:0, ativados:0 };
         }
-        avuRegistry[idLic].enviados++;
+        avuRegistry[idLic].enviados += qty;
         if(isAtivado) avuRegistry[idLic].ativados++;
       }
     });
@@ -3944,8 +3944,8 @@ function processLogiFile(arrayBuffer, fileName){
     // FIX3: Recalcula totais a partir do registry (fonte de verdade)
     var licChipsCalc=Object.keys(licRegistry).reduce(function(sum,id){return sum+(licRegistry[id].enviados||0);},0);
     var avuChipsCalc=Object.keys(avuRegistry).reduce(function(sum,id){return sum+(avuRegistry[id].enviados||0);},0);
-    if(licChipsCalc>0){licChips=licChipsCalc;}
-    if(avuChipsCalc>0){avuChips=avuChipsCalc;}
+    if(licChipsCalc>licChips){licChips=licChipsCalc;}
+    if(avuChipsCalc>avuChips){avuChips=avuChipsCalc;}
     totalChips=licChips+avuChips;
     console.log('[Logistica] Recalculado: lic='+licChips+' avu='+avuChips+' total='+totalChips);
 
