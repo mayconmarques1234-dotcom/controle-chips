@@ -3949,20 +3949,22 @@ function processLogiFile(arrayBuffer, fileName){
     totalChips=licChips+avuChips;
     console.log('[Logistica] Recalculado: lic='+licChips+' avu='+avuChips+' total='+totalChips);
 
-    // FIX4: contNovos por diff do registry
+    // FIX4: calcula contNovos (desconto será aplicado apenas na confirmação do preview)
+    // NÃO modifica LS.qty aqui — isso é feito em confirmarLogiImport()
     if(LS.qty !== null && LS.desde){
-      var prevLicT=Object.keys(prev.licRegistry||{}).reduce(function(s,id){return s+((prev.licRegistry[id]&&prev.licRegistry[id].enviados)||0);},0);
-      var prevAvuT=Object.keys(prev.avuRegistry||{}).reduce(function(s,id){return s+((prev.avuRegistry[id]&&prev.avuRegistry[id].enviados)||0);},0);
-      var prevTotalReg=prevLicT+prevAvuT;
-      if(prevTotalReg===0)prevTotalReg=(prev.totalChips||0);
-      var contNovos=Math.max(0,totalChips-prevTotalReg);
-      console.log('[Logistica] prev='+prevTotalReg+' novo='+totalChips+' contNovos='+contNovos);
-      if(contNovos>0){
-        LS.qty=Math.max(0,LS.qty-contNovos);
-        LS.log.unshift({id:Date.now(),date:new Date().toISOString(),de:LS.qty+contNovos,para:LS.qty,
-          motivo:'Desconto: +'+contNovos+' chips novos ('+prevTotalReg+' para '+totalChips+')',responsavel:S.user||'sistema'});
-        saveLogiEstoqueSheets();renderLogiEstoque();updateSidebar();
-      } else { console.log('[Logistica] Sem chips novos.'); }
+      var desdeDate = new Date(LS.desde + 'T00:00:00').getTime();
+      var chipsDesdePeriodo = 0;
+      Object.keys(monthlyChips).forEach(function(mk){
+        var firstDay = new Date(mk + '-01T00:00:00').getTime();
+        if(firstDay >= desdeDate) chipsDesdePeriodo += (monthlyChips[mk] || 0);
+      });
+      var prevChipsDesdePeriodo = 0;
+      var prevMonthly = prev.monthlyChips || {};
+      Object.keys(prevMonthly).forEach(function(mk){
+        var firstDay = new Date(mk + '-01T00:00:00').getTime();
+        if(firstDay >= desdeDate) prevChipsDesdePeriodo += (prevMonthly[mk] || 0);
+      });
+      console.log('[Logistica] chipsDesdePeriodo='+chipsDesdePeriodo+' prevDesde='+prevChipsDesdePeriodo+' desde='+LS.desde);
     }
 
     // ── Processa aba ATIVAÇÕES (cruzamento com licenças + avulsos) ──
@@ -4133,8 +4135,18 @@ function processLogiFile(arrayBuffer, fileName){
     // FIX5: Preview antes de salvar
     var _pT5=(function(){var pl=Object.keys(prev.licRegistry||{}).reduce(function(s,id){return s+((prev.licRegistry[id]&&prev.licRegistry[id].enviados)||0);},0);var pa=Object.keys(prev.avuRegistry||{}).reduce(function(s,id){return s+((prev.avuRegistry[id]&&prev.avuRegistry[id].enviados)||0);},0);return(pl+pa)>0?(pl+pa):(prev.totalChips||0);})();
     var _dC=Math.max(0,totalChips-_pT5),_dL=Object.keys(licRegistry).length-Object.keys(prev.licRegistry||{}).length,_dA=totalAtv-(prev.totalAtv||0);
-    var _eI=(LS.qty!==null)?Math.max(0,LS.qty-_dC):null;
-    window._logiPendente={totalChips:totalChips,licChips:licChips,avuChips:avuChips,ativados:ativados,naoAtivados:naoAtivados,totalAtv:totalAtv,licRegistry:licRegistry,avuRegistry:avuRegistry,licIdTipoMap:licIdTipoMap,atvSeen:atvSeen,licLinesSeen:licLinesSeen,avuLinesSeen:avuLinesSeen,monthlyChips:monthlyChips,monthlyByType:monthlyByType,atvByMonth:atvByMonth,atvByMonthTipo:atvByMonthTipo,byType:byType,byUf:byUf,ufDetailed:ufDetailed,breakdown:breakdown,fileName:fileName,contNovos:_dC,uploadHistory:uploadHistory};
+    // Calcula desconto de estoque apenas para o periodo desde LS.desde
+    var _descontoEstoque = _dC;
+    if(LS.desde){
+      var _dDate=new Date(LS.desde+'T00:00:00').getTime();
+      var _cDP=0,_pDP=0;
+      var _prevMC=prev.monthlyChips||{};
+      Object.keys(monthlyChips).forEach(function(mk){if(new Date(mk+'-01T00:00:00').getTime()>=_dDate) _cDP+=(monthlyChips[mk]||0);});
+      Object.keys(_prevMC).forEach(function(mk){if(new Date(mk+'-01T00:00:00').getTime()>=_dDate) _pDP+=(_prevMC[mk]||0);});
+      _descontoEstoque=Math.max(0,_cDP-_pDP);
+    }
+    var _eI=(LS.qty!==null)?Math.max(0,LS.qty-_descontoEstoque):null;
+    window._logiPendente={totalChips:totalChips,licChips:licChips,avuChips:avuChips,ativados:ativados,naoAtivados:naoAtivados,totalAtv:totalAtv,licRegistry:licRegistry,avuRegistry:avuRegistry,licIdTipoMap:licIdTipoMap,atvSeen:atvSeen,licLinesSeen:licLinesSeen,avuLinesSeen:avuLinesSeen,monthlyChips:monthlyChips,monthlyByType:monthlyByType,atvByMonth:atvByMonth,atvByMonthTipo:atvByMonthTipo,byType:byType,byUf:byUf,ufDetailed:ufDetailed,breakdown:breakdown,fileName:fileName,contNovos:_descontoEstoque,uploadHistory:uploadHistory};
     function _cr(n){return n>0?'var(--accent)':(n<0?'var(--red)':'var(--text3)');}
     function _sn(n){return n>0?'+'+n:(n<0?String(n):'0');}
     var ph='<div style="border:1px solid var(--accent);border-radius:10px;padding:16px;background:rgba(52,212,116,.05);margin-bottom:14px">'+
@@ -4145,7 +4157,7 @@ function processLogiFile(arrayBuffer, fileName){
         '<div style="background:var(--surface3);border-radius:8px;padding:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase">LICENCIADOS</div><div style="font-size:20px;font-weight:600;color:var(--amber)">'+Object.keys(licRegistry).length.toLocaleString('pt-BR')+'</div><div style="font-size:11px;color:'+_cr(_dL)+';margin-top:2px">'+_sn(_dL)+' novos</div></div>'+
         '<div style="background:var(--surface3);border-radius:8px;padding:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase">NAO ATIVADOS</div><div style="font-size:20px;font-weight:600;color:var(--red)">'+naoAtivados.toLocaleString('pt-BR')+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+licChips+' lic + '+avuChips+' avu</div></div>'+
       '</div>'+
-      (_eI!==null?'<div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:var(--amber)">Estoque: '+LS.qty+' \u2192 <strong>'+_eI+'</strong> (\u2212'+_dC+' novos)</div>':'')+
+      (_eI!==null?'<div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:var(--amber)">Estoque CD: '+LS.qty+' \u2192 <strong>'+_eI+'</strong> (\u2212'+_descontoEstoque+' chips desde '+(LS.desde?new Date(LS.desde+'T12:00:00').toLocaleDateString('pt-BR'):'inicio')+')</div>':'')+
       '<div style="display:flex;gap:8px">'+
         '<button onclick="confirmarLogiImport()" style="flex:1;background:var(--accent);color:#0d1a0d;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Confirmar importacao</button>'+
         '<button onclick="cancelarLogiImport()" style="background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:11px 18px;font-size:13px;cursor:pointer;font-family:var(--font)">Cancelar</button>'+
