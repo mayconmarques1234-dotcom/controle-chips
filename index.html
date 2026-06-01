@@ -1770,16 +1770,22 @@ function loadFromSheets(){
           // Atualiza campos de resumo que o Sheets pode ter mais recente (de outro PC)
           if(sheetsData.uploadDate && (!localData.uploadDate || new Date(sheetsData.uploadDate) > new Date(localData.uploadDate))){
             // Sheets tem upload mais recente de outro PC — atualiza tudo
-            var savedReg = localData.licRegistry;
-            var savedAvu = localData.avuRegistry;
-            var savedMap = localData._licIdTipoMap;
-            var savedAtv = localData.atvByMonthTipo;
-            var savedAtvM = localData.atvByMonth;
-            var savedTotAtv = localData.totalAtv;
+            var savedReg     = localData.licRegistry;
+            var savedAvu     = localData.avuRegistry;
+            var savedMap     = localData._licIdTipoMap;
+            var savedAtv     = localData.atvByMonthTipo;
+            var savedAtvM    = localData.atvByMonth;
+            var savedTotAtv  = localData.totalAtv;
+            var savedLicLS   = localData._licLinesSeen;
+            var savedAvuLS   = localData._avuLinesSeen;
+            var savedAtvSeen = localData._atvSeen;
             LG.data = sheetsData;
-            LG.data.licRegistry = savedReg;
-            LG.data.avuRegistry = savedAvu;
-            LG.data._licIdTipoMap = savedMap;
+            LG.data.licRegistry    = savedReg;
+            LG.data.avuRegistry    = savedAvu;
+            LG.data._licIdTipoMap  = savedMap;
+            LG.data._licLinesSeen  = savedLicLS;
+            LG.data._avuLinesSeen  = savedAvuLS;
+            LG.data._atvSeen       = savedAtvSeen;
             if(!LG.data.atvByMonthTipo) LG.data.atvByMonthTipo = savedAtv;
             if(!LG.data.atvByMonth) LG.data.atvByMonth = savedAtvM;
             if(!LG.data.totalAtv && savedTotAtv){ LG.data.totalAtv = savedTotAtv; LG.data.ativados = savedTotAtv; }
@@ -3294,6 +3300,18 @@ function openLogiModal(){
 }
 function closeLogiModal(){ document.getElementById('modal-logi').classList.remove('open'); }
 
+function normDate(dt){
+  if(dt===null||dt===undefined||dt==='')return '';
+  if(typeof dt==='number'){var d=new Date((dt-25569)*86400*1000);return isNaN(d.getTime())?String(dt):d.toISOString().slice(0,10);}
+  if(dt instanceof Date)return isNaN(dt.getTime())?'':dt.toISOString().slice(0,10);
+  var str=String(dt).trim();
+  var br=str.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if(br)return br[3]+'-'+br[2]+'-'+br[1];
+  var parsed=new Date(str);
+  if(!isNaN(parsed.getTime()))return parsed.toISOString().slice(0,10);
+  return str.slice(0,10);
+}
+
 function handleLogiFile(input){
   var file = input.files[0];
   if(!file) return;
@@ -3490,8 +3508,8 @@ function processLogiFile(arrayBuffer, fileName){
       var elegivel = isIntegral || isBoletoOk;
       if(!elegivel) return;
 
-      // Deduplicação: chave = ID + Data + Status (evita contar mesma linha 2x entre uploads)
-      var dedupKey = idLic + '|' + String(dt||'') + '|' + status + '|' + produto;
+      // Deduplicação: chave normalizada (evita contar mesma linha 2x entre uploads)
+      var dedupKey = idLic + '|' + normDate(dt) + '|' + status + '|' + produto;
       if(licLinesSeen[dedupKey]) return;
       licLinesSeen[dedupKey] = true;
 
@@ -3598,38 +3616,28 @@ function processLogiFile(arrayBuffer, fileName){
       }
     });
 
-    // Descontar do estoque apenas os chips NOVOS deste upload
+    // FIX3: Recalcula totais a partir do registry (fonte de verdade)
+    var licChipsCalc=Object.keys(licRegistry).reduce(function(sum,id){return sum+(licRegistry[id].enviados||0);},0);
+    var avuChipsCalc=Object.keys(avuRegistry).reduce(function(sum,id){return sum+(avuRegistry[id].enviados||0);},0);
+    if(licChipsCalc>0){licChips=licChipsCalc;}
+    if(avuChipsCalc>0){avuChips=avuChipsCalc;}
+    totalChips=licChips+avuChips;
+    console.log('[Logistica] Recalculado: lic='+licChips+' avu='+avuChips+' total='+totalChips);
+
+    // FIX4: contNovos por diff do registry
     if(LS.qty !== null && LS.desde){
-      var desdeDate = new Date(LS.desde + 'T00:00:00').getTime();
-      // Calcula chips novos deste upload no período (não o acumulado total)
-      var prevMonthly = prev.monthlyChips || {};
-      var contNovos = 0;
-      Object.keys(monthlyChips).forEach(function(mk){
-        var firstDay = new Date(mk + '-01T00:00:00').getTime();
-        if(firstDay >= desdeDate){
-          var atual = monthlyChips[mk] || 0;
-          var anterior = prevMonthly[mk] || 0;
-          var diff = atual - anterior;
-          if(diff > 0) contNovos += diff;
-        }
-      });
-      if(contNovos > 0){
-        LS.qty = Math.max(0, LS.qty - contNovos);
-        LS.log.unshift({
-          id:Date.now(),
-          date:new Date().toISOString(),
-          de: LS.qty + contNovos,
-          para: LS.qty,
-          motivo: 'Desconto automático ao subir planilha ('+contNovos+' chips novos desde '+new Date(LS.desde+'T00:00:00').toLocaleDateString('pt-BR')+')',
-          responsavel: S.user || 'sistema'
-        });
-        saveLogiEstoqueSheets();
-        renderLogiEstoque();
-        updateSidebar();
-        console.log('[Logística] Desconto aplicado: -'+contNovos+' chips novos. Novo estoque: '+LS.qty);
-      } else {
-        console.log('[Logística] Nenhum desconto novo: contNovos=0, LS.desde='+LS.desde);
-      }
+      var prevLicT=Object.keys(prev.licRegistry||{}).reduce(function(s,id){return s+((prev.licRegistry[id]&&prev.licRegistry[id].enviados)||0);},0);
+      var prevAvuT=Object.keys(prev.avuRegistry||{}).reduce(function(s,id){return s+((prev.avuRegistry[id]&&prev.avuRegistry[id].enviados)||0);},0);
+      var prevTotalReg=prevLicT+prevAvuT;
+      if(prevTotalReg===0)prevTotalReg=(prev.totalChips||0);
+      var contNovos=Math.max(0,totalChips-prevTotalReg);
+      console.log('[Logistica] prev='+prevTotalReg+' novo='+totalChips+' contNovos='+contNovos);
+      if(contNovos>0){
+        LS.qty=Math.max(0,LS.qty-contNovos);
+        LS.log.unshift({id:Date.now(),date:new Date().toISOString(),de:LS.qty+contNovos,para:LS.qty,
+          motivo:'Desconto: +'+contNovos+' chips novos ('+prevTotalReg+' para '+totalChips+')',responsavel:S.user||'sistema'});
+        saveLogiEstoqueSheets();renderLogiEstoque();updateSidebar();
+      } else { console.log('[Logistica] Sem chips novos.'); }
     }
 
     // ── Processa aba ATIVAÇÕES (cruzamento com licenças + avulsos) ──
@@ -3795,47 +3803,48 @@ function processLogiFile(arrayBuffer, fileName){
       fileName:      fileName
     };
 
-    // Salva dados resumidos no Sheets (sem registries grandes que excedem limite de célula)
-    var logiSummary = {
-      totalChips:LG.data.totalChips, licChips:LG.data.licChips, avuChips:LG.data.avuChips,
-      ativados:LG.data.ativados, naoAtivados:LG.data.naoAtivados, totalAtv:LG.data.totalAtv,
-      monthlyChips:LG.data.monthlyChips, monthlyByType:LG.data.monthlyByType,
-      atvByMonth:LG.data.atvByMonth, atvByMonthTipo:LG.data.atvByMonthTipo,
-      byType:LG.data.byType, byUf:LG.data.byUf, ufDetailed:LG.data.ufDetailed,
-      breakdown:LG.data.breakdown,
-      uploadDate:LG.data.uploadDate, fileName:LG.data.fileName,
-      uploadHistory: LG.data.uploadHistory
-    };
-    fetch(SCRIPT_URL, {
-      method:'POST', headers:{'Content-Type':'text/plain'},
-      body: JSON.stringify({ saveLogiData: logiSummary })
-    }).catch(function(){});
+    // Salvar agora acontece em confirmarLogiImport()
 
-    // Salva registries grandes em localStorage (persistem no browser)
-    try {
-      localStorage.setItem('cc_logi_licRegistry', JSON.stringify(LG.data.licRegistry || {}));
-      localStorage.setItem('cc_logi_avuRegistry', JSON.stringify(LG.data.avuRegistry || {}));
-      localStorage.setItem('cc_logi_licIdTipoMap', JSON.stringify(LG.data._licIdTipoMap || {}));
-      localStorage.setItem('cc_logi_atvSeen', JSON.stringify(LG.data._atvSeen || {}));
-      localStorage.setItem('cc_logi_licLinesSeen', JSON.stringify(LG.data._licLinesSeen || {}));
-      localStorage.setItem('cc_logi_avuLinesSeen', JSON.stringify(LG.data._avuLinesSeen || {}));
-    } catch(e){ console.warn('localStorage cheio, registries não salvos:', e); }
-
-    // Salva registries comprimidos no Sheets (compartilhado com outros PCs)
-    saveRegistriesToSheets();
-
-    document.getElementById('logi-file-status').innerHTML =
-      '✅ <strong>Planilha processada com sucesso!</strong><br>'+
-      'Total: <strong style="color:var(--accent)">'+totalChips+' chips</strong> · Licenças: '+licChips+' · Avulsos: '+avuChips+'<br>'+
-      'Ativados: '+ativados+' · Não ativados: '+naoAtivados;
-    closeLogiModal();
-    renderLogistica();
-    updateSidebar();
-    toast('Planilha processada: '+totalChips+' chips contabilizados');
+    // FIX5: Preview antes de salvar
+    var _pT5=(function(){var pl=Object.keys(prev.licRegistry||{}).reduce(function(s,id){return s+((prev.licRegistry[id]&&prev.licRegistry[id].enviados)||0);},0);var pa=Object.keys(prev.avuRegistry||{}).reduce(function(s,id){return s+((prev.avuRegistry[id]&&prev.avuRegistry[id].enviados)||0);},0);return(pl+pa)>0?(pl+pa):(prev.totalChips||0);})();
+    var _dC=Math.max(0,totalChips-_pT5),_dL=Object.keys(licRegistry).length-Object.keys(prev.licRegistry||{}).length,_dA=totalAtv-(prev.totalAtv||0);
+    var _eI=(LS.qty!==null)?Math.max(0,LS.qty-_dC):null;
+    window._logiPendente={totalChips:totalChips,licChips:licChips,avuChips:avuChips,ativados:ativados,naoAtivados:naoAtivados,totalAtv:totalAtv,licRegistry:licRegistry,avuRegistry:avuRegistry,licIdTipoMap:licIdTipoMap,atvSeen:atvSeen,licLinesSeen:licLinesSeen,avuLinesSeen:avuLinesSeen,monthlyChips:monthlyChips,monthlyByType:monthlyByType,atvByMonth:atvByMonth,atvByMonthTipo:atvByMonthTipo,byType:byType,byUf:byUf,ufDetailed:ufDetailed,breakdown:breakdown,fileName:fileName,contNovos:_dC,uploadHistory:uploadHistory};
+    function _cr(n){return n>0?'var(--accent)':(n<0?'var(--red)':'var(--text3)');}
+    function _sn(n){return n>0?'+'+n:(n<0?String(n):'0');}
+    var ph='<div style="border:1px solid var(--accent);border-radius:10px;padding:16px;background:rgba(52,212,116,.05);margin-bottom:14px">'+
+      '<div style="font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Resumo do que vai mudar</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'+
+        '<div style="background:var(--surface3);border-radius:8px;padding:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase">TOTAL CHIPS</div><div style="font-size:20px;font-weight:600;color:var(--accent)">'+totalChips.toLocaleString('pt-BR')+'</div><div style="font-size:11px;color:'+_cr(_dC)+';margin-top:2px">'+_sn(_dC)+' chips novos</div></div>'+
+        '<div style="background:var(--surface3);border-radius:8px;padding:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase">ATIVADOS</div><div style="font-size:20px;font-weight:600;color:var(--teal)">'+ativados.toLocaleString('pt-BR')+'</div><div style="font-size:11px;color:'+_cr(_dA)+';margin-top:2px">'+_sn(_dA)+' novas</div></div>'+
+        '<div style="background:var(--surface3);border-radius:8px;padding:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase">LICENCIADOS</div><div style="font-size:20px;font-weight:600;color:var(--amber)">'+Object.keys(licRegistry).length.toLocaleString('pt-BR')+'</div><div style="font-size:11px;color:'+_cr(_dL)+';margin-top:2px">'+_sn(_dL)+' novos</div></div>'+
+        '<div style="background:var(--surface3);border-radius:8px;padding:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase">NAO ATIVADOS</div><div style="font-size:20px;font-weight:600;color:var(--red)">'+naoAtivados.toLocaleString('pt-BR')+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+licChips+' lic + '+avuChips+' avu</div></div>'+
+      '</div>'+
+      (_eI!==null?'<div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:var(--amber)">Estoque: '+LS.qty+' \u2192 <strong>'+_eI+'</strong> (\u2212'+_dC+' novos)</div>':'')+
+      '<div style="display:flex;gap:8px">'+
+        '<button onclick="confirmarLogiImport()" style="flex:1;background:var(--accent);color:#0d1a0d;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Confirmar importacao</button>'+
+        '<button onclick="cancelarLogiImport()" style="background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:11px 18px;font-size:13px;cursor:pointer;font-family:var(--font)">Cancelar</button>'+
+      '</div></div>';
+    document.getElementById('logi-file-status').style.display='block';
+    document.getElementById('logi-file-status').innerHTML=ph;
   } catch(err){
     showLogiError('Erro ao processar: '+(err.message||err));
   }
 }
+
+function confirmarLogiImport(){
+  if(!window._logiPendente){closeLogiModal();return;}
+  var p=window._logiPendente;
+  LG.data={totalChips:p.totalChips,licChips:p.licChips,avuChips:p.avuChips,ativados:p.ativados,naoAtivados:p.naoAtivados,totalAtv:p.totalAtv,monthlyChips:p.monthlyChips,monthlyByType:p.monthlyByType,atvByMonth:p.atvByMonth,atvByMonthTipo:p.atvByMonthTipo,byType:p.byType,byUf:p.byUf,ufDetailed:p.ufDetailed,breakdown:p.breakdown,licRegistry:p.licRegistry,avuRegistry:p.avuRegistry,_licIdTipoMap:p.licIdTipoMap,_atvSeen:p.atvSeen,_licLinesSeen:p.licLinesSeen,_avuLinesSeen:p.avuLinesSeen,uploadDate:new Date().toISOString(),fileName:p.fileName,uploadHistory:p.uploadHistory};
+  if(LS.qty!==null&&p.contNovos>0){var ant=LS.qty;LS.qty=Math.max(0,LS.qty-p.contNovos);LS.log.unshift({id:Date.now(),date:new Date().toISOString(),de:ant,para:LS.qty,motivo:'Desconto upload: -'+p.contNovos+' chips novos',responsavel:S.user||'sistema'});saveLogiEstoqueSheets();renderLogiEstoque();}
+  var ls={totalChips:LG.data.totalChips,licChips:LG.data.licChips,avuChips:LG.data.avuChips,ativados:LG.data.ativados,naoAtivados:LG.data.naoAtivados,totalAtv:LG.data.totalAtv,monthlyChips:LG.data.monthlyChips,monthlyByType:LG.data.monthlyByType,atvByMonth:LG.data.atvByMonth,atvByMonthTipo:LG.data.atvByMonthTipo,byType:LG.data.byType,byUf:LG.data.byUf,ufDetailed:LG.data.ufDetailed,breakdown:LG.data.breakdown,uploadDate:LG.data.uploadDate,fileName:LG.data.fileName,uploadHistory:LG.data.uploadHistory};
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveLogiData:ls})}).catch(function(){});
+  try{localStorage.setItem('cc_logi_licRegistry',JSON.stringify(LG.data.licRegistry||{}));localStorage.setItem('cc_logi_avuRegistry',JSON.stringify(LG.data.avuRegistry||{}));localStorage.setItem('cc_logi_licIdTipoMap',JSON.stringify(LG.data._licIdTipoMap||{}));localStorage.setItem('cc_logi_atvSeen',JSON.stringify(LG.data._atvSeen||{}));localStorage.setItem('cc_logi_licLinesSeen',JSON.stringify(LG.data._licLinesSeen||{}));localStorage.setItem('cc_logi_avuLinesSeen',JSON.stringify(LG.data._avuLinesSeen||{}));}catch(e){}
+  saveRegistriesToSheets();
+  window._logiPendente=null;closeLogiModal();renderLogistica();updateSidebar();
+  toast('Importacao confirmada: '+p.totalChips.toLocaleString('pt-BR')+' chips (+'+p.contNovos+' novos)');
+}
+function cancelarLogiImport(){window._logiPendente=null;document.getElementById('logi-file-status').style.display='none';document.getElementById('logi-file-input').value='';toast('Upload cancelado.');}
 
 function clearLogi(){
   if(!confirm('Remover todos os dados da planilha? Esta ação não pode ser desfeita.')) return;
