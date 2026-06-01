@@ -454,13 +454,17 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
         Histórico
         <span class="nav-badge" id="badge-count" style="display:none">0</span>
       </button>
-      <button class="nav-item" onclick="setPage('contel',this)">
+      <button class="nav-item" onclick="setPage('sede',this)">
         <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Sede
+      </button>
+      <button class="nav-item" onclick="setPage('contel',this)">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         Contel
       </button>
-      <button class="nav-item" onclick="setPage('logistica',this)">
+      <button class="nav-item" onclick="setPage('cd',this)">
         <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        Logística
+        CD
       </button>
       <button class="nav-item" onclick="setPage('licenciados',this)">
         <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -497,7 +501,7 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
         </div>
         <div style="margin-bottom:10px;padding:8px 10px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border)">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <span style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Chip entrega</span>
+            <span style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">CD</span>
             <span style="font-size:15px;font-weight:600;color:var(--purple);font-family:var(--mono)" id="sb-logi">—</span>
           </div>
           <div style="height:3px;background:var(--surface3);border-radius:2px;overflow:hidden">
@@ -634,8 +638,127 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
           </div>
         </div>
 
-        <!-- ESTOQUE -->
+        <!-- ESTOQUE — DASHBOARD EXECUTIVO -->
         <div id="page-stock" class="page">
+          <div id="dash-stale-alert" class="alert-bar" style="display:none">
+            <svg viewBox="0 0 24 24" style="width:15px;height:15px;flex-shrink:0;stroke:var(--amber);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span id="dash-stale-txt"></span>
+          </div>
+
+          <!-- SAÚDE DO ESTOQUE -->
+          <div id="dash-health-banner" style="border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;border:1px solid var(--border)">
+            <div id="dash-health-icon" style="font-size:40px;flex-shrink:0">📊</div>
+            <div style="flex:1;min-width:0">
+              <div id="dash-health-title" style="font-size:16px;font-weight:600;margin-bottom:3px">Carregando...</div>
+              <div id="dash-health-sub" style="font-size:13px;color:var(--text2)">Aguarde a sincronização dos dados.</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div id="dash-health-months" style="font-size:32px;font-weight:600;letter-spacing:-.02em">—</div>
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em">meses de cobertura</div>
+            </div>
+          </div>
+
+          <!-- CARDS PRINCIPAIS -->
+          <div class="metrics" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+            <div class="mc g" style="padding:18px;position:relative">
+              <div class="mc-lbl" style="margin-top:0">Total de chips</div>
+              <div class="mc-val" id="dash-total" style="font-size:32px;margin-top:6px">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px">SEDE + CONTEL + CD</div>
+            </div>
+            <div class="mc b" style="padding:18px;cursor:pointer" onclick="setPage('sede',document.querySelector('[onclick*=sede]'))">
+              <div class="mc-lbl" style="margin-top:0">Sede</div>
+              <div class="mc-val" id="dash-sede" style="font-size:32px;margin-top:6px">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px">chips físicos</div>
+            </div>
+            <div class="mc a" style="padding:18px;cursor:pointer" onclick="setPage('contel',document.querySelector('[onclick*=contel]'))">
+              <div class="mc-lbl" style="margin-top:0">Contel</div>
+              <div class="mc-val" id="dash-contel" style="font-size:32px;margin-top:6px">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px">chips + envelopes</div>
+            </div>
+            <div class="mc p" style="padding:18px;cursor:pointer" onclick="setPage('cd',document.querySelector('[onclick*=\'cd\']'))">
+              <div class="mc-lbl" style="margin-top:0">CD</div>
+              <div class="mc-val" id="dash-cd" style="font-size:32px;margin-top:6px">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px">centro de distribuição</div>
+            </div>
+          </div>
+
+          <!-- CONSUMO -->
+          <div class="sec-title">Consumo de chips</div>
+          <div class="metrics" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:20px">
+            <div class="mc a" style="padding:16px">
+              <div class="mc-lbl" style="margin-top:0">Enviados por licenciamento</div>
+              <div class="mc-val" id="dash-lic-env" style="font-size:24px;margin-top:6px">—</div>
+            </div>
+            <div class="mc b" style="padding:16px">
+              <div class="mc-lbl" style="margin-top:0">Enviados por chip avulso</div>
+              <div class="mc-val" id="dash-avu-env" style="font-size:24px;margin-top:6px">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:3px">confirmados na DOM</div>
+            </div>
+            <div class="mc r" style="padding:16px">
+              <div class="mc-lbl" style="margin-top:0">Total consumido</div>
+              <div class="mc-val" id="dash-consumido" style="font-size:24px;margin-top:6px">—</div>
+            </div>
+            <div class="mc g" style="padding:16px">
+              <div class="mc-lbl" style="margin-top:0">Estoque disponível</div>
+              <div class="mc-val" id="dash-disponivel" style="font-size:24px;margin-top:6px">—</div>
+            </div>
+          </div>
+
+          <!-- PREVISÃO -->
+          <div class="sec-title">Previsão e cobertura</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Consumo médio mensal</div>
+              <div style="font-size:24px;font-weight:600;color:var(--amber)" id="dash-media-mensal">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:3px">chips/mês</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Meses de cobertura</div>
+              <div style="font-size:24px;font-weight:600" id="dash-meses-cobertura">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:3px" id="dash-meses-sub">baseado no consumo médio</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Previsão de término</div>
+              <div style="font-size:24px;font-weight:600;color:var(--red)" id="dash-previsao-fim">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:3px">data estimada</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Próxima compra recomendada</div>
+              <div style="font-size:18px;font-weight:600;color:var(--teal)" id="dash-proxima-compra">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:3px">prazo de entrega: ~90 dias</div>
+            </div>
+          </div>
+
+          <!-- BARRA DE COBERTURA -->
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:20px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <span style="font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.07em">Nível de cobertura do estoque</span>
+              <span style="font-size:11px;color:var(--text3)" id="dash-bar-label">—</span>
+            </div>
+            <div style="height:12px;background:var(--surface3);border-radius:6px;overflow:hidden">
+              <div id="dash-bar-fill" style="height:100%;border-radius:6px;background:var(--accent);transition:width .6s,background .3s;width:0%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--text3)">
+              <span>🔴 Crítico</span><span>🟡 Atenção</span><span>🟢 Saudável</span>
+            </div>
+          </div>
+
+          <!-- INDICADOR DE REPOSIÇÃO -->
+          <div id="dash-reposicao" style="border-radius:var(--radius-lg);padding:16px;margin-bottom:20px;border:1px solid var(--border)"></div>
+
+          <!-- CONSUMO POR MÊS -->
+          <div class="sec-title">Consumo mensal — Licenciamento vs Chip Avulso</div>
+          <div id="dash-consumo-mensal" style="margin-bottom:20px"></div>
+
+          <!-- ÚLTIMA ATUALIZAÇÃO -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);font-size:11px;color:var(--text3)">
+            <span>Última atualização: <strong id="dash-ultima-atualizacao" style="color:var(--text2)">—</strong></span>
+            <span id="dash-fonte" style="color:var(--text3)">Fonte: Planilha de vendas + Estoque sede + Contel</span>
+          </div>
+        </div>
+
+        <!-- SEDE (antigo Estoque) -->
+        <div id="page-sede" class="page">
           <div id="stk-alert" class="alert-bar" style="display:none">
             <svg viewBox="0 0 24 24" style="width:15px;height:15px;flex-shrink:0;stroke:var(--amber);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             <span id="stk-alert-txt"></span>
@@ -800,11 +923,11 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
         </div>
 
         <!-- LOGÍSTICA -->
-        <div id="page-logistica" class="page">
+        <div id="page-cd" class="page">
           <div class="config-card" style="margin-bottom:16px;border-color:var(--accent-dark)">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
               <div>
-                <div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Estoque atual — Logística</div>
+                <div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Estoque atual — CD</div>
                 <div style="display:flex;align-items:baseline;gap:10px">
                   <span style="font-size:36px;font-weight:600;color:var(--accent);letter-spacing:-.02em" id="logi-estoque-val">—</span>
                   <span style="font-size:13px;color:var(--text3)">chips</span>
@@ -1369,20 +1492,22 @@ var LS = { qty: null, desde: null, log: [] };
 var TITLES = {
   launch:     'Novo lançamento',
   stock:      'Estoque',
+  sede:       'Sede',
   ops:        'Operações',
   history:    'Histórico',
-  contel:     'Logística Contel',
-  logistica:  'Logística — Vendas',
+  contel:     'Contel',
+  cd:         'CD — Centro de Distribuição',
   licenciados:'Base Licenciados',
   config:     'Configurações'
 };
 var SUBS = {
   launch:     'Selecione a natureza e preencha os dados',
-  stock:      'Visão geral e filtro de saídas de chips',
+  stock:      'Dashboard executivo — visão consolidada de toda a operação',
+  sede:       'Estoque físico da sede — saídas, entradas e filtros',
   ops:        'Recargas, ativações e reativações',
   history:    'Todos os lançamentos registrados',
   contel:     'Chips e envelopes enviados ao Contel do país',
-  logistica:  'Análise de vendas e movimento de chips por planilha',
+  cd:         'Análise de vendas e movimento de chips por planilha',
   licenciados:'Licenciados com chips enviados e não ativados',
   config:     'Conexão com Google Sheets e preferências'
 };
@@ -1441,12 +1566,13 @@ function setPage(p, btn){
   if(btn) btn.classList.add('active');
   document.getElementById('top-title').textContent = TITLES[p];
   document.getElementById('top-sub').textContent = SUBS[p];
-  if(p==='stock')       renderStock();
+  if(p==='stock')       renderDashboard();
+  if(p==='sede')        renderStock();
   if(p==='ops')         renderOps();
   if(p==='history')     renderHistory();
   if(p==='contel')      renderContel();
   if(p==='licenciados') renderLicenciados();
-  if(p==='logistica'){
+  if(p==='cd'){
     if(!LG.data && document.getElementById('sync-dot').className.indexOf('spin')>=0){
       document.getElementById('logi-empty').style.display = 'none';
       document.getElementById('logi-content').style.display = 'none';
@@ -1457,7 +1583,7 @@ function setPage(p, btn){
         ll.className = 'empty';
         ll.style.padding = '60px 0';
         ll.innerHTML = '⏳ Carregando dados do servidor...';
-        document.getElementById('page-logistica').appendChild(ll);
+        document.getElementById('page-cd').appendChild(ll);
       } else {
         ll.style.display = 'block';
       }
@@ -1839,7 +1965,7 @@ function loadFromSheets(){
           if(!LG.data.avuRegistry) LG.data.avuRegistry = {};
         }
         
-        if(document.getElementById('page-logistica').classList.contains('active'))    renderLogistica();
+        if(document.getElementById('page-cd').classList.contains('active'))    renderLogistica();
         if(document.getElementById('page-licenciados').classList.contains('active')) renderLicenciados();
       } else {
         // Sem dados no Sheets — tenta restaurar tudo do localStorage
@@ -1936,6 +2062,205 @@ function saveUsers(){
 </script>
 
 <script>
+
+/* ── DASHBOARD EXECUTIVO ─────────────────────────────── */
+function renderDashboard(){
+  // Coleta dados de todas as fontes
+  var sedeChips = S.stock || 0;
+  var contelChips = SL.chips || 0;
+  var cdChips = (LS && LS.qty !== null) ? LS.qty : 0;
+  var totalChips = sedeChips + contelChips + cdChips;
+
+  // Consumo (dados da planilha de logística)
+  var licEnviados = (LG.data && LG.data.licChips) ? LG.data.licChips : 0;
+  var avuEnviados = (LG.data && LG.data.avuChips) ? LG.data.avuChips : 0;
+  var totalConsumido = licEnviados + avuEnviados;
+  var disponivel = Math.max(0, totalChips);
+
+  // Cards principais
+  document.getElementById('dash-total').textContent = totalChips.toLocaleString('pt-BR');
+  document.getElementById('dash-sede').textContent = sedeChips.toLocaleString('pt-BR');
+  document.getElementById('dash-contel').textContent = contelChips.toLocaleString('pt-BR');
+  document.getElementById('dash-cd').textContent = cdChips.toLocaleString('pt-BR');
+
+  // Consumo
+  document.getElementById('dash-lic-env').textContent = licEnviados.toLocaleString('pt-BR');
+  document.getElementById('dash-avu-env').textContent = avuEnviados.toLocaleString('pt-BR');
+  document.getElementById('dash-consumido').textContent = totalConsumido.toLocaleString('pt-BR');
+  document.getElementById('dash-disponivel').textContent = disponivel.toLocaleString('pt-BR');
+
+  // Consumo médio mensal (últimos meses da planilha)
+  var monthlyChips = (LG.data && LG.data.monthlyChips) ? LG.data.monthlyChips : {};
+  var mKeys = Object.keys(monthlyChips).sort();
+  var mediaMensal = 0;
+  if(mKeys.length > 0){
+    var vals = mKeys.map(function(k){ return monthlyChips[k]; }).filter(function(v){ return v > 0; });
+    // Usa últimos 3 meses para média mais recente
+    var recentes = vals.slice(-3);
+    mediaMensal = recentes.length > 0 ? Math.round(recentes.reduce(function(a,b){return a+b;},0) / recentes.length) : 0;
+  }
+  document.getElementById('dash-media-mensal').textContent = mediaMensal > 0 ? mediaMensal.toLocaleString('pt-BR') : '—';
+
+  // Meses de cobertura
+  var mesesCobertura = mediaMensal > 0 ? (disponivel / mediaMensal) : 0;
+  var mesesTxt = mediaMensal > 0 ? mesesCobertura.toFixed(1) : '—';
+  document.getElementById('dash-meses-cobertura').textContent = mesesTxt;
+  document.getElementById('dash-health-months').textContent = mesesTxt;
+
+  // Cor dos meses de cobertura
+  var corMeses = mesesCobertura > 6 ? 'var(--accent)' : (mesesCobertura > 3 ? 'var(--amber)' : 'var(--red)');
+  document.getElementById('dash-meses-cobertura').style.color = corMeses;
+  document.getElementById('dash-health-months').style.color = corMeses;
+
+  // Previsão de término
+  if(mediaMensal > 0){
+    var mesesRestantes = Math.floor(mesesCobertura);
+    var dtFim = new Date();
+    dtFim.setMonth(dtFim.getMonth() + mesesRestantes);
+    var ms = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    document.getElementById('dash-previsao-fim').textContent = ms[dtFim.getMonth()] + '/' + dtFim.getFullYear();
+    document.getElementById('dash-previsao-fim').style.color = corMeses;
+  } else {
+    document.getElementById('dash-previsao-fim').textContent = '—';
+  }
+
+  // Próxima compra recomendada (considerando 90 dias de lead time)
+  var elCompra = document.getElementById('dash-proxima-compra');
+  if(mediaMensal > 0){
+    var mesesAteCompra = Math.max(0, mesesCobertura - 3); // 3 meses = 90 dias
+    if(mesesAteCompra <= 0){
+      elCompra.textContent = 'AGORA — urgente';
+      elCompra.style.color = 'var(--red)';
+    } else if(mesesAteCompra <= 1){
+      elCompra.textContent = 'Em até 30 dias';
+      elCompra.style.color = 'var(--amber)';
+    } else {
+      var dtCompra = new Date();
+      dtCompra.setMonth(dtCompra.getMonth() + Math.floor(mesesAteCompra));
+      elCompra.textContent = ms[dtCompra.getMonth()] + '/' + dtCompra.getFullYear();
+      elCompra.style.color = 'var(--teal)';
+    }
+  } else {
+    elCompra.textContent = '—';
+  }
+
+  // Barra de cobertura (12 meses = 100%)
+  var pctBarra = Math.min(100, Math.round(mesesCobertura / 12 * 100));
+  var barFill = document.getElementById('dash-bar-fill');
+  barFill.style.width = pctBarra + '%';
+  barFill.style.background = mesesCobertura > 6 ? 'var(--accent)' : (mesesCobertura > 3 ? 'var(--amber)' : 'var(--red)');
+  document.getElementById('dash-bar-label').textContent = pctBarra + '% — ' + mesesTxt + ' meses';
+
+  // Banner de saúde
+  var hBanner = document.getElementById('dash-health-banner');
+  var hIcon = document.getElementById('dash-health-icon');
+  var hTitle = document.getElementById('dash-health-title');
+  var hSub = document.getElementById('dash-health-sub');
+  if(mesesCobertura > 6){
+    hBanner.style.background = 'rgba(52,212,116,.06)';
+    hBanner.style.borderColor = 'rgba(52,212,116,.25)';
+    hIcon.textContent = '✅';
+    hTitle.textContent = 'Estoque saudável';
+    hTitle.style.color = 'var(--accent)';
+    hSub.textContent = 'Cobertura superior a 6 meses. Sem necessidade imediata de compra.';
+  } else if(mesesCobertura > 3){
+    hBanner.style.background = 'var(--amber-bg)';
+    hBanner.style.borderColor = 'var(--amber-border)';
+    hIcon.textContent = '⚠️';
+    hTitle.textContent = 'Atenção — iniciar processo de compra';
+    hTitle.style.color = 'var(--amber)';
+    hSub.textContent = 'Cobertura entre 3 e 6 meses. Considere iniciar nova compra (prazo de entrega ~90 dias).';
+  } else if(mesesCobertura > 0){
+    hBanner.style.background = 'var(--red-bg)';
+    hBanner.style.borderColor = 'var(--red-border)';
+    hIcon.textContent = '🚨';
+    hTitle.textContent = 'CRÍTICO — compra urgente recomendada';
+    hTitle.style.color = 'var(--red)';
+    hSub.textContent = 'Cobertura inferior a 3 meses! Risco de ruptura considerando prazo de reposição de 90 dias.';
+  } else {
+    hBanner.style.background = 'var(--surface2)';
+    hBanner.style.borderColor = 'var(--border)';
+    hIcon.textContent = '📊';
+    hTitle.textContent = 'Aguardando dados';
+    hTitle.style.color = 'var(--text2)';
+    hSub.textContent = 'Suba uma planilha de vendas na aba CD para ativar as previsões.';
+  }
+
+  // Indicador de reposição
+  var repEl = document.getElementById('dash-reposicao');
+  if(mediaMensal > 0){
+    var consumo3m = mediaMensal * 3;
+    var sugestao = Math.ceil(consumo3m * 1.15 / 100) * 100;
+    var urgente = mesesCobertura <= 3;
+    repEl.style.background = urgente ? 'rgba(240,107,107,.06)' : 'rgba(52,212,116,.04)';
+    repEl.style.borderColor = urgente ? 'var(--red-border)' : 'rgba(52,212,116,.2)';
+    repEl.innerHTML =
+      '<div style="font-size:11px;font-weight:600;color:'+(urgente?'var(--red)':'var(--accent)')+';text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">'+(urgente?'🚨 Compra imediata necessária':'💡 Necessidade estimada de compra')+'</div>'+
+      '<div style="display:flex;align-items:baseline;gap:12px">'+
+        '<span style="font-size:28px;font-weight:600;color:'+(urgente?'var(--red)':'var(--accent)')+'">'+sugestao.toLocaleString('pt-BR')+' chips</span>'+
+        '<span style="font-size:12px;color:var(--text3)">para cobrir os próximos 3 meses (+15% margem)</span>'+
+      '</div>'+
+      (urgente ? '<div style="margin-top:8px;font-size:12px;color:var(--red)">⚠️ O estoque pode acabar antes da nova remessa chegar (lead time ~90 dias).</div>' : '');
+  } else {
+    repEl.style.background = 'var(--surface2)';
+    repEl.style.borderColor = 'var(--border)';
+    repEl.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:8px">Suba uma planilha de vendas para ativar indicadores de reposição.</div>';
+  }
+
+  // Gráfico consumo mensal
+  var monthlyByType = (LG.data && LG.data.monthlyByType) ? LG.data.monthlyByType : {};
+  var cmKeys = Object.keys(monthlyByType).sort();
+  var cmEl = document.getElementById('dash-consumo-mensal');
+  if(cmKeys.length){
+    var maxCm = 1;
+    cmKeys.forEach(function(k){
+      var lic = 0, avu = 0;
+      Object.keys(monthlyByType[k]).forEach(function(t){
+        if(t.toLowerCase().indexOf('avulso') >= 0) avu += monthlyByType[k][t];
+        else lic += monthlyByType[k][t];
+      });
+      if(lic+avu > maxCm) maxCm = lic+avu;
+    });
+    var tblHtml = '<table class="rtable"><thead><tr><th>Mês</th><th style="color:var(--amber)">Licenciamento</th><th style="color:var(--blue)">Chip avulso</th><th>Total</th><th style="width:25%">Distribuição</th></tr></thead><tbody>';
+    cmKeys.forEach(function(k){
+      var d2=new Date(k+'-01');var lbl=String(d2.getMonth()+1).padStart(2,'0')+'/'+d2.getFullYear();
+      var lic=0,avu=0;
+      Object.keys(monthlyByType[k]).forEach(function(t){
+        if(t.toLowerCase().indexOf('avulso')>=0)avu+=monthlyByType[k][t];
+        else lic+=monthlyByType[k][t];
+      });
+      var tot=lic+avu;
+      var pct=Math.round(tot/maxCm*100);
+      var pLic=tot>0?Math.round(lic/tot*100):0;
+      tblHtml+='<tr><td style="font-weight:500">'+lbl+'</td><td style="color:var(--amber)">'+lic.toLocaleString('pt-BR')+'</td><td style="color:var(--blue)">'+avu.toLocaleString('pt-BR')+'</td><td style="font-weight:600;color:var(--accent)">'+tot.toLocaleString('pt-BR')+'</td><td><div style="display:flex;height:7px;border-radius:4px;overflow:hidden;background:var(--surface3)"><div style="width:'+pLic+'%;background:var(--amber)"></div><div style="width:'+(100-pLic)+'%;background:var(--blue)"></div></div></td></tr>';
+    });
+    tblHtml+='</tbody></table>';
+    cmEl.innerHTML=tblHtml;
+  } else {
+    cmEl.innerHTML='<div class="empty">Nenhum dado de consumo mensal. Suba uma planilha na aba CD.</div>';
+  }
+
+  // Última atualização
+  var lastUpdate = (LG.data && LG.data.uploadDate) ? new Date(LG.data.uploadDate) : null;
+  document.getElementById('dash-ultima-atualizacao').textContent = lastUpdate
+    ? lastUpdate.toLocaleDateString('pt-BR') + ' ' + lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})
+    : 'Nenhuma planilha carregada';
+
+  // Alerta de dados desatualizados
+  var alertEl = document.getElementById('dash-stale-alert');
+  if(lastUpdate){
+    var diasDesde = Math.round((Date.now() - lastUpdate.getTime()) / (1000*60*60*24));
+    if(diasDesde > 7){
+      alertEl.style.display = 'flex';
+      document.getElementById('dash-stale-txt').textContent = 'Estoque sem atualização há '+diasDesde+' dias. As previsões podem estar imprecisas. Suba uma nova planilha na aba CD.';
+    } else {
+      alertEl.style.display = 'none';
+    }
+  } else {
+    alertEl.style.display = 'none';
+  }
+}
+
 /* ── STOCK PAGE ──────────────────────────────────────── */
 function renderStock(){
   var chips    = S.recs.filter(function(r){ return r.nature==='chip';  });
