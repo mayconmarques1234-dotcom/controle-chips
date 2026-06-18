@@ -3968,9 +3968,10 @@ function processLogiFile(arrayBuffer, fileName){
     }
 
     // ── Processa aba ATIVAÇÕES (cruzamento com licenças + avulsos) ──
-    var totalAtv = prev.totalAtv || 0;
-    var atvByMonth = prev.atvByMonth || {};
-    var atvByMonthTipo = prev.atvByMonthTipo || {};
+    // FIX: sempre recalcula ativações do zero (evita acumulação entre uploads)
+    var totalAtv = 0;
+    var atvByMonth = {};
+    var atvByMonthTipo = {};
     // Mapa de codId -> tipo de licença (para classificar ativações)
     var licIdTipoMap = {};
     Object.keys(licRegistry).forEach(function(id){
@@ -3994,21 +3995,14 @@ function processLogiFile(arrayBuffer, fileName){
 
     if(sAtv){
       console.log('[Logística] Processando aba ativações...');
-      // Reseta ativados nos registries para reprocessar a partir do atvSeen acumulado
-      // NÃO reseta totalAtv/atvByMonth/atvByMonthTipo — o atvSeen evita duplicação
-      // e novos são somados ao total existente
       var rowsAtv = XLSX.utils.sheet_to_json(sAtv, { defval:'' });
+      // FIX E: sempre começa com atvSeen vazio — recalcula do zero
+      // Evita acumulação de dados residuais entre uploads
       var atvSeen = {};
-      // Carrega ativações já processadas em uploads anteriores
-      try {
-        var prevSeen = (LG.data && LG.data._atvSeen) ? LG.data._atvSeen : null;
-        if(!prevSeen){
-          var asStr = localStorage.getItem('cc_logi_atvSeen');
-          if(asStr) prevSeen = JSON.parse(asStr);
-        }
-        if(prevSeen) atvSeen = prevSeen;
-      } catch(e){}
-      console.log('[Logística] atvSeen inicial (dedup):', Object.keys(atvSeen).length);
+      // Reset ativados nos registries
+      Object.keys(licRegistry).forEach(function(id){ licRegistry[id].ativados = 0; });
+      Object.keys(avuRegistry).forEach(function(id){ avuRegistry[id].ativados = 0; });
+      console.log('[Logística] atvSeen resetado. Processando', rowsAtv.length, 'linhas de ativações...');
       rowsAtv.forEach(function(r){
         var codId = String(getCol(r, ['código (id)','codigo (id)','codigo_id','id_licenciado']) || '').trim();
         var idTelecom = String(getCol(r, ['id telecom','id_telecom','idtelecom']) || '').trim();
@@ -4018,7 +4012,8 @@ function processLogiFile(arrayBuffer, fileName){
         // Desconsiderar eSIM — só conta chip físico
         if(tipoLinha === 'esim') return;
         // Só conta se o ID existe em licença ou avulso (desta ou de upload anterior)
-        if(!licIdTipoMap[codId]) return;
+        // FIX: conta TODAS as ativações, classifica IDs sem match como ANTERIOR
+        // (licenciados que compraram antes do período da planilha)
         var atvKey = codId + '|' + idTelecom;
         if(atvSeen[atvKey]) return;
         atvSeen[atvKey] = true;
@@ -4038,14 +4033,15 @@ function processLogiFile(arrayBuffer, fileName){
             var mk = dObj.getFullYear()+'-'+String(dObj.getMonth()+1).padStart(2,'0');
             atvByMonth[mk] = (atvByMonth[mk]||0) + 1;
             // Por tipo
-            var tipoNorm = (licIdTipoMap[codId] || 'OUTRO').toUpperCase();
-            var tn = 'OUTRO';
-            if(tipoNorm.indexOf('EXPERT')>=0 && tipoNorm.indexOf('TELECOM')>=0) tn='EXPERT_TELECOM';
+            var tipoNorm = (licIdTipoMap[codId] || '').toUpperCase();
+            var tn = 'ANTERIOR';
+            if(!tipoNorm || tipoNorm === 'OUTRO') tn = 'ANTERIOR';
+            else if(tipoNorm.indexOf('EXPERT')>=0 && tipoNorm.indexOf('TELECOM')>=0) tn='EXPERT_TELECOM';
             else if(tipoNorm.indexOf('EXPERT')>=0) tn='EXPERT';
             else if(tipoNorm.indexOf('TELECOM')>=0) tn='TELECOM';
             else if(tipoNorm.indexOf('VOUCHER')>=0) tn='VOUCHER';
             else if(tipoNorm.indexOf('AVULSO')>=0 || tipoNorm.indexOf('CHIP')>=0) tn='AVULSO';
-            if(!atvByMonthTipo[mk]) atvByMonthTipo[mk] = {EXPERT:0,EXPERT_TELECOM:0,TELECOM:0,VOUCHER:0,AVULSO:0,OUTRO:0};
+            if(!atvByMonthTipo[mk]) atvByMonthTipo[mk] = {EXPERT:0,EXPERT_TELECOM:0,TELECOM:0,VOUCHER:0,AVULSO:0,ANTERIOR:0};
             atvByMonthTipo[mk][tn] = (atvByMonthTipo[mk][tn]||0) + 1;
           }
         }
@@ -4336,9 +4332,9 @@ function renderLicenciados(){
   var atvTipoKeys = Object.keys(atvTipoMes).sort();
   if(atvTipoKeys.length){
     // Formato original: {EXPERT:0, EXPERT_TELECOM:0, TELECOM:0, VOUCHER:0, AVULSO:0, OUTRO:0}
-    var tipoLabels = ['EXPERT','EXPERT_TELECOM','TELECOM','VOUCHER','AVULSO','OUTRO'];
-    var tipoCoresAtv = {'EXPERT':'var(--accent)','EXPERT_TELECOM':'var(--blue)','TELECOM':'var(--amber)','VOUCHER':'var(--purple)','AVULSO':'var(--teal)','OUTRO':'var(--text3)'};
-    var tipoNames = {'EXPERT':'Expert','EXPERT_TELECOM':'Expert+Telecom','TELECOM':'Telecom','VOUCHER':'Voucher','AVULSO':'Chip avulso','OUTRO':'Outro'};
+    var tipoLabels = ['EXPERT','EXPERT_TELECOM','TELECOM','VOUCHER','AVULSO','ANTERIOR'];
+    var tipoCoresAtv = {'EXPERT':'var(--accent)','EXPERT_TELECOM':'var(--blue)','TELECOM':'var(--amber)','VOUCHER':'var(--purple)','AVULSO':'var(--teal)','ANTERIOR':'var(--text3)'};
+    var tipoNames = {'EXPERT':'Expert','EXPERT_TELECOM':'Expert+Telecom','TELECOM':'Telecom','VOUCHER':'Voucher','AVULSO':'Chip avulso','ANTERIOR':'Anteriores'};
     var mhtml = '<table class="rtable"><thead><tr><th>MÊS</th>';
     tipoLabels.forEach(function(t){ mhtml += '<th style="color:'+(tipoCoresAtv[t]||'var(--text2)')+'">'+tipoNames[t]+'</th>'; });
     mhtml += '<th style="font-weight:600">TOTAL</th></tr></thead><tbody>';
