@@ -379,39 +379,6 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
   background:var(--purple-bg);border:1px solid var(--purple-border);
   color:var(--purple);font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500;
 }
-
-/* ── RESUMO EXECUTIVO / APRESENTAÇÃO ────── */
-.present-mode .sidebar,.present-mode .topnav{display:none!important}
-.present-mode .body-wrap{display:block}
-.present-mode .main{max-width:100%}
-.present-mode .topbar{display:none!important}
-.present-mode .content{padding:24px 32px}
-.resumo-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
-.resumo-brand{display:flex;align-items:center;gap:12px}
-.resumo-brand-icon{width:42px;height:42px;background:var(--accent);border-radius:11px;display:flex;align-items:center;justify-content:center}
-.resumo-brand-icon svg{width:24px;height:24px;stroke:#0d1a0d;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-.resumo-hero{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
-.rh-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px 28px;position:relative;overflow:hidden}
-.rh-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.rh-card.g::before{background:var(--accent)}.rh-card.a::before{background:var(--amber)}.rh-card.t::before{background:var(--teal)}.rh-card.b::before{background:var(--blue)}.rh-card.r::before{background:var(--red)}.rh-card.p::before{background:var(--purple)}
-.rh-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:500}
-.rh-val{font-size:42px;font-weight:600;letter-spacing:-.03em;margin-top:6px;line-height:1}
-.rh-sub{font-size:12px;color:var(--text3);margin-top:8px}
-.resumo-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
-.resumo-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:20px 24px}
-.resumo-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.rbar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.rbar-lbl{font-size:13px;color:var(--text2);width:50px;flex-shrink:0;font-weight:500}
-.rbar-track{flex:1;height:10px;background:var(--surface3);border-radius:5px;overflow:hidden}
-.rbar-fill{height:100%;border-radius:5px;transition:width .6s}
-.rbar-num{font-size:13px;font-weight:600;width:70px;text-align:right;font-family:var(--mono)}
-.btn-present{
-  display:inline-flex;align-items:center;gap:7px;
-  background:var(--surface3);color:var(--text2);border:1px solid var(--border2);
-  border-radius:var(--radius);padding:8px 16px;font-size:12px;cursor:pointer;
-  font-family:var(--font);transition:all .15s;
-}
-.btn-present:hover{background:var(--accent);color:#0d1a0d;border-color:var(--accent)}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
 </head>
@@ -478,10 +445,6 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
         <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
         Estoque
       </button>
-      <button class="nav-item" onclick="setPage('resumo',this)">
-        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        Resumo Executivo
-      </button>
       <button class="nav-item" onclick="setPage('ops',this)">
         <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
         Operações
@@ -491,13 +454,17 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
         Histórico
         <span class="nav-badge" id="badge-count" style="display:none">0</span>
       </button>
-      <button class="nav-item" onclick="setPage('contel',this)">
+      <button class="nav-item" onclick="setPage('sede',this)">
         <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Sede
+      </button>
+      <button class="nav-item" onclick="setPage('contel',this)">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         Contel
       </button>
-      <button class="nav-item" onclick="setPage('logistica',this)">
+      <button class="nav-item" onclick="setPage('cd',this)">
         <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        Logística
+        CD
       </button>
       <button class="nav-item" onclick="setPage('licenciados',this)">
         <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -534,7 +501,7 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
         </div>
         <div style="margin-bottom:10px;padding:8px 10px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border)">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <span style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Chip entrega</span>
+            <span style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">CD</span>
             <span style="font-size:15px;font-weight:600;color:var(--purple);font-family:var(--mono)" id="sb-logi">—</span>
           </div>
           <div style="height:3px;background:var(--surface3);border-radius:2px;overflow:hidden">
@@ -671,8 +638,127 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
           </div>
         </div>
 
-        <!-- ESTOQUE -->
+        <!-- ESTOQUE — DASHBOARD EXECUTIVO -->
         <div id="page-stock" class="page">
+          <div id="dash-stale-alert" class="alert-bar" style="display:none">
+            <svg viewBox="0 0 24 24" style="width:15px;height:15px;flex-shrink:0;stroke:var(--amber);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span id="dash-stale-txt"></span>
+          </div>
+
+          <!-- SAÚDE DO ESTOQUE -->
+          <div id="dash-health-banner" style="border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;border:1px solid var(--border)">
+            <div id="dash-health-icon" style="font-size:40px;flex-shrink:0">📊</div>
+            <div style="flex:1;min-width:0">
+              <div id="dash-health-title" style="font-size:16px;font-weight:600;margin-bottom:3px">Carregando...</div>
+              <div id="dash-health-sub" style="font-size:13px;color:var(--text2)">Aguarde a sincronização dos dados.</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div id="dash-health-months" style="font-size:32px;font-weight:600;letter-spacing:-.02em">—</div>
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em">meses de cobertura</div>
+            </div>
+          </div>
+
+          <!-- CARDS PRINCIPAIS -->
+          <div class="metrics" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+            <div class="mc g" style="padding:18px;position:relative">
+              <div class="mc-lbl" style="margin-top:0">Total de chips</div>
+              <div class="mc-val" id="dash-total" style="font-size:32px;margin-top:6px">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px">SEDE + CONTEL + CD</div>
+            </div>
+            <div class="mc b" style="padding:18px;cursor:pointer" onclick="setPage('sede',document.querySelector('[onclick*=sede]'))">
+              <div class="mc-lbl" style="margin-top:0">Sede</div>
+              <div class="mc-val" id="dash-sede" style="font-size:32px;margin-top:6px">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px">chips físicos</div>
+            </div>
+            <div class="mc a" style="padding:18px;cursor:pointer" onclick="setPage('contel',document.querySelector('[onclick*=contel]'))">
+              <div class="mc-lbl" style="margin-top:0">Contel</div>
+              <div class="mc-val" id="dash-contel" style="font-size:32px;margin-top:6px">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px">chips + envelopes</div>
+            </div>
+            <div class="mc p" style="padding:18px;cursor:pointer" onclick="setPage('cd',document.querySelector('[onclick*=\'cd\']'))">
+              <div class="mc-lbl" style="margin-top:0">CD</div>
+              <div class="mc-val" id="dash-cd" style="font-size:32px;margin-top:6px">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px">centro de distribuição</div>
+            </div>
+          </div>
+
+          <!-- CONSUMO -->
+          <div class="sec-title">Consumo de chips</div>
+          <div class="metrics" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:20px">
+            <div class="mc a" style="padding:16px">
+              <div class="mc-lbl" style="margin-top:0">Enviados por licenciamento</div>
+              <div class="mc-val" id="dash-lic-env" style="font-size:24px;margin-top:6px">—</div>
+            </div>
+            <div class="mc b" style="padding:16px">
+              <div class="mc-lbl" style="margin-top:0">Enviados por chip avulso</div>
+              <div class="mc-val" id="dash-avu-env" style="font-size:24px;margin-top:6px">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:3px">confirmados na DOM</div>
+            </div>
+            <div class="mc r" style="padding:16px">
+              <div class="mc-lbl" style="margin-top:0">Total consumido</div>
+              <div class="mc-val" id="dash-consumido" style="font-size:24px;margin-top:6px">—</div>
+            </div>
+            <div class="mc g" style="padding:16px">
+              <div class="mc-lbl" style="margin-top:0">Estoque disponível</div>
+              <div class="mc-val" id="dash-disponivel" style="font-size:24px;margin-top:6px">—</div>
+            </div>
+          </div>
+
+          <!-- PREVISÃO -->
+          <div class="sec-title">Previsão e cobertura</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Consumo médio mensal</div>
+              <div style="font-size:24px;font-weight:600;color:var(--amber)" id="dash-media-mensal">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:3px">chips/mês</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Meses de cobertura</div>
+              <div style="font-size:24px;font-weight:600" id="dash-meses-cobertura">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:3px" id="dash-meses-sub">baseado no consumo médio</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Previsão de término</div>
+              <div style="font-size:24px;font-weight:600;color:var(--red)" id="dash-previsao-fim">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:3px">data estimada</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Próxima compra recomendada</div>
+              <div style="font-size:18px;font-weight:600;color:var(--teal)" id="dash-proxima-compra">—</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:3px">prazo de entrega: ~90 dias</div>
+            </div>
+          </div>
+
+          <!-- BARRA DE COBERTURA -->
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:20px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <span style="font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.07em">Nível de cobertura do estoque</span>
+              <span style="font-size:11px;color:var(--text3)" id="dash-bar-label">—</span>
+            </div>
+            <div style="height:12px;background:var(--surface3);border-radius:6px;overflow:hidden">
+              <div id="dash-bar-fill" style="height:100%;border-radius:6px;background:var(--accent);transition:width .6s,background .3s;width:0%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--text3)">
+              <span>🔴 Crítico</span><span>🟡 Atenção</span><span>🟢 Saudável</span>
+            </div>
+          </div>
+
+          <!-- INDICADOR DE REPOSIÇÃO -->
+          <div id="dash-reposicao" style="border-radius:var(--radius-lg);padding:16px;margin-bottom:20px;border:1px solid var(--border)"></div>
+
+          <!-- CONSUMO POR MÊS -->
+          <div class="sec-title">Consumo mensal — Licenciamento vs Chip Avulso</div>
+          <div id="dash-consumo-mensal" style="margin-bottom:20px"></div>
+
+          <!-- ÚLTIMA ATUALIZAÇÃO -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);font-size:11px;color:var(--text3)">
+            <span>Última atualização: <strong id="dash-ultima-atualizacao" style="color:var(--text2)">—</strong></span>
+            <span id="dash-fonte" style="color:var(--text3)">Fonte: Planilha de vendas + Estoque sede + Contel</span>
+          </div>
+        </div>
+
+        <!-- SEDE (antigo Estoque) -->
+        <div id="page-sede" class="page">
           <div id="stk-alert" class="alert-bar" style="display:none">
             <svg viewBox="0 0 24 24" style="width:15px;height:15px;flex-shrink:0;stroke:var(--amber);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             <span id="stk-alert-txt"></span>
@@ -837,11 +923,11 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
         </div>
 
         <!-- LOGÍSTICA -->
-        <div id="page-logistica" class="page">
+        <div id="page-cd" class="page">
           <div class="config-card" style="margin-bottom:16px;border-color:var(--accent-dark)">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
               <div>
-                <div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Estoque atual — Logística</div>
+                <div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Estoque atual — CD</div>
                 <div style="display:flex;align-items:baseline;gap:10px">
                   <span style="font-size:36px;font-weight:600;color:var(--accent);letter-spacing:-.02em" id="logi-estoque-val">—</span>
                   <span style="font-size:13px;color:var(--text3)">chips</span>
@@ -963,67 +1049,6 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
             <div id="lic-show-more" style="display:none;margin-top:10px">
               <button onclick="toggleLicAll()" id="lic-toggle-btn" class="btn-secondary" style="font-size:11px">Ver todos os licenciados com pendências</button>
             </div>
-          </div>
-        </div>
-
-        <!-- RESUMO EXECUTIVO -->
-        <div id="page-resumo" class="page">
-          <div class="resumo-header">
-            <div class="resumo-brand">
-              <div class="resumo-brand-icon">
-                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-              </div>
-              <div>
-                <div style="font-size:18px;font-weight:600;color:var(--text)">Chips Control · iGreen Telecom</div>
-                <div style="font-size:12px;color:var(--text3)" id="resumo-date">Relatório atualizado em —</div>
-              </div>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <button class="btn-present" onclick="togglePresentMode()">
-                <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                <span id="present-btn-label">Modo Apresentação</span>
-              </button>
-              <button class="btn-primary" onclick="exportFullReport()" style="font-size:12px;padding:8px 16px">
-                <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#0d1a0d;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Exportar Relatório Excel
-              </button>
-            </div>
-          </div>
-
-          <!-- Hero KPIs -->
-          <div class="resumo-hero" id="resumo-hero"></div>
-
-          <!-- Stock breakdown -->
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px" id="resumo-stock-cards"></div>
-
-          <!-- Two-column grid -->
-          <div class="resumo-grid">
-            <div class="resumo-section">
-              <div class="resumo-section-title">📊 Consumo mensal</div>
-              <div id="resumo-monthly"></div>
-            </div>
-            <div class="resumo-section">
-              <div class="resumo-section-title">📋 Ativações por tipo</div>
-              <div id="resumo-atv-tipo"></div>
-            </div>
-          </div>
-
-          <!-- Health + UFs -->
-          <div class="resumo-grid">
-            <div class="resumo-section">
-              <div class="resumo-section-title">🏥 Saúde do estoque</div>
-              <div id="resumo-health"></div>
-            </div>
-            <div class="resumo-section">
-              <div class="resumo-section-title">🗺️ Top 10 estados (UF)</div>
-              <div id="resumo-ufs"></div>
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-top:20px;font-size:11px;color:var(--text3)">
-            <span>Fonte: Planilha de vendas + Estoque sede + Contel · Processado via Chips Control</span>
-            <span id="resumo-footer-date">—</span>
           </div>
         </div>
 
@@ -1467,22 +1492,22 @@ var LS = { qty: null, desde: null, log: [] };
 var TITLES = {
   launch:     'Novo lançamento',
   stock:      'Estoque',
-  resumo:     'Resumo Executivo',
+  sede:       'Sede',
   ops:        'Operações',
   history:    'Histórico',
-  contel:     'Logística Contel',
-  logistica:  'Logística — Vendas',
+  contel:     'Contel',
+  cd:         'CD — Centro de Distribuição',
   licenciados:'Base Licenciados',
   config:     'Configurações'
 };
 var SUBS = {
   launch:     'Selecione a natureza e preencha os dados',
-  stock:      'Visão geral e filtro de saídas de chips',
-  resumo:     'Visão consolidada para apresentação executiva',
+  stock:      'Dashboard executivo — visão consolidada de toda a operação',
+  sede:       'Estoque físico da sede — saídas, entradas e filtros',
   ops:        'Recargas, ativações e reativações',
   history:    'Todos os lançamentos registrados',
   contel:     'Chips e envelopes enviados ao Contel do país',
-  logistica:  'Análise de vendas e movimento de chips por planilha',
+  cd:         'Análise de vendas e movimento de chips por planilha',
   licenciados:'Licenciados com chips enviados e não ativados',
   config:     'Conexão com Google Sheets e preferências'
 };
@@ -1541,13 +1566,13 @@ function setPage(p, btn){
   if(btn) btn.classList.add('active');
   document.getElementById('top-title').textContent = TITLES[p];
   document.getElementById('top-sub').textContent = SUBS[p];
-  if(p==='stock')       renderStock();
-  if(p==='resumo')      renderResumo();
+  if(p==='stock')       renderDashboard();
+  if(p==='sede')        renderStock();
   if(p==='ops')         renderOps();
   if(p==='history')     renderHistory();
   if(p==='contel')      renderContel();
   if(p==='licenciados') renderLicenciados();
-  if(p==='logistica'){
+  if(p==='cd'){
     if(!LG.data && document.getElementById('sync-dot').className.indexOf('spin')>=0){
       document.getElementById('logi-empty').style.display = 'none';
       document.getElementById('logi-content').style.display = 'none';
@@ -1558,7 +1583,7 @@ function setPage(p, btn){
         ll.className = 'empty';
         ll.style.padding = '60px 0';
         ll.innerHTML = '⏳ Carregando dados do servidor...';
-        document.getElementById('page-logistica').appendChild(ll);
+        document.getElementById('page-cd').appendChild(ll);
       } else {
         ll.style.display = 'block';
       }
@@ -1871,16 +1896,22 @@ function loadFromSheets(){
           // Atualiza campos de resumo que o Sheets pode ter mais recente (de outro PC)
           if(sheetsData.uploadDate && (!localData.uploadDate || new Date(sheetsData.uploadDate) > new Date(localData.uploadDate))){
             // Sheets tem upload mais recente de outro PC — atualiza tudo
-            var savedReg = localData.licRegistry;
-            var savedAvu = localData.avuRegistry;
-            var savedMap = localData._licIdTipoMap;
-            var savedAtv = localData.atvByMonthTipo;
-            var savedAtvM = localData.atvByMonth;
-            var savedTotAtv = localData.totalAtv;
+            var savedReg     = localData.licRegistry;
+            var savedAvu     = localData.avuRegistry;
+            var savedMap     = localData._licIdTipoMap;
+            var savedAtv     = localData.atvByMonthTipo;
+            var savedAtvM    = localData.atvByMonth;
+            var savedTotAtv  = localData.totalAtv;
+            var savedLicLS   = localData._licLinesSeen;
+            var savedAvuLS   = localData._avuLinesSeen;
+            var savedAtvSeen = localData._atvSeen;
             LG.data = sheetsData;
-            LG.data.licRegistry = savedReg;
-            LG.data.avuRegistry = savedAvu;
-            LG.data._licIdTipoMap = savedMap;
+            LG.data.licRegistry    = savedReg;
+            LG.data.avuRegistry    = savedAvu;
+            LG.data._licIdTipoMap  = savedMap;
+            LG.data._licLinesSeen  = savedLicLS;
+            LG.data._avuLinesSeen  = savedAvuLS;
+            LG.data._atvSeen       = savedAtvSeen;
             if(!LG.data.atvByMonthTipo) LG.data.atvByMonthTipo = savedAtv;
             if(!LG.data.atvByMonth) LG.data.atvByMonth = savedAtvM;
             if(!LG.data.totalAtv && savedTotAtv){ LG.data.totalAtv = savedTotAtv; LG.data.ativados = savedTotAtv; }
@@ -1934,7 +1965,7 @@ function loadFromSheets(){
           if(!LG.data.avuRegistry) LG.data.avuRegistry = {};
         }
         
-        if(document.getElementById('page-logistica').classList.contains('active'))    renderLogistica();
+        if(document.getElementById('page-cd').classList.contains('active'))    renderLogistica();
         if(document.getElementById('page-licenciados').classList.contains('active')) renderLicenciados();
       } else {
         // Sem dados no Sheets — tenta restaurar tudo do localStorage
@@ -2031,6 +2062,205 @@ function saveUsers(){
 </script>
 
 <script>
+
+/* ── DASHBOARD EXECUTIVO ─────────────────────────────── */
+function renderDashboard(){
+  // Coleta dados de todas as fontes
+  var sedeChips = S.stock || 0;
+  var contelChips = SL.chips || 0;
+  var cdChips = (LS && LS.qty !== null) ? LS.qty : 0;
+  var totalChips = sedeChips + contelChips + cdChips;
+
+  // Consumo (dados da planilha de logística)
+  var licEnviados = (LG.data && LG.data.licChips) ? LG.data.licChips : 0;
+  var avuEnviados = (LG.data && LG.data.avuChips) ? LG.data.avuChips : 0;
+  var totalConsumido = licEnviados + avuEnviados;
+  var disponivel = Math.max(0, totalChips);
+
+  // Cards principais
+  document.getElementById('dash-total').textContent = totalChips.toLocaleString('pt-BR');
+  document.getElementById('dash-sede').textContent = sedeChips.toLocaleString('pt-BR');
+  document.getElementById('dash-contel').textContent = contelChips.toLocaleString('pt-BR');
+  document.getElementById('dash-cd').textContent = cdChips.toLocaleString('pt-BR');
+
+  // Consumo
+  document.getElementById('dash-lic-env').textContent = licEnviados.toLocaleString('pt-BR');
+  document.getElementById('dash-avu-env').textContent = avuEnviados.toLocaleString('pt-BR');
+  document.getElementById('dash-consumido').textContent = totalConsumido.toLocaleString('pt-BR');
+  document.getElementById('dash-disponivel').textContent = disponivel.toLocaleString('pt-BR');
+
+  // Consumo médio mensal (últimos meses da planilha)
+  var monthlyChips = (LG.data && LG.data.monthlyChips) ? LG.data.monthlyChips : {};
+  var mKeys = Object.keys(monthlyChips).sort();
+  var mediaMensal = 0;
+  if(mKeys.length > 0){
+    var vals = mKeys.map(function(k){ return monthlyChips[k]; }).filter(function(v){ return v > 0; });
+    // Usa últimos 3 meses para média mais recente
+    var recentes = vals.slice(-3);
+    mediaMensal = recentes.length > 0 ? Math.round(recentes.reduce(function(a,b){return a+b;},0) / recentes.length) : 0;
+  }
+  document.getElementById('dash-media-mensal').textContent = mediaMensal > 0 ? mediaMensal.toLocaleString('pt-BR') : '—';
+
+  // Meses de cobertura
+  var mesesCobertura = mediaMensal > 0 ? (disponivel / mediaMensal) : 0;
+  var mesesTxt = mediaMensal > 0 ? mesesCobertura.toFixed(1) : '—';
+  document.getElementById('dash-meses-cobertura').textContent = mesesTxt;
+  document.getElementById('dash-health-months').textContent = mesesTxt;
+
+  // Cor dos meses de cobertura
+  var corMeses = mesesCobertura > 6 ? 'var(--accent)' : (mesesCobertura > 3 ? 'var(--amber)' : 'var(--red)');
+  document.getElementById('dash-meses-cobertura').style.color = corMeses;
+  document.getElementById('dash-health-months').style.color = corMeses;
+
+  // Previsão de término
+  if(mediaMensal > 0){
+    var mesesRestantes = Math.floor(mesesCobertura);
+    var dtFim = new Date();
+    dtFim.setMonth(dtFim.getMonth() + mesesRestantes);
+    var ms = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    document.getElementById('dash-previsao-fim').textContent = ms[dtFim.getMonth()] + '/' + dtFim.getFullYear();
+    document.getElementById('dash-previsao-fim').style.color = corMeses;
+  } else {
+    document.getElementById('dash-previsao-fim').textContent = '—';
+  }
+
+  // Próxima compra recomendada (considerando 90 dias de lead time)
+  var elCompra = document.getElementById('dash-proxima-compra');
+  if(mediaMensal > 0){
+    var mesesAteCompra = Math.max(0, mesesCobertura - 3); // 3 meses = 90 dias
+    if(mesesAteCompra <= 0){
+      elCompra.textContent = 'AGORA — urgente';
+      elCompra.style.color = 'var(--red)';
+    } else if(mesesAteCompra <= 1){
+      elCompra.textContent = 'Em até 30 dias';
+      elCompra.style.color = 'var(--amber)';
+    } else {
+      var dtCompra = new Date();
+      dtCompra.setMonth(dtCompra.getMonth() + Math.floor(mesesAteCompra));
+      elCompra.textContent = ms[dtCompra.getMonth()] + '/' + dtCompra.getFullYear();
+      elCompra.style.color = 'var(--teal)';
+    }
+  } else {
+    elCompra.textContent = '—';
+  }
+
+  // Barra de cobertura (12 meses = 100%)
+  var pctBarra = Math.min(100, Math.round(mesesCobertura / 12 * 100));
+  var barFill = document.getElementById('dash-bar-fill');
+  barFill.style.width = pctBarra + '%';
+  barFill.style.background = mesesCobertura > 6 ? 'var(--accent)' : (mesesCobertura > 3 ? 'var(--amber)' : 'var(--red)');
+  document.getElementById('dash-bar-label').textContent = pctBarra + '% — ' + mesesTxt + ' meses';
+
+  // Banner de saúde
+  var hBanner = document.getElementById('dash-health-banner');
+  var hIcon = document.getElementById('dash-health-icon');
+  var hTitle = document.getElementById('dash-health-title');
+  var hSub = document.getElementById('dash-health-sub');
+  if(mesesCobertura > 6){
+    hBanner.style.background = 'rgba(52,212,116,.06)';
+    hBanner.style.borderColor = 'rgba(52,212,116,.25)';
+    hIcon.textContent = '✅';
+    hTitle.textContent = 'Estoque saudável';
+    hTitle.style.color = 'var(--accent)';
+    hSub.textContent = 'Cobertura superior a 6 meses. Sem necessidade imediata de compra.';
+  } else if(mesesCobertura > 3){
+    hBanner.style.background = 'var(--amber-bg)';
+    hBanner.style.borderColor = 'var(--amber-border)';
+    hIcon.textContent = '⚠️';
+    hTitle.textContent = 'Atenção — iniciar processo de compra';
+    hTitle.style.color = 'var(--amber)';
+    hSub.textContent = 'Cobertura entre 3 e 6 meses. Considere iniciar nova compra (prazo de entrega ~90 dias).';
+  } else if(mesesCobertura > 0){
+    hBanner.style.background = 'var(--red-bg)';
+    hBanner.style.borderColor = 'var(--red-border)';
+    hIcon.textContent = '🚨';
+    hTitle.textContent = 'CRÍTICO — compra urgente recomendada';
+    hTitle.style.color = 'var(--red)';
+    hSub.textContent = 'Cobertura inferior a 3 meses! Risco de ruptura considerando prazo de reposição de 90 dias.';
+  } else {
+    hBanner.style.background = 'var(--surface2)';
+    hBanner.style.borderColor = 'var(--border)';
+    hIcon.textContent = '📊';
+    hTitle.textContent = 'Aguardando dados';
+    hTitle.style.color = 'var(--text2)';
+    hSub.textContent = 'Suba uma planilha de vendas na aba CD para ativar as previsões.';
+  }
+
+  // Indicador de reposição
+  var repEl = document.getElementById('dash-reposicao');
+  if(mediaMensal > 0){
+    var consumo3m = mediaMensal * 3;
+    var sugestao = Math.ceil(consumo3m * 1.15 / 100) * 100;
+    var urgente = mesesCobertura <= 3;
+    repEl.style.background = urgente ? 'rgba(240,107,107,.06)' : 'rgba(52,212,116,.04)';
+    repEl.style.borderColor = urgente ? 'var(--red-border)' : 'rgba(52,212,116,.2)';
+    repEl.innerHTML =
+      '<div style="font-size:11px;font-weight:600;color:'+(urgente?'var(--red)':'var(--accent)')+';text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">'+(urgente?'🚨 Compra imediata necessária':'💡 Necessidade estimada de compra')+'</div>'+
+      '<div style="display:flex;align-items:baseline;gap:12px">'+
+        '<span style="font-size:28px;font-weight:600;color:'+(urgente?'var(--red)':'var(--accent)')+'">'+sugestao.toLocaleString('pt-BR')+' chips</span>'+
+        '<span style="font-size:12px;color:var(--text3)">para cobrir os próximos 3 meses (+15% margem)</span>'+
+      '</div>'+
+      (urgente ? '<div style="margin-top:8px;font-size:12px;color:var(--red)">⚠️ O estoque pode acabar antes da nova remessa chegar (lead time ~90 dias).</div>' : '');
+  } else {
+    repEl.style.background = 'var(--surface2)';
+    repEl.style.borderColor = 'var(--border)';
+    repEl.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:8px">Suba uma planilha de vendas para ativar indicadores de reposição.</div>';
+  }
+
+  // Gráfico consumo mensal
+  var monthlyByType = (LG.data && LG.data.monthlyByType) ? LG.data.monthlyByType : {};
+  var cmKeys = Object.keys(monthlyByType).sort();
+  var cmEl = document.getElementById('dash-consumo-mensal');
+  if(cmKeys.length){
+    var maxCm = 1;
+    cmKeys.forEach(function(k){
+      var lic = 0, avu = 0;
+      Object.keys(monthlyByType[k]).forEach(function(t){
+        if(t.toLowerCase().indexOf('avulso') >= 0) avu += monthlyByType[k][t];
+        else lic += monthlyByType[k][t];
+      });
+      if(lic+avu > maxCm) maxCm = lic+avu;
+    });
+    var tblHtml = '<table class="rtable"><thead><tr><th>Mês</th><th style="color:var(--amber)">Licenciamento</th><th style="color:var(--blue)">Chip avulso</th><th>Total</th><th style="width:25%">Distribuição</th></tr></thead><tbody>';
+    cmKeys.forEach(function(k){
+      var d2=new Date(k+'-01');var lbl=String(d2.getMonth()+1).padStart(2,'0')+'/'+d2.getFullYear();
+      var lic=0,avu=0;
+      Object.keys(monthlyByType[k]).forEach(function(t){
+        if(t.toLowerCase().indexOf('avulso')>=0)avu+=monthlyByType[k][t];
+        else lic+=monthlyByType[k][t];
+      });
+      var tot=lic+avu;
+      var pct=Math.round(tot/maxCm*100);
+      var pLic=tot>0?Math.round(lic/tot*100):0;
+      tblHtml+='<tr><td style="font-weight:500">'+lbl+'</td><td style="color:var(--amber)">'+lic.toLocaleString('pt-BR')+'</td><td style="color:var(--blue)">'+avu.toLocaleString('pt-BR')+'</td><td style="font-weight:600;color:var(--accent)">'+tot.toLocaleString('pt-BR')+'</td><td><div style="display:flex;height:7px;border-radius:4px;overflow:hidden;background:var(--surface3)"><div style="width:'+pLic+'%;background:var(--amber)"></div><div style="width:'+(100-pLic)+'%;background:var(--blue)"></div></div></td></tr>';
+    });
+    tblHtml+='</tbody></table>';
+    cmEl.innerHTML=tblHtml;
+  } else {
+    cmEl.innerHTML='<div class="empty">Nenhum dado de consumo mensal. Suba uma planilha na aba CD.</div>';
+  }
+
+  // Última atualização
+  var lastUpdate = (LG.data && LG.data.uploadDate) ? new Date(LG.data.uploadDate) : null;
+  document.getElementById('dash-ultima-atualizacao').textContent = lastUpdate
+    ? lastUpdate.toLocaleDateString('pt-BR') + ' ' + lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})
+    : 'Nenhuma planilha carregada';
+
+  // Alerta de dados desatualizados
+  var alertEl = document.getElementById('dash-stale-alert');
+  if(lastUpdate){
+    var diasDesde = Math.round((Date.now() - lastUpdate.getTime()) / (1000*60*60*24));
+    if(diasDesde > 7){
+      alertEl.style.display = 'flex';
+      document.getElementById('dash-stale-txt').textContent = 'Estoque sem atualização há '+diasDesde+' dias. As previsões podem estar imprecisas. Suba uma nova planilha na aba CD.';
+    } else {
+      alertEl.style.display = 'none';
+    }
+  } else {
+    alertEl.style.display = 'none';
+  }
+}
+
 /* ── STOCK PAGE ──────────────────────────────────────── */
 function renderStock(){
   var chips    = S.recs.filter(function(r){ return r.nature==='chip';  });
@@ -3113,25 +3343,16 @@ function renderLogistica(){
   var atvTipoEl = document.getElementById('logi-atv-tipo');
   if(atvTipoEl){
     if(tipoKeys.length){
-      var _tLabels = ['EXPERT','EXPERT_TELECOM','TELECOM','VOUCHER','AVULSO','ANTERIOR'];
-      var _tCores = {'EXPERT':'var(--accent)','EXPERT_TELECOM':'var(--blue)','TELECOM':'var(--teal)','VOUCHER':'var(--amber)','AVULSO':'var(--purple)','ANTERIOR':'var(--text3)'};
-      var _tNames = {'EXPERT':'Expert','EXPERT_TELECOM':'Expert+Telecom','TELECOM':'Telecom','VOUCHER':'Voucher','AVULSO':'Chip avulso','ANTERIOR':'Anteriores'};
-      var thtml = '<table class="rtable"><thead><tr><th>Mês</th>';
-      _tLabels.forEach(function(t){ thtml += '<th style="color:'+(_tCores[t]||'var(--text2)')+'">'+_tNames[t]+'</th>'; });
-      thtml += '<th>Total</th></tr></thead><tbody>';
-      var totT = {}; _tLabels.forEach(function(t){ totT[t]=0; });
+      var thtml = '<table class="rtable"><thead><tr><th>Mês</th><th style="color:var(--accent)">Expert</th><th style="color:var(--blue)">Expert+Telecom</th><th style="color:var(--teal)">Telecom</th><th style="color:var(--amber)">Voucher</th><th style="color:var(--text3)">Outro</th><th>Total</th></tr></thead><tbody>';
+      var totT = {EXPERT:0, EXPERT_TELECOM:0, TELECOM:0, VOUCHER:0, OUTRO:0};
       tipoKeys.forEach(function(m){
         var t = atvTipo[m];
-        var tot = 0;
-        _tLabels.forEach(function(k){ tot += (t[k]||0); totT[k] += (t[k]||0); });
-        thtml += '<tr><td style="font-weight:500">' + m + '</td>';
-        _tLabels.forEach(function(k){ thtml += '<td style="color:'+((t[k]||0)>0?(_tCores[k]||'var(--text)'):'var(--text3)')+';font-weight:'+((t[k]||0)>0?'500':'400')+'">' + (t[k]||0) + '</td>'; });
-        thtml += '<td style="font-weight:600">' + tot + '</td></tr>';
+        var tot = (t.EXPERT||0) + (t.EXPERT_TELECOM||0) + (t.TELECOM||0) + (t.VOUCHER||0) + (t.OUTRO||0);
+        ['EXPERT','EXPERT_TELECOM','TELECOM','VOUCHER','OUTRO'].forEach(function(k){ totT[k] += (t[k]||0); });
+        thtml += '<tr><td style="font-weight:500">' + m + '</td><td style="color:var(--accent)">' + (t.EXPERT||0) + '</td><td style="color:var(--blue)">' + (t.EXPERT_TELECOM||0) + '</td><td style="color:var(--teal)">' + (t.TELECOM||0) + '</td><td style="color:var(--amber)">' + (t.VOUCHER||0) + '</td><td style="color:var(--text3)">' + (t.OUTRO||0) + '</td><td style="font-weight:600">' + tot + '</td></tr>';
       });
-      var totG = _tLabels.reduce(function(a,k){ return a+totT[k]; }, 0);
-      thtml += '<tr style="border-top:1px solid var(--border2);background:var(--surface2)"><td style="font-weight:600;color:var(--text2)">TOTAL</td>';
-      _tLabels.forEach(function(k){ thtml += '<td style="color:'+(_tCores[k]||'var(--text)')+';font-weight:600">' + totT[k] + '</td>'; });
-      thtml += '<td style="font-weight:700;color:var(--text)">' + totG + '</td></tr>';
+      var totG = Object.keys(totT).reduce(function(a,k){ return a+totT[k]; }, 0);
+      thtml += '<tr style="border-top:1px solid var(--border2);background:var(--surface2)"><td style="font-weight:600;color:var(--text2)">TOTAL</td><td style="color:var(--accent);font-weight:600">' + totT.EXPERT + '</td><td style="color:var(--blue);font-weight:600">' + totT.EXPERT_TELECOM + '</td><td style="color:var(--teal);font-weight:600">' + totT.TELECOM + '</td><td style="color:var(--amber);font-weight:600">' + totT.VOUCHER + '</td><td style="color:var(--text3);font-weight:600">' + totT.OUTRO + '</td><td style="font-weight:700;color:var(--text)">' + totG + '</td></tr>';
       thtml += '</tbody></table>';
       atvTipoEl.innerHTML = thtml;
     } else if(usarMonthlyByType){
@@ -3404,6 +3625,18 @@ function openLogiModal(){
 }
 function closeLogiModal(){ document.getElementById('modal-logi').classList.remove('open'); }
 
+function normDate(dt){
+  if(dt===null||dt===undefined||dt==='')return '';
+  if(typeof dt==='number'){var d=new Date((dt-25569)*86400*1000);return isNaN(d.getTime())?String(dt):d.toISOString().slice(0,10);}
+  if(dt instanceof Date)return isNaN(dt.getTime())?'':dt.toISOString().slice(0,10);
+  var str=String(dt).trim();
+  var br=str.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if(br)return br[3]+'-'+br[2]+'-'+br[1];
+  var parsed=new Date(str);
+  if(!isNaN(parsed.getTime()))return parsed.toISOString().slice(0,10);
+  return str.slice(0,10);
+}
+
 function handleLogiFile(input){
   var file = input.files[0];
   if(!file) return;
@@ -3448,7 +3681,7 @@ function processLogiFile(arrayBuffer, fileName){
         if(sn.indexOf('licenc')>=0){ sLic=wb.Sheets[wb.SheetNames[si]]; break; }
       }
     }
-    var sAvu  = findSheet('chip avulso') || findSheet('avulso');
+    var sAvu  = findSheet('chip avulso') || findSheet('avulso') || findSheet('chip');
     var sDom  = findSheet('dom');
     var sAtv  = findSheet('ativações') || findSheet('ativacoes') || findSheet('ativa');
     // Fallback extra: busca manual sem depender de acento
@@ -3494,7 +3727,9 @@ function processLogiFile(arrayBuffer, fileName){
     rowsDom.forEach(function(r){
       var keys = Object.keys(r);
       keys.forEach(function(k){
-        if(k.toLowerCase().indexOf('payer') >= 0 && r[k]){
+        var kl = k.toLowerCase();
+        // Suporta "payer_name" (formato antigo) e "cod_external" (formato novo)
+        if((kl.indexOf('payer') >= 0 || kl.indexOf('cod_external') >= 0 || kl === 'cod_external') && r[k]){
           domPayers[String(r[k]).trim()] = true;
         }
       });
@@ -3600,8 +3835,8 @@ function processLogiFile(arrayBuffer, fileName){
       var elegivel = isIntegral || isBoletoOk;
       if(!elegivel) return;
 
-      // Deduplicação: chave = ID + Data + Status (evita contar mesma linha 2x entre uploads)
-      var dedupKey = idLic + '|' + String(dt||'') + '|' + status + '|' + produto;
+      // Deduplicação: chave normalizada (evita contar mesma linha 2x entre uploads)
+      var dedupKey = idLic + '|' + normDate(dt) + '|' + status + '|' + produto;
       if(licLinesSeen[dedupKey]) return;
       licLinesSeen[dedupKey] = true;
 
@@ -3703,54 +3938,47 @@ function processLogiFile(arrayBuffer, fileName){
         if(!avuRegistry[idLic]){
           avuRegistry[idLic] = { id:idLic, nome:nomeLic||'—', uf:uf||'—', tipo:'Chip avulso', enviados:0, ativados:0 };
         }
-        avuRegistry[idLic].enviados++;
+        avuRegistry[idLic].enviados += qty;
         if(isAtivado) avuRegistry[idLic].ativados++;
       }
     });
 
-    // Descontar do estoque apenas os chips NOVOS deste upload
+    // FIX3: Recalcula totais a partir do registry (fonte de verdade)
+    var licChipsCalc=Object.keys(licRegistry).reduce(function(sum,id){return sum+(licRegistry[id].enviados||0);},0);
+    var avuChipsCalc=Object.keys(avuRegistry).reduce(function(sum,id){return sum+(avuRegistry[id].enviados||0);},0);
+    if(licChipsCalc>licChips){licChips=licChipsCalc;}
+    if(avuChipsCalc>avuChips){avuChips=avuChipsCalc;}
+    totalChips=licChips+avuChips;
+    console.log('[Logistica] Recalculado: lic='+licChips+' avu='+avuChips+' total='+totalChips);
+
+    // FIX4: calcula contNovos (desconto será aplicado apenas na confirmação do preview)
+    // NÃO modifica LS.qty aqui — isso é feito em confirmarLogiImport()
     if(LS.qty !== null && LS.desde){
       var desdeDate = new Date(LS.desde + 'T00:00:00').getTime();
-      // Calcula chips novos deste upload no período (não o acumulado total)
-      var prevMonthly = prev.monthlyChips || {};
-      var contNovos = 0;
+      var chipsDesdePeriodo = 0;
       Object.keys(monthlyChips).forEach(function(mk){
         var firstDay = new Date(mk + '-01T00:00:00').getTime();
-        if(firstDay >= desdeDate){
-          var atual = monthlyChips[mk] || 0;
-          var anterior = prevMonthly[mk] || 0;
-          var diff = atual - anterior;
-          if(diff > 0) contNovos += diff;
-        }
+        if(firstDay >= desdeDate) chipsDesdePeriodo += (monthlyChips[mk] || 0);
       });
-      if(contNovos > 0){
-        LS.qty = Math.max(0, LS.qty - contNovos);
-        LS.log.unshift({
-          id:Date.now(),
-          date:new Date().toISOString(),
-          de: LS.qty + contNovos,
-          para: LS.qty,
-          motivo: 'Desconto automático ao subir planilha ('+contNovos+' chips novos desde '+new Date(LS.desde+'T00:00:00').toLocaleDateString('pt-BR')+')',
-          responsavel: S.user || 'sistema'
-        });
-        saveLogiEstoqueSheets();
-        renderLogiEstoque();
-        updateSidebar();
-        console.log('[Logística] Desconto aplicado: -'+contNovos+' chips novos. Novo estoque: '+LS.qty);
-      } else {
-        console.log('[Logística] Nenhum desconto novo: contNovos=0, LS.desde='+LS.desde);
-      }
+      var prevChipsDesdePeriodo = 0;
+      var prevMonthly = prev.monthlyChips || {};
+      Object.keys(prevMonthly).forEach(function(mk){
+        var firstDay = new Date(mk + '-01T00:00:00').getTime();
+        if(firstDay >= desdeDate) prevChipsDesdePeriodo += (prevMonthly[mk] || 0);
+      });
+      console.log('[Logistica] chipsDesdePeriodo='+chipsDesdePeriodo+' prevDesde='+prevChipsDesdePeriodo+' desde='+LS.desde);
     }
 
     // ── Processa aba ATIVAÇÕES (cruzamento com licenças + avulsos) ──
-    var totalAtv = prev.totalAtv || 0;
-    var atvByMonth = prev.atvByMonth || {};
-    var atvByMonthTipo = prev.atvByMonthTipo || {};
+    // FIX: sempre recalcula ativações do zero (evita acumulação entre uploads)
+    var totalAtv = 0;
+    var atvByMonth = {};
+    var atvByMonthTipo = {};
     // Mapa de codId -> tipo de licença (para classificar ativações)
     var licIdTipoMap = {};
     Object.keys(licRegistry).forEach(function(id){
       var l = licRegistry[id];
-      licIdTipoMap[id] = l.tipo || 'ANTERIOR';
+      licIdTipoMap[id] = l.tipo || 'OUTRO';
     });
     Object.keys(avuRegistry).forEach(function(id){
       licIdTipoMap[id] = 'Chip avulso';
@@ -3769,21 +3997,14 @@ function processLogiFile(arrayBuffer, fileName){
 
     if(sAtv){
       console.log('[Logística] Processando aba ativações...');
-      // Reseta ativados nos registries para reprocessar a partir do atvSeen acumulado
-      // NÃO reseta totalAtv/atvByMonth/atvByMonthTipo — o atvSeen evita duplicação
-      // e novos são somados ao total existente
       var rowsAtv = XLSX.utils.sheet_to_json(sAtv, { defval:'' });
+      // FIX E: sempre começa com atvSeen vazio — recalcula do zero
+      // Evita acumulação de dados residuais entre uploads
       var atvSeen = {};
-      // Carrega ativações já processadas em uploads anteriores
-      try {
-        var prevSeen = (LG.data && LG.data._atvSeen) ? LG.data._atvSeen : null;
-        if(!prevSeen){
-          var asStr = localStorage.getItem('cc_logi_atvSeen');
-          if(asStr) prevSeen = JSON.parse(asStr);
-        }
-        if(prevSeen) atvSeen = prevSeen;
-      } catch(e){}
-      console.log('[Logística] atvSeen inicial (dedup):', Object.keys(atvSeen).length);
+      // Reset ativados nos registries
+      Object.keys(licRegistry).forEach(function(id){ licRegistry[id].ativados = 0; });
+      Object.keys(avuRegistry).forEach(function(id){ avuRegistry[id].ativados = 0; });
+      console.log('[Logística] atvSeen resetado. Processando', rowsAtv.length, 'linhas de ativações...');
       rowsAtv.forEach(function(r){
         var codId = String(getCol(r, ['código (id)','codigo (id)','codigo_id','id_licenciado']) || '').trim();
         var idTelecom = String(getCol(r, ['id telecom','id_telecom','idtelecom']) || '').trim();
@@ -3793,7 +4014,8 @@ function processLogiFile(arrayBuffer, fileName){
         // Desconsiderar eSIM — só conta chip físico
         if(tipoLinha === 'esim') return;
         // Só conta se o ID existe em licença ou avulso (desta ou de upload anterior)
-        if(!licIdTipoMap[codId]) return;
+        // FIX: conta TODAS as ativações, classifica IDs sem match como ANTERIOR
+        // (licenciados que compraram antes do período da planilha)
         var atvKey = codId + '|' + idTelecom;
         if(atvSeen[atvKey]) return;
         atvSeen[atvKey] = true;
@@ -3816,7 +4038,7 @@ function processLogiFile(arrayBuffer, fileName){
             var tipoNorm = (licIdTipoMap[codId] || '').toUpperCase();
             var tn = 'ANTERIOR';
             if(!tipoNorm || tipoNorm === 'OUTRO') tn = 'ANTERIOR';
-            if(tipoNorm.indexOf('EXPERT')>=0 && tipoNorm.indexOf('TELECOM')>=0) tn='EXPERT_TELECOM';
+            else if(tipoNorm.indexOf('EXPERT')>=0 && tipoNorm.indexOf('TELECOM')>=0) tn='EXPERT_TELECOM';
             else if(tipoNorm.indexOf('EXPERT')>=0) tn='EXPERT';
             else if(tipoNorm.indexOf('TELECOM')>=0) tn='TELECOM';
             else if(tipoNorm.indexOf('VOUCHER')>=0) tn='VOUCHER';
@@ -3906,47 +4128,58 @@ function processLogiFile(arrayBuffer, fileName){
       fileName:      fileName
     };
 
-    // Salva dados resumidos no Sheets (sem registries grandes que excedem limite de célula)
-    var logiSummary = {
-      totalChips:LG.data.totalChips, licChips:LG.data.licChips, avuChips:LG.data.avuChips,
-      ativados:LG.data.ativados, naoAtivados:LG.data.naoAtivados, totalAtv:LG.data.totalAtv,
-      monthlyChips:LG.data.monthlyChips, monthlyByType:LG.data.monthlyByType,
-      atvByMonth:LG.data.atvByMonth, atvByMonthTipo:LG.data.atvByMonthTipo,
-      byType:LG.data.byType, byUf:LG.data.byUf, ufDetailed:LG.data.ufDetailed,
-      breakdown:LG.data.breakdown,
-      uploadDate:LG.data.uploadDate, fileName:LG.data.fileName,
-      uploadHistory: LG.data.uploadHistory
-    };
-    fetch(SCRIPT_URL, {
-      method:'POST', headers:{'Content-Type':'text/plain'},
-      body: JSON.stringify({ saveLogiData: logiSummary })
-    }).catch(function(){});
+    // Salvar agora acontece em confirmarLogiImport()
 
-    // Salva registries grandes em localStorage (persistem no browser)
-    try {
-      localStorage.setItem('cc_logi_licRegistry', JSON.stringify(LG.data.licRegistry || {}));
-      localStorage.setItem('cc_logi_avuRegistry', JSON.stringify(LG.data.avuRegistry || {}));
-      localStorage.setItem('cc_logi_licIdTipoMap', JSON.stringify(LG.data._licIdTipoMap || {}));
-      localStorage.setItem('cc_logi_atvSeen', JSON.stringify(LG.data._atvSeen || {}));
-      localStorage.setItem('cc_logi_licLinesSeen', JSON.stringify(LG.data._licLinesSeen || {}));
-      localStorage.setItem('cc_logi_avuLinesSeen', JSON.stringify(LG.data._avuLinesSeen || {}));
-    } catch(e){ console.warn('localStorage cheio, registries não salvos:', e); }
-
-    // Salva registries comprimidos no Sheets (compartilhado com outros PCs)
-    saveRegistriesToSheets();
-
-    document.getElementById('logi-file-status').innerHTML =
-      '✅ <strong>Planilha processada com sucesso!</strong><br>'+
-      'Total: <strong style="color:var(--accent)">'+totalChips+' chips</strong> · Licenças: '+licChips+' · Avulsos: '+avuChips+'<br>'+
-      'Ativados: '+ativados+' · Não ativados: '+naoAtivados;
-    closeLogiModal();
-    renderLogistica();
-    updateSidebar();
-    toast('Planilha processada: '+totalChips+' chips contabilizados');
+    // FIX5: Preview antes de salvar
+    var _pT5=(function(){var pl=Object.keys(prev.licRegistry||{}).reduce(function(s,id){return s+((prev.licRegistry[id]&&prev.licRegistry[id].enviados)||0);},0);var pa=Object.keys(prev.avuRegistry||{}).reduce(function(s,id){return s+((prev.avuRegistry[id]&&prev.avuRegistry[id].enviados)||0);},0);return(pl+pa)>0?(pl+pa):(prev.totalChips||0);})();
+    var _dC=Math.max(0,totalChips-_pT5),_dL=Object.keys(licRegistry).length-Object.keys(prev.licRegistry||{}).length,_dA=totalAtv-(prev.totalAtv||0);
+    // Calcula desconto de estoque apenas para o periodo desde LS.desde
+    var _descontoEstoque = _dC;
+    if(LS.desde){
+      var _dDate=new Date(LS.desde+'T00:00:00').getTime();
+      var _cDP=0,_pDP=0;
+      var _prevMC=prev.monthlyChips||{};
+      Object.keys(monthlyChips).forEach(function(mk){if(new Date(mk+'-01T00:00:00').getTime()>=_dDate) _cDP+=(monthlyChips[mk]||0);});
+      Object.keys(_prevMC).forEach(function(mk){if(new Date(mk+'-01T00:00:00').getTime()>=_dDate) _pDP+=(_prevMC[mk]||0);});
+      _descontoEstoque=Math.max(0,_cDP-_pDP);
+    }
+    var _eI=(LS.qty!==null)?Math.max(0,LS.qty-_descontoEstoque):null;
+    window._logiPendente={totalChips:totalChips,licChips:licChips,avuChips:avuChips,ativados:ativados,naoAtivados:naoAtivados,totalAtv:totalAtv,licRegistry:licRegistry,avuRegistry:avuRegistry,licIdTipoMap:licIdTipoMap,atvSeen:atvSeen,licLinesSeen:licLinesSeen,avuLinesSeen:avuLinesSeen,monthlyChips:monthlyChips,monthlyByType:monthlyByType,atvByMonth:atvByMonth,atvByMonthTipo:atvByMonthTipo,byType:byType,byUf:byUf,ufDetailed:ufDetailed,breakdown:breakdown,fileName:fileName,contNovos:_descontoEstoque,uploadHistory:uploadHistory};
+    function _cr(n){return n>0?'var(--accent)':(n<0?'var(--red)':'var(--text3)');}
+    function _sn(n){return n>0?'+'+n:(n<0?String(n):'0');}
+    var ph='<div style="border:1px solid var(--accent);border-radius:10px;padding:16px;background:rgba(52,212,116,.05);margin-bottom:14px">'+
+      '<div style="font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Resumo do que vai mudar</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'+
+        '<div style="background:var(--surface3);border-radius:8px;padding:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase">TOTAL CHIPS</div><div style="font-size:20px;font-weight:600;color:var(--accent)">'+totalChips.toLocaleString('pt-BR')+'</div><div style="font-size:11px;color:'+_cr(_dC)+';margin-top:2px">'+_sn(_dC)+' chips novos</div></div>'+
+        '<div style="background:var(--surface3);border-radius:8px;padding:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase">ATIVADOS</div><div style="font-size:20px;font-weight:600;color:var(--teal)">'+ativados.toLocaleString('pt-BR')+'</div><div style="font-size:11px;color:'+_cr(_dA)+';margin-top:2px">'+_sn(_dA)+' novas</div></div>'+
+        '<div style="background:var(--surface3);border-radius:8px;padding:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase">LICENCIADOS</div><div style="font-size:20px;font-weight:600;color:var(--amber)">'+Object.keys(licRegistry).length.toLocaleString('pt-BR')+'</div><div style="font-size:11px;color:'+_cr(_dL)+';margin-top:2px">'+_sn(_dL)+' novos</div></div>'+
+        '<div style="background:var(--surface3);border-radius:8px;padding:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase">NAO ATIVADOS</div><div style="font-size:20px;font-weight:600;color:var(--red)">'+naoAtivados.toLocaleString('pt-BR')+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+licChips+' lic + '+avuChips+' avu</div></div>'+
+      '</div>'+
+      (_eI!==null?'<div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:var(--amber)">Estoque CD: '+LS.qty+' \u2192 <strong>'+_eI+'</strong> (\u2212'+_descontoEstoque+' chips desde '+(LS.desde?new Date(LS.desde+'T12:00:00').toLocaleDateString('pt-BR'):'inicio')+')</div>':'')+
+      '<div style="display:flex;gap:8px">'+
+        '<button onclick="confirmarLogiImport()" style="flex:1;background:var(--accent);color:#0d1a0d;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Confirmar importacao</button>'+
+        '<button onclick="cancelarLogiImport()" style="background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:11px 18px;font-size:13px;cursor:pointer;font-family:var(--font)">Cancelar</button>'+
+      '</div></div>';
+    document.getElementById('logi-file-status').style.display='block';
+    document.getElementById('logi-file-status').innerHTML=ph;
   } catch(err){
     showLogiError('Erro ao processar: '+(err.message||err));
   }
 }
+
+function confirmarLogiImport(){
+  if(!window._logiPendente){closeLogiModal();return;}
+  var p=window._logiPendente;
+  LG.data={totalChips:p.totalChips,licChips:p.licChips,avuChips:p.avuChips,ativados:p.ativados,naoAtivados:p.naoAtivados,totalAtv:p.totalAtv,monthlyChips:p.monthlyChips,monthlyByType:p.monthlyByType,atvByMonth:p.atvByMonth,atvByMonthTipo:p.atvByMonthTipo,byType:p.byType,byUf:p.byUf,ufDetailed:p.ufDetailed,breakdown:p.breakdown,licRegistry:p.licRegistry,avuRegistry:p.avuRegistry,_licIdTipoMap:p.licIdTipoMap,_atvSeen:p.atvSeen,_licLinesSeen:p.licLinesSeen,_avuLinesSeen:p.avuLinesSeen,uploadDate:new Date().toISOString(),fileName:p.fileName,uploadHistory:p.uploadHistory};
+  if(LS.qty!==null&&p.contNovos>0){var ant=LS.qty;LS.qty=Math.max(0,LS.qty-p.contNovos);LS.log.unshift({id:Date.now(),date:new Date().toISOString(),de:ant,para:LS.qty,motivo:'Desconto upload: -'+p.contNovos+' chips novos',responsavel:S.user||'sistema'});saveLogiEstoqueSheets();renderLogiEstoque();}
+  var ls={totalChips:LG.data.totalChips,licChips:LG.data.licChips,avuChips:LG.data.avuChips,ativados:LG.data.ativados,naoAtivados:LG.data.naoAtivados,totalAtv:LG.data.totalAtv,monthlyChips:LG.data.monthlyChips,monthlyByType:LG.data.monthlyByType,atvByMonth:LG.data.atvByMonth,atvByMonthTipo:LG.data.atvByMonthTipo,byType:LG.data.byType,byUf:LG.data.byUf,ufDetailed:LG.data.ufDetailed,breakdown:LG.data.breakdown,uploadDate:LG.data.uploadDate,fileName:LG.data.fileName,uploadHistory:LG.data.uploadHistory};
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({saveLogiData:ls})}).catch(function(){});
+  try{localStorage.setItem('cc_logi_licRegistry',JSON.stringify(LG.data.licRegistry||{}));localStorage.setItem('cc_logi_avuRegistry',JSON.stringify(LG.data.avuRegistry||{}));localStorage.setItem('cc_logi_licIdTipoMap',JSON.stringify(LG.data._licIdTipoMap||{}));localStorage.setItem('cc_logi_atvSeen',JSON.stringify(LG.data._atvSeen||{}));localStorage.setItem('cc_logi_licLinesSeen',JSON.stringify(LG.data._licLinesSeen||{}));localStorage.setItem('cc_logi_avuLinesSeen',JSON.stringify(LG.data._avuLinesSeen||{}));}catch(e){}
+  saveRegistriesToSheets();
+  window._logiPendente=null;closeLogiModal();renderLogistica();updateSidebar();
+  toast('Importacao confirmada: '+p.totalChips.toLocaleString('pt-BR')+' chips (+'+p.contNovos+' novos)');
+}
+function cancelarLogiImport(){window._logiPendente=null;document.getElementById('logi-file-status').style.display='none';document.getElementById('logi-file-input').value='';toast('Upload cancelado.');}
 
 function clearLogi(){
   if(!confirm('Remover todos os dados da planilha? Esta ação não pode ser desfeita.')) return;
@@ -4100,7 +4333,7 @@ function renderLicenciados(){
   var atvTipoMes = LG.data.atvByMonthTipo || {};
   var atvTipoKeys = Object.keys(atvTipoMes).sort();
   if(atvTipoKeys.length){
-    // Formato: {EXPERT:0, EXPERT_TELECOM:0, TELECOM:0, VOUCHER:0, AVULSO:0, ANTERIOR:0}
+    // Formato original: {EXPERT:0, EXPERT_TELECOM:0, TELECOM:0, VOUCHER:0, AVULSO:0, OUTRO:0}
     var tipoLabels = ['EXPERT','EXPERT_TELECOM','TELECOM','VOUCHER','AVULSO','ANTERIOR'];
     var tipoCoresAtv = {'EXPERT':'var(--accent)','EXPERT_TELECOM':'var(--blue)','TELECOM':'var(--amber)','VOUCHER':'var(--purple)','AVULSO':'var(--teal)','ANTERIOR':'var(--text3)'};
     var tipoNames = {'EXPERT':'Expert','EXPERT_TELECOM':'Expert+Telecom','TELECOM':'Telecom','VOUCHER':'Voucher','AVULSO':'Chip avulso','ANTERIOR':'Anteriores'};
@@ -4416,278 +4649,6 @@ function showStockAlertBanner(){
     window.open('https://wa.me/55'+wpp.replace(/\D/g,'')+'?text='+encodeURIComponent(msg), '_blank');
   }
   toast('⚠️ Estoque baixo! Alerta '+(SL.cmbContacts.length || email ? 'enviado automaticamente.' : 'Verifique a aba Estoque.'));
-}
-
-/* ── RESUMO EXECUTIVO ─────────────────────────────────── */
-function renderResumo(){
-  var d = LG.data || {};
-  var sedeChips = S.stock || 0;
-  var contelChips = SL.chips || 0;
-  var cdChips = (LS && LS.qty !== null) ? LS.qty : 0;
-  var totalEstoque = sedeChips + contelChips + cdChips;
-  var licEnv = d.licChips || 0;
-  var avuEnv = d.avuChips || 0;
-  var totalEnv = licEnv + avuEnv;
-  var totalAtv = d.totalAtv || d.ativados || 0;
-  var taxaAtv = totalEnv > 0 ? (totalAtv / totalEnv * 100) : 0;
-  var naoAtv = Math.max(0, totalEnv - totalAtv);
-  var ms = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  var hoje = new Date();
-
-  // Date
-  var dtStr = String(hoje.getDate()).padStart(2,'0')+'/'+String(hoje.getMonth()+1).padStart(2,'0')+'/'+hoje.getFullYear();
-  document.getElementById('resumo-date').textContent = 'Relatório gerado em '+dtStr;
-  document.getElementById('resumo-footer-date').textContent = 'Gerado: '+dtStr+' às '+String(hoje.getHours()).padStart(2,'0')+':'+String(hoje.getMinutes()).padStart(2,'0');
-
-  // Hero cards
-  document.getElementById('resumo-hero').innerHTML =
-    '<div class="rh-card g"><div class="rh-label">Total enviados (Licença + Avulso)</div><div class="rh-val" style="color:var(--accent)">'+totalEnv.toLocaleString('pt-BR')+'</div><div class="rh-sub">'+licEnv.toLocaleString('pt-BR')+' por licenciamento · '+avuEnv.toLocaleString('pt-BR')+' chip avulso</div></div>'+
-    '<div class="rh-card t"><div class="rh-label">Ativações registradas</div><div class="rh-val" style="color:var(--teal)">'+totalAtv.toLocaleString('pt-BR')+'</div><div class="rh-sub">'+naoAtv.toLocaleString('pt-BR')+' chips ainda não ativados</div></div>'+
-    '<div class="rh-card '+(taxaAtv>=60?'g':(taxaAtv>=35?'a':'r'))+'"><div class="rh-label">Taxa de ativação</div><div class="rh-val" style="color:'+(taxaAtv>=60?'var(--accent)':(taxaAtv>=35?'var(--amber)':'var(--red)'))+'">'+taxaAtv.toFixed(1)+'%</div><div class="rh-sub">'+(taxaAtv>=60?'Desempenho saudável':(taxaAtv>=35?'Atenção — abaixo do ideal':'Crítico — muitos chips parados'))+'</div></div>';
-
-  // Stock cards
-  var monthlyChips = d.monthlyChips || {};
-  var mKeys = Object.keys(monthlyChips).sort();
-  var mediaMensal = 0;
-  if(mKeys.length){
-    var vals = mKeys.map(function(k){return monthlyChips[k];}).filter(function(v){return v>0;});
-    var rec = vals.slice(-3);
-    mediaMensal = rec.length ? Math.round(rec.reduce(function(a,b){return a+b;},0)/rec.length) : 0;
-  }
-  var mesesCob = mediaMensal > 0 ? (totalEstoque/mediaMensal) : 0;
-  var corCob = mesesCob>6?'var(--accent)':(mesesCob>3?'var(--amber)':'var(--red)');
-  var lblCob = mesesCob>6?'Saudável':(mesesCob>3?'Atenção':'Crítico');
-
-  document.getElementById('resumo-stock-cards').innerHTML =
-    '<div class="mc b" style="padding:18px"><div class="mc-lbl" style="margin-top:0">Sede</div><div class="mc-val" style="font-size:28px;margin-top:6px">'+sedeChips.toLocaleString('pt-BR')+'</div><div style="font-size:10px;color:var(--text3);margin-top:4px">chips físicos</div></div>'+
-    '<div class="mc a" style="padding:18px"><div class="mc-lbl" style="margin-top:0">Contel</div><div class="mc-val" style="font-size:28px;margin-top:6px">'+contelChips.toLocaleString('pt-BR')+'</div><div style="font-size:10px;color:var(--text3);margin-top:4px">chips + envelopes</div></div>'+
-    '<div class="mc p" style="padding:18px"><div class="mc-lbl" style="margin-top:0">CD</div><div class="mc-val" style="font-size:28px;margin-top:6px">'+cdChips.toLocaleString('pt-BR')+'</div><div style="font-size:10px;color:var(--text3);margin-top:4px">centro distribuição</div></div>'+
-    '<div class="mc g" style="padding:18px"><div class="mc-lbl" style="margin-top:0">Total estoque</div><div class="mc-val" style="font-size:28px;margin-top:6px">'+totalEstoque.toLocaleString('pt-BR')+'</div><div style="font-size:10px;color:var(--text3);margin-top:4px">Sede + Contel + CD</div></div>';
-
-  // Monthly consumption bars
-  var monthlyByType = d.monthlyByType || {};
-  var cmKeys = Object.keys(monthlyByType).sort().slice(-7);
-  if(cmKeys.length){
-    var maxCm = 1;
-    cmKeys.forEach(function(k){ var t=0; Object.keys(monthlyByType[k]).forEach(function(tp){t+=monthlyByType[k][tp];}); if(t>maxCm) maxCm=t; });
-    var mh = '';
-    cmKeys.forEach(function(k){
-      var d2=new Date(k+'-01');var lbl=ms[d2.getMonth()]+'/'+String(d2.getFullYear()).slice(2);
-      var lic=0,avu=0;
-      Object.keys(monthlyByType[k]).forEach(function(tp){ if(tp.toLowerCase().indexOf('avulso')>=0)avu+=monthlyByType[k][tp]; else lic+=monthlyByType[k][tp]; });
-      var tot=lic+avu; var pct=Math.round(tot/maxCm*100); var pLic=tot>0?Math.round(lic/tot*100):50;
-      mh+='<div class="rbar"><span class="rbar-lbl">'+lbl+'</span><div class="rbar-track"><div style="display:flex;height:100%;border-radius:5px;overflow:hidden"><div style="width:'+pLic+'%;background:var(--amber)"></div><div style="width:'+(100-pLic)+'%;background:var(--blue)"></div></div></div><span class="rbar-num" style="color:var(--accent)">'+tot.toLocaleString('pt-BR')+'</span></div>';
-    });
-    mh+='<div style="display:flex;gap:16px;margin-top:10px;font-size:11px"><span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--amber)"></span>Licenciamento</span><span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--blue)"></span>Chip avulso</span></div>';
-    document.getElementById('resumo-monthly').innerHTML=mh;
-  } else {
-    document.getElementById('resumo-monthly').innerHTML='<div class="empty" style="padding:20px">Sem dados. Suba uma planilha na aba Logística.</div>';
-  }
-
-  // Activation by type
-  var byType = d.byType || {};
-  var btKeys = Object.keys(byType);
-  if(btKeys.length){
-    var maxBt = 1; btKeys.forEach(function(t){if(byType[t].total>maxBt) maxBt=byType[t].total;});
-    var tipoCor = {'Expert':'var(--accent)','Expert+Telecom':'var(--blue)','Telecom':'var(--teal)','Voucher':'var(--amber)','Chip avulso':'var(--purple)'};
-    var ah='';
-    btKeys.forEach(function(t){
-      var info=byType[t]; var pctAtv=info.total>0?Math.round(info.ativados/info.total*100):0;
-      var cor=tipoCor[t]||'var(--text2)';
-      ah+='<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:'+cor+';font-weight:500">'+t+'</span><span style="font-size:11px;color:var(--text3)">'+info.total.toLocaleString('pt-BR')+' env · '+info.ativados.toLocaleString('pt-BR')+' atv ('+pctAtv+'%)</span></div><div style="height:8px;background:var(--surface3);border-radius:4px;overflow:hidden;display:flex"><div style="width:'+pctAtv+'%;background:'+cor+';border-radius:4px"></div></div></div>';
-    });
-    document.getElementById('resumo-atv-tipo').innerHTML=ah;
-  } else {
-    document.getElementById('resumo-atv-tipo').innerHTML='<div class="empty" style="padding:20px">Sem dados de tipo.</div>';
-  }
-
-  // Health
-  var hh='';
-  hh+='<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px"><div style="font-size:48px">'+(mesesCob>6?'✅':(mesesCob>3?'⚠️':'🚨'))+'</div><div><div style="font-size:18px;font-weight:600;color:'+corCob+'">'+lblCob+(mesesCob>0?' — '+mesesCob.toFixed(1)+' meses':'')+'</div><div style="font-size:12px;color:var(--text3);margin-top:4px">'+(mediaMensal>0?'Consumo médio: '+mediaMensal.toLocaleString('pt-BR')+' chips/mês':'Sem dados de consumo')+'</div></div></div>';
-  if(mediaMensal>0){
-    var pctBar=Math.min(100,Math.round(mesesCob/12*100));
-    hh+='<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:11px;color:var(--text3)"><span>Cobertura</span><span>'+pctBar+'%</span></div><div style="height:14px;background:var(--surface3);border-radius:7px;overflow:hidden"><div style="height:100%;width:'+pctBar+'%;border-radius:7px;background:'+corCob+';transition:width .6s"></div></div><div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--text3)"><span>0</span><span>6m</span><span>12m</span></div></div>';
-    var sug=Math.ceil(mediaMensal*3*1.15/100)*100;
-    hh+='<div style="background:var(--surface3);border-radius:var(--radius);padding:12px;font-size:12px"><span style="color:var(--text3)">Sugestão de compra (3 meses +15%): </span><strong style="color:var(--accent);font-size:16px">'+sug.toLocaleString('pt-BR')+' chips</strong></div>';
-  }
-  document.getElementById('resumo-health').innerHTML=hh;
-
-  // Top UFs
-  var ufDet = d.ufDetailed || {};
-  var ufKeys = Object.keys(ufDet).filter(function(u){return u&&u!=='—';}).sort(function(a,b){return(ufDet[b].enviados||0)-(ufDet[a].enviados||0);}).slice(0,10);
-  if(ufKeys.length){
-    var maxUf=ufDet[ufKeys[0]].enviados||1;
-    var uh='';
-    ufKeys.forEach(function(uf){
-      var info=ufDet[uf]; var env=info.enviados||0; var atv=info.ativados||0;
-      var pctA=env>0?Math.round(atv/env*100):0; var w=Math.round(env/maxUf*100);
-      var cor=pctA>=60?'var(--accent)':(pctA>=35?'var(--amber)':'var(--red)');
-      uh+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:12px;font-weight:600;color:var(--text);width:28px">'+uf+'</span><div style="flex:1;height:8px;background:var(--surface3);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+w+'%;background:'+cor+';border-radius:4px"></div></div><span style="font-size:11px;color:var(--text2);width:50px;text-align:right;font-family:var(--mono)">'+env.toLocaleString('pt-BR')+'</span><span style="font-size:10px;color:'+cor+';width:35px;text-align:right">'+pctA+'%</span></div>';
-    });
-    document.getElementById('resumo-ufs').innerHTML=uh;
-  } else {
-    document.getElementById('resumo-ufs').innerHTML='<div class="empty" style="padding:20px">Sem dados de UF.</div>';
-  }
-}
-
-function togglePresentMode(){
-  var app=document.getElementById('app');
-  var btn=document.getElementById('present-btn-label');
-  if(app.classList.contains('present-mode')){
-    app.classList.remove('present-mode');
-    btn.textContent='Modo Apresentação';
-  } else {
-    app.classList.add('present-mode');
-    btn.textContent='Sair da Apresentação (ESC)';
-  }
-}
-document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'&&document.getElementById('app').classList.contains('present-mode')) togglePresentMode();
-});
-
-/* ── EXPORTAÇÃO COMPLETA EXCEL (MULTI-ABAS) ──────────── */
-function exportFullReport(){
-  if(!LG.data){ toast('Sem dados para exportar. Suba uma planilha primeiro.'); return; }
-  if(typeof XLSX==='undefined'){ toast('Biblioteca XLSX não carregada.'); return; }
-  var d=LG.data;
-  var wb=XLSX.utils.book_new();
-  var fmt=function(n){return typeof n==='number'?n:'';};
-
-  // 1. RESUMO GERAL
-  var sedeChips=S.stock||0,contelChips=SL.chips||0,cdChips=(LS&&LS.qty!==null)?LS.qty:0;
-  var totalEst=sedeChips+contelChips+cdChips;
-  var licEnv=d.licChips||0,avuEnv=d.avuChips||0,totalEnv=licEnv+avuEnv;
-  var totalAtv=d.totalAtv||d.ativados||0;
-  var resumoData=[
-    ['CHIPS CONTROL — RELATÓRIO COMPLETO','','Data: '+new Date().toLocaleDateString('pt-BR')],
-    [],
-    ['INDICADOR','VALOR','DETALHE'],
-    ['Total enviados (chips)',totalEnv,licEnv+' licenciamento + '+avuEnv+' avulso'],
-    ['Chips por licenciamento',licEnv,''],
-    ['Chips por chip avulso',avuEnv,'Confirmados na DOM'],
-    ['Ativações totais',totalAtv,''],
-    ['Não ativados',Math.max(0,totalEnv-totalAtv),''],
-    ['Taxa de ativação',totalEnv>0?Math.round(totalAtv/totalEnv*100)+'%':'—',''],
-    [],
-    ['ESTOQUE ATUAL','VALOR',''],
-    ['Sede',sedeChips,''],
-    ['Contel (chips)',contelChips,''],
-    ['Contel (envelopes)',SL.env||0,''],
-    ['Chips Esin',SE.qty||0,''],
-    ['CD (Centro Distribuição)',cdChips,''],
-    ['Total estoque',totalEst,'Sede + Contel + CD'],
-    [],
-    ['Licenciados únicos',Object.keys(d.licRegistry||{}).length,'Na base de licenças'],
-    ['Licenciados chip avulso',Object.keys(d.avuRegistry||{}).length,'Na base de avulsos']
-  ];
-  var ws1=XLSX.utils.aoa_to_sheet(resumoData);
-  ws1['!cols']=[{wch:35},{wch:15},{wch:40}];
-  XLSX.utils.book_append_sheet(wb,ws1,'Resumo Geral');
-
-  // 2. CONSUMO MENSAL
-  var monthlyByType=d.monthlyByType||{};
-  var atvByMonth=d.atvByMonth||{};
-  var allMK=Object.keys(monthlyByType).sort();
-  var allTipos=[];
-  allMK.forEach(function(m){Object.keys(monthlyByType[m]).forEach(function(t){if(allTipos.indexOf(t)<0)allTipos.push(t);});});
-  var consHead=['Mês'].concat(allTipos).concat(['Total Enviados','Ativados','Não Ativados','% Ativação']);
-  var consRows=[consHead];
-  var gTotals={};allTipos.forEach(function(t){gTotals[t]=0;});var gEnv=0,gAtv=0;
-  allMK.forEach(function(m){
-    var d2=new Date(m+'-01');var lbl=String(d2.getMonth()+1).padStart(2,'0')+'/'+d2.getFullYear();
-    var row=[lbl];var rowTot=0;
-    allTipos.forEach(function(t){var v=(monthlyByType[m]&&monthlyByType[m][t])||0;row.push(v);gTotals[t]+=v;rowTot+=v;});
-    var atv=atvByMonth[m]||0;var nAtv=Math.max(0,rowTot-atv);var pct=rowTot>0?Math.round(atv/rowTot*100)+'%':'—';
-    row.push(rowTot,atv,nAtv,pct);gEnv+=rowTot;gAtv+=atv;
-    consRows.push(row);
-  });
-  var totRow=['TOTAL'];allTipos.forEach(function(t){totRow.push(gTotals[t]);});
-  totRow.push(gEnv,gAtv,Math.max(0,gEnv-gAtv),gEnv>0?Math.round(gAtv/gEnv*100)+'%':'—');
-  consRows.push(totRow);
-  var ws2=XLSX.utils.aoa_to_sheet(consRows);
-  ws2['!cols']=[{wch:12}];for(var ci=0;ci<allTipos.length+4;ci++) ws2['!cols'].push({wch:16});
-  XLSX.utils.book_append_sheet(wb,ws2,'Consumo Mensal');
-
-  // 3. ATIVAÇÕES POR TIPO
-  var atvTipo=d.atvByMonthTipo||{};
-  var atKeys=Object.keys(atvTipo).sort();
-  var tLabels=['EXPERT','EXPERT_TELECOM','TELECOM','VOUCHER','AVULSO','ANTERIOR'];
-  var tNames={'EXPERT':'Expert','EXPERT_TELECOM':'Expert+Telecom','TELECOM':'Telecom','VOUCHER':'Voucher','AVULSO':'Chip avulso','ANTERIOR':'Anteriores'};
-  var atvHead=['Mês'].concat(tLabels.map(function(t){return tNames[t]||t;})).concat(['Total']);
-  var atvRows=[atvHead];
-  var gAT={};tLabels.forEach(function(t){gAT[t]=0;});var gATot=0;
-  atKeys.forEach(function(m){
-    var d2=new Date(m+'-01');var lbl=String(d2.getMonth()+1).padStart(2,'0')+'/'+d2.getFullYear();
-    var row=[lbl];var rowTot=0;
-    tLabels.forEach(function(t){var v=(atvTipo[m]&&atvTipo[m][t])||0;row.push(v);gAT[t]+=v;rowTot+=v;});
-    row.push(rowTot);gATot+=rowTot;atvRows.push(row);
-  });
-  var atTotRow=['TOTAL'];tLabels.forEach(function(t){atTotRow.push(gAT[t]);});atTotRow.push(gATot);
-  atvRows.push(atTotRow);
-  var ws3=XLSX.utils.aoa_to_sheet(atvRows);
-  ws3['!cols']=[{wch:12}];for(var ci2=0;ci2<tLabels.length+1;ci2++) ws3['!cols'].push({wch:16});
-  XLSX.utils.book_append_sheet(wb,ws3,'Ativações por Tipo');
-
-  // 4. BASE LICENCIADOS
-  var licHead=['ID','Nome','UF','Tipo','Enviados','Ativados','Pendentes','% Ativação','Status'];
-  var licRows=[licHead];
-  var allMap={};
-  Object.keys(d.licRegistry||{}).forEach(function(id){
-    var l=d.licRegistry[id];
-    if(!allMap[id])allMap[id]={id:id,nome:l.nome||'—',uf:l.uf||'—',tipo:l.tipo||'—',enviados:0,ativados:0};
-    allMap[id].enviados+=l.enviados||0;allMap[id].ativados+=l.ativados||0;
-  });
-  Object.keys(d.avuRegistry||{}).forEach(function(id){
-    var l=d.avuRegistry[id];
-    if(!allMap[id])allMap[id]={id:id,nome:l.nome||'—',uf:l.uf||'—',tipo:'Chip avulso',enviados:0,ativados:0};
-    allMap[id].enviados+=l.enviados||0;allMap[id].ativados+=l.ativados||0;
-  });
-  var allLic=Object.keys(allMap).map(function(id){return allMap[id];});
-  allLic.forEach(function(l){l.ativados=Math.min(l.ativados,l.enviados);});
-  allLic.sort(function(a,b){return(b.enviados-b.ativados)-(a.enviados-a.ativados);});
-  allLic.forEach(function(l){
-    var pend=l.enviados-l.ativados;var pct=l.enviados>0?Math.round(l.ativados/l.enviados*100):0;
-    var status=pct>=70?'Saudável':(pct>=30?'Atenção':'Crítico');
-    licRows.push([l.id,l.nome,l.uf,l.tipo,l.enviados,l.ativados,pend,pct+'%',status]);
-  });
-  var ws4=XLSX.utils.aoa_to_sheet(licRows);
-  ws4['!cols']=[{wch:12},{wch:30},{wch:6},{wch:18},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10}];
-  XLSX.utils.book_append_sheet(wb,ws4,'Base Licenciados');
-
-  // 5. DISTRIBUIÇÃO POR UF
-  var ufDet=d.ufDetailed||{};
-  var ufHead=['UF','Total Enviados','Licenciamento','Chip Avulso','Ativados','Inativos','% Ativação','% do Total'];
-  var ufRows=[ufHead];
-  var ufKeys2=Object.keys(ufDet).filter(function(u){return u&&u!=='—';}).sort(function(a,b){return(ufDet[b].enviados||0)-(ufDet[a].enviados||0);});
-  ufKeys2.forEach(function(uf){
-    var info=ufDet[uf];var env=info.enviados||0;var lic=info.lic||0;var avu=info.avu||0;var atv=info.ativados||0;
-    var inat=Math.max(0,env-atv);var pctA=env>0?Math.round(atv/env*100):0;var pctT=totalEnv>0?Math.round(env/totalEnv*100):0;
-    ufRows.push([uf,env,lic,avu,atv,inat,pctA+'%',pctT+'%']);
-  });
-  var ws5=XLSX.utils.aoa_to_sheet(ufRows);
-  ws5['!cols']=[{wch:6},{wch:14},{wch:14},{wch:14},{wch:10},{wch:10},{wch:10},{wch:10}];
-  XLSX.utils.book_append_sheet(wb,ws5,'Distribuição por UF');
-
-  // 6. ESTOQUE DETALHADO
-  var estRows=[
-    ['ESTOQUE — DETALHAMENTO','','Data: '+new Date().toLocaleDateString('pt-BR')],
-    [],
-    ['Local','Quantidade','Observação'],
-    ['Sede (chips físicos)',sedeChips,'Mínimo configurado: '+S.minStock],
-    ['Contel (chips)',contelChips,'Mínimo: '+SL.chipsMin],
-    ['Contel (envelopes)',SL.env||0,'Mínimo: '+SL.envMin],
-    ['Chips Esin',SE.qty||0,'Mínimo: 700'],
-    ['CD (Centro Distribuição)',cdChips,LS.desde?'Contagem desde '+LS.desde:''],
-    [],['TOTAL',totalEst,'']
-  ];
-  var ws6=XLSX.utils.aoa_to_sheet(estRows);
-  ws6['!cols']=[{wch:28},{wch:14},{wch:35}];
-  XLSX.utils.book_append_sheet(wb,ws6,'Estoque Detalhado');
-
-  // Generate
-  var fileName='iGreen_Chips_Relatorio_'+new Date().toISOString().slice(0,10)+'.xlsx';
-  XLSX.writeFile(wb,fileName);
-  toast('Relatório Excel exportado com 6 abas!');
 }
 
 /* ── INIT ────────────────────────────────────────────── */
