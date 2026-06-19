@@ -3681,7 +3681,7 @@ function processLogiFile(arrayBuffer, fileName){
         if(sn.indexOf('licenc')>=0){ sLic=wb.Sheets[wb.SheetNames[si]]; break; }
       }
     }
-    var sAvu  = findSheet('chip avulso') || findSheet('avulso');
+    var sAvu  = findSheet('chip avulso') || findSheet('avulso') || findSheet('chip');
     var sDom  = findSheet('dom');
     var sAtv  = findSheet('ativações') || findSheet('ativacoes') || findSheet('ativa');
     // Fallback extra: busca manual sem depender de acento
@@ -3727,7 +3727,9 @@ function processLogiFile(arrayBuffer, fileName){
     rowsDom.forEach(function(r){
       var keys = Object.keys(r);
       keys.forEach(function(k){
-        if(k.toLowerCase().indexOf('payer') >= 0 && r[k]){
+        var kl = k.toLowerCase();
+        // Suporta "payer_name" (formato antigo) e "cod_external" (formato novo)
+        if((kl.indexOf('payer') >= 0 || kl.indexOf('cod_external') >= 0 || kl === 'cod_external') && r[k]){
           domPayers[String(r[k]).trim()] = true;
         }
       });
