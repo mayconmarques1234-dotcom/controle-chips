@@ -3598,7 +3598,7 @@ function processLogiFile(arrayBuffer, fileName){
         if(sn.indexOf('licenc')>=0){ sLic=wb.Sheets[wb.SheetNames[si]]; break; }
       }
     }
-    var sAvu  = findSheet('chip avulso') || findSheet('avulso') || findSheet('chip');
+    var sAvu  = findSheet('chip avulso') || findSheet('avulso');
     var sDom  = findSheet('dom');
     var sAtv  = findSheet('ativações') || findSheet('ativacoes') || findSheet('ativa');
     // Fallback extra: busca manual sem depender de acento
@@ -3644,7 +3644,7 @@ function processLogiFile(arrayBuffer, fileName){
     rowsDom.forEach(function(r){
       var keys = Object.keys(r);
       keys.forEach(function(k){
-        var kl = k.toLowerCase(); if((kl.indexOf('payer') >= 0 || kl.indexOf('cod_external') >= 0) && r[k]){
+        if(k.toLowerCase().indexOf('payer') >= 0 && r[k]){
           domPayers[String(r[k]).trim()] = true;
         }
       });
@@ -3853,7 +3853,7 @@ function processLogiFile(arrayBuffer, fileName){
         if(!avuRegistry[idLic]){
           avuRegistry[idLic] = { id:idLic, nome:nomeLic||'—', uf:uf||'—', tipo:'Chip avulso', enviados:0, ativados:0 };
         }
-        avuRegistry[idLic].enviados += qty;
+        avuRegistry[idLic].enviados++;
         if(isAtivado) avuRegistry[idLic].ativados++;
       }
     });
