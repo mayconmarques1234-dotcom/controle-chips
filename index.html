@@ -4627,29 +4627,45 @@ function renderResumo(){
     // Legend
     h+='<div style="display:flex;gap:16px;margin-bottom:12px;font-size:10px;color:var(--text3)"><span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:'+cA+'"></span>Licenciamento</span><span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:'+cB+'"></span>Chips enviados</span><span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:3px;border-radius:2px;background:'+cG+'"></span>Ativações</span></div>';
     // SVG chart
-    var cW=440,cH=200,pad=40,bW=Math.min(30,Math.floor((cW-pad*2)/(chartData.length*2)));
-    var xStep=(cW-pad*2)/(chartData.length);
-    h+='<svg viewBox="0 0 '+cW+' '+(cH+30)+'" style="width:100%;height:auto;font-family:var(--font)">';
-    // Y axis labels
-    for(var yi=0;yi<=4;yi++){var yVal=Math.round(maxChart/4*yi);var yPos=cH-pad-(yi/4)*(cH-pad*2);h+='<text x="'+(pad-6)+'" y="'+yPos+'" fill="#4E6B58" font-size="9" text-anchor="end">'+Math.round(yVal/1000)+'k</text><line x1="'+pad+'" y1="'+yPos+'" x2="'+(cW-10)+'" y2="'+yPos+'" stroke="#1E3328" stroke-width="0.5"/>';}
-    // Bars + line
+    var cW=460,cH=220,padL=42,padB=45,plotH=cH-padB-10,plotW=cW-padL-10;
+    var xStep=plotW/chartData.length;
+    var bW=Math.min(16,Math.floor(xStep/3));
+    // Find max for Y scale (use total sent as max)
+    var yMax=1;chartData.forEach(function(cd){if(cd.tot>yMax)yMax=cd.tot;if(cd.lic>yMax)yMax=cd.lic;});
+    // Round up to nice number
+    var yTop=Math.ceil(yMax/5000)*5000;if(yTop<yMax*1.1)yTop+=5000;
+    var ySteps=Math.min(5,Math.ceil(yTop/5000));
+    h+='<svg viewBox="0 0 '+cW+' '+(cH+5)+'" style="width:100%;height:auto;font-family:var(--font)">';
+    // Y axis grid + labels
+    for(var yi=0;yi<=ySteps;yi++){var yVal=Math.round(yTop/ySteps*yi);var yPos=10+plotH-(yi/ySteps)*plotH;h+='<line x1="'+padL+'" y1="'+yPos+'" x2="'+(cW-5)+'" y2="'+yPos+'" stroke="#1E3328" stroke-width="0.5"/><text x="'+(padL-5)+'" y="'+(yPos+3)+'" fill="#4E6B58" font-size="9" text-anchor="end">'+(yVal>=1000?Math.round(yVal/1000)+'k':yVal)+'</text>';}
+    // Bars (side by side: amber=lic, blue=total) + line (green=atv)
     var linePoints='';
     chartData.forEach(function(cd,i){
-      var x=pad+i*xStep+xStep/2;
-      var hLic=(cd.lic/maxChart)*(cH-pad*2);var hTot=(cd.tot/maxChart)*(cH-pad*2);var hAtv=(cd.atv/maxChart)*(cH-pad*2);
-      var yBase=cH-pad;
-      // Stacked bars: lic (amber) + avu (blue)
-      h+='<rect x="'+(x-bW)+'" y="'+(yBase-hTot)+'" width="'+bW+'" height="'+hTot+'" rx="2" fill="'+cB+'" opacity=".8"/>';
-      h+='<rect x="'+(x-bW)+'" y="'+(yBase-hLic)+'" width="'+bW+'" height="'+hLic+'" rx="2" fill="'+cA+'" opacity=".9"/>';
-      // Line point for ativações
+      var xCenter=padL+i*xStep+xStep/2;
+      var yBase=10+plotH;
+      // Amber bar (Licenciamento) - left
+      var hLic=(cd.lic/yTop)*plotH;
+      h+='<rect x="'+(xCenter-bW-1)+'" y="'+(yBase-hLic)+'" width="'+bW+'" height="'+hLic+'" rx="2" fill="'+cA+'" opacity=".85"/>';
+      // Blue bar (Chips enviados = total) - right
+      var hTot=(cd.tot/yTop)*plotH;
+      h+='<rect x="'+(xCenter+1)+'" y="'+(yBase-hTot)+'" width="'+bW+'" height="'+hTot+'" rx="2" fill="'+cB+'" opacity=".85"/>';
+      // Green dot for ativações
+      var hAtv=(cd.atv/yTop)*plotH;
       var yAtv=yBase-hAtv;
-      linePoints+=(i===0?'M':'L')+x+','+yAtv+' ';
-      h+='<circle cx="'+x+'" cy="'+yAtv+'" r="3.5" fill="'+cG+'" stroke="#050B08" stroke-width="1.5"/>';
+      linePoints+=(i===0?'M':'L')+xCenter+','+yAtv+' ';
       // X label
       var d2=new Date(cd.k+'-01');var lbl=ms[d2.getMonth()]+'/'+String(d2.getFullYear()).slice(2);
-      h+='<text x="'+x+'" y="'+(cH+2)+'" fill="#4E6B58" font-size="9" text-anchor="middle">'+lbl+'</text>';
+      h+='<text x="'+xCenter+'" y="'+(cH-2)+'" fill="#4E6B58" font-size="8" text-anchor="middle">'+lbl+'</text>';
     });
-    h+='<polyline points="'+linePoints.trim()+'" fill="none" stroke="'+cG+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+    // Draw line first (behind dots)
+    h+='<polyline points="'+linePoints.trim()+'" fill="none" stroke="'+cG+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+    // Draw dots on top
+    chartData.forEach(function(cd,i){
+      var xCenter=padL+i*xStep+xStep/2;
+      var yBase=10+plotH;
+      var hAtv=(cd.atv/yTop)*plotH;
+      h+='<circle cx="'+xCenter+'" cy="'+(yBase-hAtv)+'" r="4" fill="'+cG+'" stroke="#050B08" stroke-width="1.5"/>';
+    });
     h+='</svg>';
     // Insight text
     var bestMonth='',bestAtv=0;chartData.forEach(function(cd){if(cd.atv>bestAtv){bestAtv=cd.atv;bestMonth=cd.k;}});
@@ -4684,22 +4700,36 @@ function renderResumo(){
   h+='<div style="font-size:13px;font-weight:700;color:'+cG+';text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">4. Inteligência geográfica</div>';
   var ufSorted=ufKeys.sort(function(a,b){return(uf[b].enviados||0)-(uf[a].enviados||0);});
   if(ufSorted.length){
-    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">';
-    // Left: Top 10
+    h+='<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:14px">';
+    // LEFT: Top 10 table
     h+='<div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Top 10 estados (envios)</div>';
-    h+='<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr><th style="text-align:left;padding:4px 6px;font-size:9px;color:var(--text3);font-weight:600">Estado</th><th style="text-align:right;padding:4px 6px;font-size:9px;color:var(--text3);font-weight:600">Enviados</th><th style="text-align:right;padding:4px 6px;font-size:9px;color:var(--text3);font-weight:600">% Total</th></tr></thead><tbody>';
+    h+='<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr><th style="text-align:left;padding:4px 4px;font-size:9px;color:var(--text3);font-weight:600">Estado</th><th style="text-align:right;padding:4px 4px;font-size:9px;color:var(--text3);font-weight:600">Enviados</th><th style="text-align:right;padding:4px 4px;font-size:9px;color:var(--text3);font-weight:600">% Total</th></tr></thead><tbody>';
     ufSorted.slice(0,10).forEach(function(u,i){
       var env=uf[u].enviados||0;var pctT=totE>0?(env/totE*100).toFixed(0)+'%':'—';
-      h+='<tr><td style="padding:3px 6px;color:var(--text2)">'+(i+1)+'. <strong style="color:var(--text)">'+u+'</strong></td><td style="padding:3px 6px;text-align:right;font-family:var(--mono);color:var(--text)">'+f(env)+'</td><td style="padding:3px 6px;text-align:right;color:'+cG+';font-weight:600">'+pctT+'</td></tr>';
+      h+='<tr><td style="padding:3px 4px;color:var(--text2);white-space:nowrap">'+(i+1)+'. <strong style="color:var(--text)">'+u+'</strong></td><td style="padding:3px 4px;text-align:right;font-family:var(--mono);color:var(--text)">'+f(env)+'</td><td style="padding:3px 4px;text-align:right;color:'+cG+';font-weight:600">'+pctT+'</td></tr>';
     });
     h+='</tbody></table></div>';
-    // Right: Best/Worst conversion
+    // CENTER: Brazil SVG map
+    var mapPaths={'AC':'M18,128 L42,118 L38,148 L12,155Z','AM':'M35,52 L140,35 L158,82 L148,135 L88,142 L42,118 L25,80Z','RR':'M88,8 L138,5 L140,35 L95,38Z','AP':'M182,12 L215,8 L222,55 L185,58Z','PA':'M140,35 L222,55 L248,78 L250,128 L192,138 L158,130 L148,135 L158,82Z','MA':'M248,78 L285,72 L295,108 L268,128 L250,128Z','PI':'M268,108 L295,108 L300,152 L275,165 L258,145Z','CE':'M295,82 L322,78 L328,115 L300,125 L295,108Z','RN':'M325,82 L342,85 L338,102 L325,98Z','PB':'M322,102 L342,105 L340,118 L318,115Z','PE':'M298,118 L340,118 L338,135 L295,138Z','AL':'M318,138 L340,138 L338,155 L320,152Z','SE':'M315,155 L335,158 L332,168 L312,165Z','BA':'M250,128 L295,138 L320,152 L312,165 L302,208 L272,225 L248,205 L242,168Z','TO':'M192,138 L250,128 L242,168 L248,205 L212,208 L192,178Z','MT':'M88,142 L148,135 L192,138 L192,178 L212,208 L192,245 L115,245 L85,195Z','GO':'M192,208 L248,205 L252,242 L238,265 L205,265 L188,248Z','DF':'M228,242 L242,242 L242,255 L228,255Z','MS':'M85,245 L192,245 L188,285 L155,315 L98,305 L82,275Z','MG':'M205,228 L272,225 L292,255 L285,302 L240,312 L215,295 L205,265Z','ES':'M285,255 L308,252 L305,288 L285,288Z','RJ':'M265,305 L292,298 L302,312 L278,318Z','SP':'M188,285 L240,295 L265,305 L260,332 L205,342 L175,325 L170,305Z','PR':'M155,315 L205,332 L205,358 L155,362 L138,345Z','SC':'M155,362 L205,358 L205,382 L160,382Z','RS':'M128,365 L155,362 L160,382 L162,412 L128,415 L108,395Z','RO':'M42,118 L88,142 L85,195 L58,195 L32,165Z'};
+    var maxUfEnv=1;ufSorted.forEach(function(u){if((uf[u].enviados||0)>maxUfEnv)maxUfEnv=uf[u].enviados;});
+    h+='<div style="text-align:center"><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Mapa de cobertura</div>';
+    h+='<svg viewBox="0 0 355 425" style="width:160px;height:auto">';
+    Object.keys(mapPaths).forEach(function(st){
+      var envS=(uf[st]&&uf[st].enviados)||0;
+      var intensity=envS>0?Math.max(0.2,Math.min(1,envS/maxUfEnv)):0.08;
+      var fill=envS>0?'rgba(59,130,246,'+intensity.toFixed(2)+')':'rgba(30,51,40,.4)';
+      h+='<path d="'+mapPaths[st]+'" fill="'+fill+'" stroke="#1E3328" stroke-width="1"><title>'+st+': '+(envS>0?f(envS)+' chips':'sem dados')+'</title></path>';
+    });
+    h+='</svg>';
+    h+='<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;font-size:9px;color:var(--text3)"><div style="width:10px;height:10px;background:rgba(59,130,246,.9);border-radius:2px"></div>Maior volume<div style="width:10px;height:10px;background:rgba(59,130,246,.2);border-radius:2px;margin-left:4px"></div>Menor volume</div>';
+    h+='</div>';
+    // RIGHT: Best/Worst conversion
     var byRate=ufKeys.filter(function(u){return(uf[u].enviados||0)>50;}).sort(function(a,b){return(uf[b].enviados>0?uf[b].ativados/uf[b].enviados:0)-(uf[a].enviados>0?uf[a].ativados/uf[a].enviados:0);});
     h+='<div>';
     if(byRate.length>=6){
       h+='<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Melhor conversão</div>';
       byRate.slice(0,5).forEach(function(u,i){var p=Math.round(uf[u].ativados/(uf[u].enviados||1)*100);h+='<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px"><span style="color:var(--text2)">'+(i+1)+'. '+u+'</span><span style="color:'+cG+';font-weight:600">'+p+'%</span></div>';});
-      h+='<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:12px 0 8px">Menor conversão</div>';
+      h+='<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 8px">Menor conversão</div>';
       byRate.slice(-5).reverse().forEach(function(u,i){var p=Math.round(uf[u].ativados/(uf[u].enviados||1)*100);h+='<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px"><span style="color:var(--text2)">'+(i+1)+'. '+u+'</span><span style="color:'+cR+';font-weight:600">'+p+'%</span></div>';});
     }
     h+='</div></div>';
