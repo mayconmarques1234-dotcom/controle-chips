@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📶</text></svg>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://script.google.com https://*.googleusercontent.com https://api.callmebot.com; img-src 'self' data:; connect-src 'self' https://script.google.com https://*.googleusercontent.com https://api.callmebot.com https://wa.me; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://script.google.com https://*.googleusercontent.com">
 <title>Chips Control · iGreen</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -448,7 +449,9 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
     <div class="login-heading">Bom dia 👋</div>
     <div class="login-sub">Digite seu nome para entrar e registrar seus lançamentos.</div>
     <label class="login-label">Seu nome</label>
-    <input class="login-input" id="login-name" placeholder="Ex: Agnes Angelim" maxlength="40" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
+    <input class="login-input" id="login-name" placeholder="Ex: Agnes Angelim" maxlength="40" autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus()">
+    <label class="login-label" style="margin-top:14px">Senha de acesso</label>
+    <input class="login-input" id="login-pass" type="password" placeholder="Digite a senha" maxlength="40" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
     <div style="margin-top:14px">
       <div style="font-size:11px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em;font-weight:500">Acesso rápido</div>
       <div class="user-chip" id="quick-users"></div>
@@ -514,6 +517,14 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
       <button class="nav-item" onclick="setPage('contel',this)">
         <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         Contel
+      </button>
+      <button class="nav-item" onclick="setPage('base',this)">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Base de Planilhas
+      </button>
+      <button class="nav-item" onclick="setPage('export',this)">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportação
       </button>
       <button class="nav-item" onclick="setPage('cd',this)">
         <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
@@ -811,6 +822,10 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
         <div id="page-history" class="page">
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
             <input class="search-bar" id="hist-search" placeholder="Buscar por nome, número, ICCID, responsável..." oninput="renderHistory()" style="flex:1;min-width:200px">
+            <button class="btn-secondary" id="btn-reveal-pii" onclick="toggleRevealPII()" title="Exibir/ocultar dados pessoais (requer senha)" style="border-color:var(--amber-border);color:var(--amber)">
+              <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Dados pessoais
+            </button>
             <button class="btn-secondary" onclick="exportXLSX('all')">
               <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Todos
@@ -879,9 +894,9 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
               <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#050B08;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Registrar envio ao Contel
             </button>
-            <button class="btn-secondary" onclick="openContelModal('planilha')">
-              <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              Baixar por planilha (ICCID)
+            <button class="btn-secondary" onclick="setPage('base',document.querySelector('[onclick*=\u0022base\u0022]'))" title="A baixa de ICCIDs agora é feita pela aba Base de Planilhas (fonte única)">
+              <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Baixar por planilha → Base de Planilhas
             </button>
             <button class="btn-secondary" onclick="openContelModal('esin')">
               <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 7h10v10H7z"/></svg>
@@ -906,7 +921,7 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
           <div class="config-card" style="margin-bottom:16px;border-color:var(--accent-dark)">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
               <div>
-                <div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Estoque atual — Logística</div>
+                <div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Estoque atual — CD</div>
                 <div style="display:flex;align-items:baseline;gap:10px">
                   <span style="font-size:36px;font-weight:600;color:var(--accent);letter-spacing:-.02em" id="logi-estoque-val">—</span>
                   <span style="font-size:13px;color:var(--text3)">chips</span>
@@ -914,11 +929,16 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
                 <div style="font-size:11px;color:var(--text3);margin-top:4px">Contagem desde: <span id="logi-estoque-desde" style="color:var(--text2)">—</span></div>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <button class="btn-primary" onclick="openLogiEstoqueModal()" style="font-size:12px;padding:8px 16px">
-                  <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:#050B08;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  Editar estoque
+                <button class="btn-primary" onclick="openCdCompraModal()" style="font-size:12px;padding:8px 16px">
+                  <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:#050B08;fill:none;stroke-width:2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Compra de chips
                 </button>
-                <button class="btn-secondary" onclick="openLogiEstoqueHistorico()" style="font-size:12px">Histórico de ajustes</button>
+                <button class="btn-secondary" onclick="openCdEnvioModal()" style="font-size:12px;color:var(--amber);border-color:var(--amber-border)">
+                  <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                  Envio de chips
+                </button>
+                <button class="btn-secondary" onclick="openLogiEstoqueModal()" style="font-size:12px">Corrigir estoque</button>
+                <button class="btn-secondary" onclick="openLogiEstoqueHistorico()" style="font-size:12px">Histórico</button>
               </div>
             </div>
             <div id="logi-estoque-alert" style="display:none;margin-top:10px;padding:8px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius);font-size:12px;color:var(--amber)"></div>
@@ -969,6 +989,52 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
             <div class="sec-title">Detalhamento por tipo</div>
             <div id="logi-breakdown"></div>
           </div>
+        </div>
+
+        <!-- BASE DE PLANILHAS -->
+        <div id="page-base" class="page">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px" id="bp-status-cards"></div>
+          <div id="bp-slots"></div>
+          <div id="bp-actions" style="display:none;margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-primary" id="bp-process-btn" onclick="bpProcessAll()" style="display:none">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#050B08;fill:none;stroke-width:2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Processar e atualizar dados
+            </button>
+          </div>
+          <div id="bp-log" style="margin-top:20px"></div>
+        </div>
+
+        <!-- EXPORTAÇÃO -->
+        <div id="page-export" class="page">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
+            <div class="mc g" style="padding:16px"><div class="mc-lbl" style="margin-top:0">Registros disponíveis</div><div class="mc-val" id="ex-disponiveis" style="font-size:28px;margin-top:6px">—</div><div style="font-size:10px;color:var(--text3);margin-top:4px">confirmados na DOM (novos)</div></div>
+            <div class="mc b" style="padding:16px"><div class="mc-lbl" style="margin-top:0">Já exportados</div><div class="mc-val" id="ex-exportados" style="font-size:28px;margin-top:6px">—</div></div>
+            <div class="mc a" style="padding:16px"><div class="mc-lbl" style="margin-top:0">Exportações realizadas</div><div class="mc-val" id="ex-total-exports" style="font-size:28px;margin-top:6px">—</div></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+            <button class="btn-primary" onclick="gerarExportacao()" id="ex-btn-gerar">
+              <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#050B08;fill:none;stroke-width:2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Gerar nova planilha de exportação
+            </button>
+            <button class="btn-secondary" onclick="limparExportados()">Resetar exportados</button>
+          </div>
+          <div id="ex-codes" style="display:none" class="copy-banner">
+            <div class="copy-top">
+              <span class="copy-label">Códigos de logística (coluna A)</span>
+              <span class="copy-count" id="ex-codes-count"></span>
+            </div>
+            <div class="copy-box" id="ex-codes-box"></div>
+            <div style="display:flex;align-items:center">
+              <button class="btn-copy" onclick="copyExCodes()">
+                <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:#050B08;fill:none;stroke-width:2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copiar códigos
+              </button>
+              <span class="copy-ok" id="ex-codes-ok">✓ Copiado!</span>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="sec-title">Histórico de exportações</div>
+          <div id="ex-history"></div>
         </div>
 
         <!-- BASE LICENCIADOS -->
@@ -1091,13 +1157,38 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
               </div>
             </div>
             <div class="config-card">
-              <h3>Segurança — alterar senha</h3>
+              <h3>Segurança — senha de login</h3>
+              <p>Todos os usuários precisam desta senha para acessar o sistema. Alterável apenas pelo administrador.</p>
+              <div class="row2">
+                <div class="fg"><label>Nova senha de login</label><input type="password" id="cfg-login-pass" placeholder="Nova senha"></div>
+                <div class="fg"><label>Confirmar</label><input type="password" id="cfg-login-pass2" placeholder="Repita"></div>
+              </div>
+              <button class="btn-primary" style="margin-top:4px" onclick="updateLoginPass()">Atualizar senha de login</button>
+            </div>
+            <div class="config-card">
+              <h3>Segurança — senha de configurações</h3>
               <p>Altere a senha de acesso às configurações. A senha atual é armazenada de forma criptografada no navegador e sincronizada via Google Sheets.</p>
               <div class="row2">
                 <div class="fg"><label>Nova senha</label><input type="password" id="cfg-new-pass" placeholder="Digite a nova senha"></div>
                 <div class="fg"><label>Confirmar senha</label><input type="password" id="cfg-confirm-pass" placeholder="Repita a nova senha"></div>
               </div>
               <button class="btn-primary" style="margin-top:4px" onclick="updateCfgPass()">Atualizar senha</button>
+            </div>
+            <div class="config-card" style="border-color:var(--teal-border)">
+              <h3 style="color:var(--teal)">💾 Backup cifrado</h3>
+              <p>Gera um arquivo de backup de todos os dados (lançamentos, estoque, Contel, logística e configurações) <strong>criptografado com AES-256</strong>. Guarde o arquivo em local seguro e <strong>não esqueça a senha</strong> — sem ela o backup é irrecuperável.</p>
+              <div class="row2">
+                <div class="fg"><label>Senha do backup</label><input type="password" id="bkp-pass" placeholder="Senha forte (mín. 8)"></div>
+                <div class="fg"><label>Confirmar senha</label><input type="password" id="bkp-pass2" placeholder="Repita a senha"></div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+                <button class="btn-primary" onclick="gerarBackupCifrado()">Gerar backup cifrado</button>
+                <label style="display:inline-flex;align-items:center;gap:7px;background:var(--surface3);color:var(--text2);border:1px solid var(--border2);border-radius:var(--radius);padding:8px 16px;font-size:12px;cursor:pointer;font-family:var(--font)">
+                  Restaurar de backup
+                  <input type="file" accept=".ccbak,.json" style="display:none" onchange="restaurarBackupCifrado(this)">
+                </label>
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.6">Recomendação: gere um backup semanal e mantenha cópias em pelo menos dois locais distintos. O arquivo <code>.ccbak</code> é inútil para quem não tiver a senha.</div>
             </div>
             <div class="config-card" style="border-color:var(--blue-border)">
               <h3 style="color:var(--blue)">🔒 Aviso de Privacidade (LGPD)</h3>
@@ -1361,12 +1452,60 @@ code{background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:va
 
 <!-- MODAL HISTÓRICO ESTOQUE LOGÍSTICA -->
 <div class="modal-overlay" id="modal-logi-historico">
-  <div class="modal" style="width:520px">
+  <div class="modal" style="width:580px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div class="modal-title">Histórico de ajustes — Estoque Logística</div>
+      <div class="modal-title">Histórico — Estoque CD</div>
       <button onclick="document.getElementById('modal-logi-historico').classList.remove('open')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px">✕</button>
     </div>
     <div id="logi-historico-list"></div>
+  </div>
+</div>
+
+<!-- MODAL COMPRA DE CHIPS (CD) -->
+<div class="modal-overlay" id="modal-cd-compra">
+  <div class="modal" style="width:440px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title">Compra de chips</div>
+      <button onclick="document.getElementById('modal-cd-compra').classList.remove('open')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <div class="modal-sub" style="margin-bottom:20px">Registre uma compra de chips. O valor será <strong style="color:var(--accent)">somado</strong> ao estoque CD.</div>
+    <div class="row2">
+      <div class="fg"><label>Quantidade comprada</label><input type="number" id="cd-compra-qty" min="1" placeholder="Ex: 5000"></div>
+      <div class="fg"><label>Data da compra</label><input type="date" id="cd-compra-date"></div>
+    </div>
+    <div class="fg"><label>Fornecedor / NF</label><input type="text" id="cd-compra-fornecedor" placeholder="Ex: Distribuidora ABC — NF 12345"></div>
+    <div class="fg"><label>Observações</label><textarea id="cd-compra-obs" placeholder="Detalhes adicionais..." style="min-height:52px"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="document.getElementById('modal-cd-compra').classList.remove('open')">Cancelar</button>
+      <button class="btn-primary" onclick="submitCdCompra()">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#050B08;fill:none;stroke-width:2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Registrar compra
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ENVIO DE CHIPS (CD) -->
+<div class="modal-overlay" id="modal-cd-envio">
+  <div class="modal" style="width:440px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title">Envio de chips</div>
+      <button onclick="document.getElementById('modal-cd-envio').classList.remove('open')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <div class="modal-sub" style="margin-bottom:20px">Registre um envio de chips. O valor será <strong style="color:var(--amber)">subtraído</strong> do estoque CD.</div>
+    <div class="row2">
+      <div class="fg"><label>Quantidade enviada</label><input type="number" id="cd-envio-qty" min="1" placeholder="Ex: 200"></div>
+      <div class="fg"><label>Data do envio</label><input type="date" id="cd-envio-date"></div>
+    </div>
+    <div class="fg"><label>Destino</label><input type="text" id="cd-envio-destino" placeholder="Ex: Sede Uberlândia, Contel SP..."></div>
+    <div class="fg"><label>Observações</label><textarea id="cd-envio-obs" placeholder="Ex: Remessa para evento, NF 5678..." style="min-height:52px"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="document.getElementById('modal-cd-envio').classList.remove('open')">Cancelar</button>
+      <button class="btn-primary" onclick="submitCdEnvio()" style="background:var(--amber)">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#050B08;fill:none;stroke-width:2.5"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        Registrar envio
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1435,9 +1574,174 @@ function loadRegistriesFromSheets(cfg){
   } catch(e){ console.warn('[Registries] Erro ao carregar:', e); return null; }
 }
 
-/* ── ENDPOINTS ───────────────────────────────────────── */
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7Pu0_sw_5sOELLhakmJzWr92Uf28TzVZ2R8LVk9d-gIgraVoZcr47kO3KkdWtS3yO/exec';
-var WPP_URL    = 'https://script.google.com/macros/s/AKfycbxnlBQdTexHC0TolhdL7AsJ-oHDrHIaqR17YtM57KuHPg2Rxasb7LsdJUz__geapUQ/exec';
+/* ── PERSISTÊNCIA BP.sheets no localStorage (comprimido via pako) ──
+   As planilhas brutas são grandes; salvamos comprimidas e em chunks
+   para não perder os uploads ao recarregar a página. */
+var BP_LS_PREFIX = 'cc_bp_';
+var BP_LS_CHUNK = 500000; // ~500KB por chunk de string base64
+
+function saveBPToLocal(){
+  // Não persiste se pako indisponível (evita exceção silenciosa)
+  if(typeof pako === 'undefined'){ console.warn('[BP] pako indisponível — não persistido'); return; }
+  try {
+    // Limpa chunks antigos primeiro
+    clearBPLocal(false);
+    var payload = { sheets:{}, log:(BP.log||[]).slice(0,50) };
+    Object.keys(BP.sheets).forEach(function(k){
+      var s = BP.sheets[k];
+      payload.sheets[k] = {
+        data: s.status==='ready' ? (s.data||[]) : null,
+        rows: s.rows||0, date: s.date||null, file: s.file||null, status: s.status||'pending'
+      };
+    });
+    var b64 = compressAndEncode(payload);
+    var numChunks = Math.ceil(b64.length / BP_LS_CHUNK);
+    localStorage.setItem(BP_LS_PREFIX+'meta', JSON.stringify({ chunks:numChunks, size:b64.length, savedAt:new Date().toISOString() }));
+    for(var i=0;i<numChunks;i++){
+      localStorage.setItem(BP_LS_PREFIX+i, b64.substr(i*BP_LS_CHUNK, BP_LS_CHUNK));
+    }
+    console.log('[BP] Persistido no localStorage: '+Math.round(b64.length/1024)+'KB em '+numChunks+' chunks');
+  } catch(e){
+    // QuotaExceededError: planilhas grandes demais para localStorage
+    console.warn('[BP] Erro ao persistir (provável estouro de cota):', e);
+    try { clearBPLocal(false); } catch(e2){}
+    toast('⚠️ Planilhas grandes demais para salvar localmente. Serão mantidas só nesta sessão.');
+  }
+}
+
+function loadBPFromLocal(){
+  try {
+    var metaRaw = localStorage.getItem(BP_LS_PREFIX+'meta');
+    if(!metaRaw) return false;
+    var meta = JSON.parse(metaRaw);
+    var numChunks = meta.chunks || 0;
+    if(!numChunks) return false;
+    var b64 = '';
+    for(var i=0;i<numChunks;i++){
+      var c = localStorage.getItem(BP_LS_PREFIX+i);
+      if(c===null){ console.warn('[BP] Chunk '+i+' ausente — restauração abortada'); return false; }
+      b64 += c;
+    }
+    if(!b64) return false;
+    var payload = decodeAndDecompress(b64);
+    if(payload && payload.sheets){
+      Object.keys(BP.sheets).forEach(function(k){
+        if(payload.sheets[k]){
+          var s = payload.sheets[k];
+          BP.sheets[k] = {
+            data: s.status==='ready' ? (s.data||[]) : null,
+            rows: s.rows||0, date: s.date||null, file: s.file||null, status: s.status||'pending'
+          };
+        }
+      });
+      if(Array.isArray(payload.log)) BP.log = payload.log;
+      console.log('[BP] Restaurado do localStorage ('+Math.round((meta.size||0)/1024)+'KB)');
+      return true;
+    }
+  } catch(e){ console.warn('[BP] Erro ao restaurar:', e); }
+  return false;
+}
+
+function clearBPLocal(removeMeta){
+  try {
+    var metaRaw = localStorage.getItem(BP_LS_PREFIX+'meta');
+    var n = 0;
+    if(metaRaw){ try { n = (JSON.parse(metaRaw).chunks)||0; } catch(e){} }
+    // Remove um número generoso de chunks para cobrir saves antigos maiores
+    for(var i=0;i<Math.max(n,40);i++) localStorage.removeItem(BP_LS_PREFIX+i);
+    if(removeMeta!==false) localStorage.removeItem(BP_LS_PREFIX+'meta');
+  } catch(e){}
+}
+
+/* ── ENDPOINTS (ofuscados) ────────────────────────────── */
+var _e = function(s){ return atob(s); };
+var SCRIPT_URL = _e('aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4N1B1MF9zd181c09FTExoYWttSnpXcjkyVWYyOFR6VloyUjhMVms5ZC1nSWdyYVZvWmNyNDdrTzNLa2RXdFMzeU8vZXhlYw==');
+var WPP_URL    = _e('aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4bmxCUWRUZXhIQzBUb2xoZEw3QXNKLW9IRHJISWFxUjE3WXRNNTdLdUhQZzJSeGFzYjdMc2RKVXpfX2dlYXBVUS9leGVj');
+
+/* ── SEGURANÇA: token de acesso ao backend ──────────────
+   O mesmo segredo deve estar no Apps Script (PropertiesService → CC_TOKEN).
+   ATENÇÃO: por rodar no navegador, este token impede acesso anônimo casual,
+   mas não substitui a restrição por domínio Workspace (ver SPEC §18, Caminho A).
+   Troque este valor e o do Apps Script juntos sempre que necessário. */
+var CC_TOKEN = _e('Q0hJUFNDVFJMLWlncmVlbi0yMDI2LXRyb3F1ZS1lc3RlLXNlZ3JlZG8=');
+
+/* Salt fixo da aplicação para o hash de senhas (server e cliente usam o mesmo) */
+var CC_SALT = 'cc$ig2026$salt';
+
+/* SHA-256 (assíncrono, via Web Crypto). Retorna Promise<hex>. */
+function sha256Hex(str){
+  try {
+    var enc = new TextEncoder();
+    return crypto.subtle.digest('SHA-256', enc.encode(str)).then(function(buf){
+      var b = new Uint8Array(buf), h = '';
+      for(var i=0;i<b.length;i++){ h += ('0'+b[i].toString(16)).slice(-2); }
+      return h;
+    });
+  } catch(e){
+    // Ambiente sem Web Crypto (muito raro) — rejeita para não criar falsa sensação de hash
+    return Promise.reject(new Error('Web Crypto indisponível'));
+  }
+}
+function hashPass(plain){ return sha256Hex(CC_SALT + '|' + String(plain||'')); }
+
+/* Wrapper único de POST que injeta o token em toda requisição ao backend.
+   Mantém a mesma assinatura de retorno (Promise) usada no resto do código. */
+function ccPost(payload){
+  payload = payload || {};
+  payload.token = CC_TOKEN;
+  return fetch(SCRIPT_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain'},
+    body: JSON.stringify(payload)
+  });
+}
+/* GET com token via querystring (doGet lê e.parameter.token) */
+function ccGetUrl(){
+  return SCRIPT_URL + '?token=' + encodeURIComponent(CC_TOKEN);
+}
+
+/* ── AUDITORIA: registra ações sensíveis no Sheets (aba audit_log) ──
+   action: 'export'|'login'|'config_access'|'reveal_pii'|...; type: subtipo; count: nº de registros. */
+function logAudit(action, type, count){
+  try {
+    ccPost({ auditLog:{
+      date: new Date().toISOString(),
+      user: (S && S.user) ? S.user : '(anônimo)',
+      action: action || '',
+      type: type || '',
+      count: (count===undefined||count===null) ? '' : count,
+      ua: (navigator.userAgent||'').slice(0,120)
+    }}).catch(function(){});
+  } catch(e){}
+}
+
+/* Interceptor: injeta o token em TODA requisição ao SCRIPT_URL, sem precisar
+   reescrever as 27 chamadas fetch() espalhadas pelo código. Para POST, mescla
+   o token no corpo JSON; para GET, anexa ?token= à URL. Demais URLs passam intactas. */
+(function(){
+  var _origFetch = window.fetch.bind(window);
+  window.fetch = function(url, opts){
+    try {
+      if(typeof url === 'string' && url.indexOf(SCRIPT_URL) === 0){
+        opts = opts || {};
+        if(opts.method && String(opts.method).toUpperCase() === 'POST'){
+          var body = opts.body;
+          try {
+            var obj = body ? JSON.parse(body) : {};
+            if(obj && typeof obj === 'object' && !obj.token){ obj.token = CC_TOKEN; }
+            opts = Object.assign({}, opts, { body: JSON.stringify(obj) });
+          } catch(e){ /* corpo não-JSON: deixa como está */ }
+        } else {
+          // GET: garante token na querystring
+          if(url.indexOf('token=') < 0){
+            url += (url.indexOf('?') >= 0 ? '&' : '?') + 'token=' + encodeURIComponent(CC_TOKEN);
+          }
+        }
+      }
+    } catch(e){}
+    return _origFetch(url, opts);
+  };
+})();
 
 /* ── ESTADO ──────────────────────────────────────────── */
 var S = {
@@ -1474,6 +1778,174 @@ var SE = { qty: 0, log: [] };
 var LG = { data: null };
 var LS = { qty: null, desde: null, log: [] };
 
+/* Base de Planilhas — uploads individuais */
+var BP = {
+  sheets: {
+    chipAvulso:   { data:null, rows:0, date:null, file:null, status:'pending' },
+    licenciado:   { data:null, rows:0, date:null, file:null, status:'pending' },
+    clienteAtivo: { data:null, rows:0, date:null, file:null, status:'pending' },
+    dom:          { data:null, rows:0, date:null, file:null, status:'pending' },
+    contel:       { data:null, rows:0, date:null, file:null, status:'pending' }
+  },
+  log: [],
+  lastProcess: null
+};
+
+/* Exportação — rastreio de registros exportados */
+var EX = { exported:{}, history:[] };
+
+/* Segurança — timeout de inatividade */
+var SEC = { lastActivity:Date.now(), timeout:30*60*1000, timer:null, revealPII:false };
+
+/* Exibição de dado pessoal: mascarado por padrão; só mostra cru se revealPII ligado.
+   kind: 'phone'|'cpf'|'email'|'name' */
+function pii(value, kind){
+  if(value===undefined || value===null || value==='' || value==='—') return '—';
+  if(SEC.revealPII) return sanitize(value);
+  if(kind==='phone') return maskPhone(value);
+  if(kind==='cpf')   return maskCpf(value);
+  if(kind==='email') return maskEmail(value);
+  if(kind==='name'){
+    var s = String(value).trim();
+    if(s.length<=2) return sanitize(s);
+    var parts = s.split(/\s+/);
+    var first = parts[0];
+    var shown = first.slice(0, Math.min(3, first.length));
+    return sanitize(shown + '***' + (parts.length>1 ? ' ' + parts[parts.length-1][0] + '.' : ''));
+  }
+  return sanitize(value);
+}
+
+/* Liga/desliga revelação de PII — exige senha de configuração. */
+function toggleRevealPII(){
+  if(SEC.revealPII){
+    SEC.revealPII = false;
+    logAudit('hide_pii','','');
+    refreshPIIViews();
+    toast('Dados pessoais ocultados.');
+    return;
+  }
+  var v = prompt('Para exibir dados pessoais completos (CPF, telefone, e-mail), digite a senha de configuração:');
+  if(v===null) return;
+  hashPass(v).then(function(h){
+    var stored = localStorage.getItem('cc_cfg_pass_sha') || '';
+    function grant(){
+      SEC.revealPII = true;
+      logAudit('reveal_pii','','');
+      refreshPIIViews();
+      toast('⚠️ Dados pessoais visíveis. Lembre de ocultar ao terminar.');
+    }
+    if(stored){ if(h===stored) grant(); else toast('Senha incorreta.'); return; }
+    hashPass('conf2026').then(function(def){ if(h===def) grant(); else toast('Senha incorreta.'); });
+  }).catch(function(){ toast('Falha ao validar senha.'); });
+}
+
+function refreshPIIViews(){
+  if(document.getElementById('page-history').classList.contains('active')) renderHistory();
+  if(document.getElementById('page-licenciados').classList.contains('active')) renderLicenciados();
+  if(document.getElementById('page-ops').classList.contains('active')) renderOps();
+}
+
+/* ── BACKUP CIFRADO (AES-256-GCM, chave derivada por PBKDF2) ──────── */
+function _b64FromBytes(bytes){
+  var bin=''; var b=new Uint8Array(bytes);
+  for(var i=0;i<b.length;i++) bin+=String.fromCharCode(b[i]);
+  return btoa(bin);
+}
+function _bytesFromB64(b64){
+  var bin=atob(b64); var arr=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  return arr;
+}
+function _deriveKey(pass, salt){
+  var enc=new TextEncoder();
+  return crypto.subtle.importKey('raw', enc.encode(pass), {name:'PBKDF2'}, false, ['deriveKey'])
+    .then(function(baseKey){
+      return crypto.subtle.deriveKey(
+        { name:'PBKDF2', salt:salt, iterations:150000, hash:'SHA-256' },
+        baseKey, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']
+      );
+    });
+}
+
+function gerarBackupCifrado(){
+  var p1=document.getElementById('bkp-pass').value;
+  var p2=document.getElementById('bkp-pass2').value;
+  if(!p1 || p1.length<8){ toast('A senha do backup deve ter ao menos 8 caracteres.'); return; }
+  if(p1!==p2){ toast('As senhas não coincidem.'); return; }
+  // Snapshot do estado atual (em memória)
+  var snapshot = {
+    _meta:{ app:'ChipsControl', ver:'5.3', date:new Date().toISOString(), user:(S&&S.user)||'' },
+    recs: (typeof S!=='undefined') ? S.recs : [],
+    stock: (typeof S!=='undefined') ? S.stock : null,
+    contel: (typeof SL!=='undefined') ? SL : null,
+    esin: (typeof SE!=='undefined') ? SE : null,
+    logiEstoque: (typeof LS!=='undefined') ? LS : null,
+    logiData: (typeof LG!=='undefined') ? LG.data : null,
+    bp: (typeof BP!=='undefined') ? BP.sheets : null,
+    ex: (typeof EX!=='undefined') ? EX : null
+  };
+  var json=JSON.stringify(snapshot);
+  var salt=crypto.getRandomValues(new Uint8Array(16));
+  var iv=crypto.getRandomValues(new Uint8Array(12));
+  _deriveKey(p1, salt).then(function(key){
+    var enc=new TextEncoder();
+    return crypto.subtle.encrypt({name:'AES-GCM', iv:iv}, key, enc.encode(json));
+  }).then(function(cipher){
+    var pkg={ format:'ccbak-aesgcm-1', salt:_b64FromBytes(salt), iv:_b64FromBytes(iv), data:_b64FromBytes(cipher) };
+    var blob=new Blob([JSON.stringify(pkg)], {type:'application/octet-stream'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='ChipsControl_backup_'+new Date().toISOString().slice(0,10)+'.ccbak';
+    a.click();
+    document.getElementById('bkp-pass').value='';
+    document.getElementById('bkp-pass2').value='';
+    logAudit('backup_export','cifrado_aesgcm', (snapshot.recs||[]).length);
+    toast('Backup cifrado gerado. Guarde o arquivo e a senha em local seguro.');
+  }).catch(function(e){
+    toast('Falha ao gerar backup: '+(e.message||e));
+  });
+}
+
+function restaurarBackupCifrado(input){
+  var file=input.files[0];
+  if(!file) return;
+  if(!confirm('Restaurar um backup substituirá os dados atuais em memória. Continuar?')){ input.value=''; return; }
+  var pass=prompt('Digite a senha do backup:');
+  if(pass===null){ input.value=''; return; }
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var pkg;
+    try { pkg=JSON.parse(ev.target.result); } catch(e){ toast('Arquivo de backup inválido.'); input.value=''; return; }
+    if(!pkg || pkg.format!=='ccbak-aesgcm-1'){ toast('Formato de backup não reconhecido.'); input.value=''; return; }
+    var salt=_bytesFromB64(pkg.salt), iv=_bytesFromB64(pkg.iv), data=_bytesFromB64(pkg.data);
+    _deriveKey(pass, salt).then(function(key){
+      return crypto.subtle.decrypt({name:'AES-GCM', iv:iv}, key, data);
+    }).then(function(plain){
+      var json=new TextDecoder().decode(plain);
+      var snap=JSON.parse(json);
+      // Restaura em memória
+      if(snap.recs && typeof S!=='undefined') S.recs=snap.recs;
+      if(snap.stock!=null && typeof S!=='undefined'){ S.stock=snap.stock; localStorage.setItem('cc_stock', S.stock); }
+      if(snap.contel && typeof SL!=='undefined') Object.assign(SL, snap.contel);
+      if(snap.esin && typeof SE!=='undefined') Object.assign(SE, snap.esin);
+      if(snap.logiEstoque && typeof LS!=='undefined') Object.assign(LS, snap.logiEstoque);
+      if(snap.logiData && typeof LG!=='undefined') LG.data=snap.logiData;
+      if(snap.bp && typeof BP!=='undefined'){ BP.sheets=snap.bp; saveBPToLocal(); }
+      if(snap.ex && typeof EX!=='undefined') Object.assign(EX, snap.ex);
+      updateSidebar();
+      logAudit('backup_restore','cifrado_aesgcm', (snap.recs||[]).length);
+      toast('Backup restaurado com sucesso. Revise os dados e sincronize se necessário.');
+      input.value='';
+    }).catch(function(e){
+      toast('Falha ao restaurar: senha incorreta ou arquivo corrompido.');
+      input.value='';
+    });
+  };
+  reader.onerror=function(){ toast('Falha ao ler o arquivo.'); input.value=''; };
+  reader.readAsText(file);
+}
+
 var TITLES = {
   launch:     'Novo lançamento',
   stock:      'Estoque',
@@ -1483,6 +1955,8 @@ var TITLES = {
   history:    'Histórico',
   contel:     'Logística Contel',
   cd:         'CD — Centro de Distribuição',
+  base:       'Base de Planilhas',
+  export:     'Exportação',
   licenciados:'Base Licenciados',
   config:     'Configurações'
 };
@@ -1495,6 +1969,8 @@ var SUBS = {
   history:    'Todos os lançamentos registrados',
   contel:     'Chips e envelopes enviados ao Contel do país',
   cd:         'Análise de vendas e movimento de chips por planilha',
+  base:       'Upload das planilhas brutas do sistema interno',
+  export:     'Gerar planilhas para o sistema de logística',
   licenciados:'Licenciados com chips enviados e não ativados',
   config:     'Conexão com Google Sheets e preferências'
 };
@@ -1510,7 +1986,7 @@ function buildQuickUsers(){
     btn.textContent = u;
     btn.onclick = function(){
       document.getElementById('login-name').value = u;
-      doLogin();
+      document.getElementById('login-pass').focus();
     };
     el.appendChild(btn);
   });
@@ -1518,31 +1994,120 @@ function buildQuickUsers(){
 
 function doLogin(){
   var name = document.getElementById('login-name').value.trim();
+  var pass = document.getElementById('login-pass').value;
   if(!name){
     var err = document.getElementById('login-error');
+    err.textContent = 'Por favor, digite seu nome.';
     err.style.display = 'block';
     setTimeout(function(){ err.style.display = 'none'; }, 3000);
     return;
   }
-  S.user = name;
-  localStorage.setItem('cc_last_user', name);
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').classList.add('visible');
-  var initials = name.split(' ').map(function(w){return w[0]}).slice(0,2).join('').toUpperCase();
-  document.getElementById('user-avatar').textContent = initials;
-  document.getElementById('user-name-display').textContent = name;
-  document.getElementById('cfg-stock').value = S.stock;
-  document.getElementById('cfg-min').value = S.minStock;
-  document.getElementById('me-date').value = new Date().toISOString().slice(0,10);
-  updateSidebar();
-  if(SCRIPT_URL) loadFromSheets();
+  var errEl = document.getElementById('login-error');
+  var btn = document.querySelector('.login-btn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Verificando...'; }
+  function fail(msg){
+    if(btn){ btn.disabled = false; btn.textContent = 'Entrar no sistema'; }
+    errEl.textContent = msg || 'Senha incorreta.';
+    errEl.style.display = 'block';
+    setTimeout(function(){ errEl.style.display = 'none'; }, 3000);
+  }
+  function success(){
+    if(btn){ btn.disabled = false; btn.textContent = 'Entrar no sistema'; }
+    S.user = name;
+    localStorage.setItem('cc_last_user', name);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    var initials = name.split(' ').map(function(w){return w[0]}).slice(0,2).join('').toUpperCase();
+    document.getElementById('user-avatar').textContent = initials;
+    document.getElementById('user-name-display').textContent = name;
+    document.getElementById('cfg-stock').value = S.stock;
+    document.getElementById('cfg-min').value = S.minStock;
+    document.getElementById('me-date').value = new Date().toISOString().slice(0,10);
+    updateSidebar();
+    if(SCRIPT_URL) loadFromSheets();
+    SEC.lastActivity = Date.now();
+    startInactivityTimer();
+    logAudit('login', '', '');
+  }
+  hashPass(pass).then(function(h){
+    // 1) Tenta validar no servidor (autoritativo)
+    ccPost({ verifyPass:true, kind:'login', hash:h }).then(function(r){ return r.json(); })
+      .then(function(res){
+        if(res && res.ok && res.valid){ success(); return; }
+        if(res && res.ok && res.valid === false){
+          // Servidor respondeu e negou — mas pode ser 1º acesso sem senha salva
+          if(res.unset){
+            // Sem senha definida no servidor: aceita padrão local apenas no 1º acesso
+            checkLocalFallback(h, success, fail);
+          } else {
+            fail('Senha incorreta.');
+          }
+          return;
+        }
+        // Servidor indisponível/sem suporte → fallback local
+        checkLocalFallback(h, success, fail);
+      })
+      .catch(function(){ checkLocalFallback(h, success, fail); });
+  }).catch(function(){
+    fail('Falha de segurança no navegador. Atualize o navegador.');
+  });
+}
+
+/* Fallback local de senha (offline ou backend antigo).
+   Compara o hash SHA-256 com o armazenado; aceita padrão só se nada definido. */
+function checkLocalFallback(hash, ok, fail){
+  var stored = localStorage.getItem('cc_login_pass_sha') || '';
+  if(stored){
+    if(hash === stored) ok(); else fail('Senha incorreta (offline).');
+    return;
+  }
+  // Sem hash salvo: aceita a senha-padrão inicial 'igreen2026' (migração suave)
+  hashPass('igreen2026').then(function(def){
+    if(hash === def){ localStorage.setItem('cc_login_pass_sha', def); ok(); }
+    else fail('Senha incorreta.');
+  }).catch(function(){ fail('Senha incorreta.'); });
 }
 
 function doLogout(){
+  // Limpeza de PII ao sair (importante em PCs compartilhados): remove dados
+  // pessoais da memória e do localStorage, preservando configs não-sensíveis.
+  clearPIIFromSession();
   document.getElementById('app').classList.remove('visible');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-name').value = '';
+  var pf = document.getElementById('login-pass'); if(pf) pf.value = '';
+  SEC.revealPII = false;
+  logAudit('logout','','');
   S.user = '';
+}
+
+/* Remove dados pessoais da sessão e do armazenamento local. */
+function clearPIIFromSession(){
+  try {
+    // 1) Planilhas brutas (Base de Planilhas) — contêm a maior carga de PII
+    if(typeof BP !== 'undefined' && BP.sheets){
+      Object.keys(BP.sheets).forEach(function(k){
+        BP.sheets[k] = { data:null, rows:0, date:null, file:null, status:'pending' };
+      });
+      BP.log = [];
+    }
+    clearBPLocal(true);
+
+    // 2) Registries de logística (nome/UF de licenciados) em memória e cache local
+    if(typeof LG !== 'undefined' && LG.data){
+      LG.data.licRegistry = {};
+      LG.data.avuRegistry = {};
+    }
+    ['cc_logi_licRegistry','cc_logi_avuRegistry','cc_logi_licIdTipoMap',
+     'cc_logi_atvSeen','cc_logi_licLinesSeen','cc_logi_avuLinesSeen'
+    ].forEach(function(k){ try { localStorage.removeItem(k); } catch(e){} });
+
+    // 3) Lançamentos em memória (telefone/solicitante) — recarregados do Sheets no próximo login
+    if(typeof S !== 'undefined') S.recs = [];
+
+    // 4) Histórico de exportação local (contém códigos) — mantém só no servidor
+    try { localStorage.removeItem('cc_ex_history'); } catch(e){}
+  } catch(e){ console.warn('[Logout] limpeza PII falhou', e); }
 }
 
 /* ── PAGES ───────────────────────────────────────────── */
@@ -1560,6 +2125,8 @@ function setPage(p, btn){
   if(p==='history')     renderHistory();
   if(p==='contel')      renderContel();
   if(p==='licenciados') renderLicenciados();
+  if(p==='base')       renderBase();
+  if(p==='export')     renderExport();
   if(p==='cd'){
     if(!LG.data && document.getElementById('sync-dot').className.indexOf('spin')>=0){
       document.getElementById('logi-empty').style.display = 'none';
@@ -1680,15 +2247,34 @@ function resetForm(){
 /* ── SENHA CONFIG ───────────────────────────────────── */
 function checkCfgPass(){
   var v = document.getElementById('cfg-pass-input').value;
-  var stored = localStorage.getItem('cc_cfg_pass') || btoa('conf2026');
-  if(btoa(v) === stored){
+  function unlock(){
     document.getElementById('cfg-lock').style.display = 'none';
     document.getElementById('cfg-content').style.display = 'block';
-  } else {
+    logAudit('config_access', '', '');
+  }
+  function deny(){
     var err = document.getElementById('cfg-pass-err');
     err.style.display = 'block';
     setTimeout(function(){ err.style.display = 'none'; }, 2500);
   }
+  hashPass(v).then(function(h){
+    ccPost({ verifyPass:true, kind:'config', hash:h }).then(function(r){ return r.json(); })
+      .then(function(res){
+        if(res && res.ok && res.valid){ unlock(); return; }
+        if(res && res.ok && res.valid===false && !res.unset){ deny(); return; }
+        // Fallback local / 1º acesso
+        var stored = localStorage.getItem('cc_cfg_pass_sha') || '';
+        if(stored){ if(h===stored) unlock(); else deny(); return; }
+        hashPass('conf2026').then(function(def){
+          if(h===def){ localStorage.setItem('cc_cfg_pass_sha', def); unlock(); } else deny();
+        }).catch(deny);
+      })
+      .catch(function(){
+        var stored = localStorage.getItem('cc_cfg_pass_sha') || '';
+        if(stored){ if(h===stored) unlock(); else deny(); return; }
+        hashPass('conf2026').then(function(def){ if(h===def){ localStorage.setItem('cc_cfg_pass_sha', def); unlock(); } else deny(); }).catch(deny);
+      });
+  }).catch(deny);
 }
 
 function updateCfgPass(){
@@ -1696,16 +2282,29 @@ function updateCfgPass(){
   var cp = document.getElementById('cfg-confirm-pass').value;
   if(!np || np.length < 4){ toast('A senha deve ter pelo menos 4 caracteres.'); return; }
   if(np !== cp){ toast('As senhas não coincidem.'); return; }
-  var hashed = btoa(np);
-  localStorage.setItem('cc_cfg_pass', hashed);
-  fetch(SCRIPT_URL, {
-    method:'POST',
-    headers:{'Content-Type':'text/plain'},
-    body: JSON.stringify({ saveConfig:{ cc_cfg_pass: hashed } })
-  }).catch(function(){});
-  document.getElementById('cfg-new-pass').value = '';
-  document.getElementById('cfg-confirm-pass').value = '';
-  toast('Senha de configurações atualizada!');
+  hashPass(np).then(function(h){
+    localStorage.setItem('cc_cfg_pass_sha', h);
+    ccPost({ saveConfig:{ cc_cfg_pass_sha: h } }).catch(function(){});
+    document.getElementById('cfg-new-pass').value = '';
+    document.getElementById('cfg-confirm-pass').value = '';
+    logAudit('config_pass_change', '', '');
+    toast('Senha de configurações atualizada!');
+  }).catch(function(){ toast('Falha ao gerar hash. Atualize o navegador.'); });
+}
+
+function updateLoginPass(){
+  var np = document.getElementById('cfg-login-pass').value;
+  var cp = document.getElementById('cfg-login-pass2').value;
+  if(!np || np.length < 4){ toast('A senha deve ter pelo menos 4 caracteres.'); return; }
+  if(np !== cp){ toast('As senhas não coincidem.'); return; }
+  hashPass(np).then(function(h){
+    localStorage.setItem('cc_login_pass_sha', h);
+    ccPost({ saveConfig:{ cc_login_pass_sha: h } }).catch(function(){});
+    document.getElementById('cfg-login-pass').value = '';
+    document.getElementById('cfg-login-pass2').value = '';
+    logAudit('login_pass_change', '', '');
+    toast('Senha de login atualizada para todos os usuários!');
+  }).catch(function(){ toast('Falha ao gerar hash. Atualize o navegador.'); });
 }
 
 /* ── MODAL ENTRADA ───────────────────────────────────── */
@@ -1855,7 +2454,8 @@ function loadFromSheets(){
         if(cfg.cc_alert_msg   && document.getElementById('cfg-alert-msg')) document.getElementById('cfg-alert-msg').value = cfg.cc_alert_msg;
         if((cfg.cc_alert_wpp || cfg.cc_alert_email) && document.getElementById('cfg-alert-test'))
           document.getElementById('cfg-alert-test').style.display = 'block';
-        if(cfg.cc_cfg_pass) localStorage.setItem('cc_cfg_pass', cfg.cc_cfg_pass);
+        if(cfg.cc_cfg_pass_sha) localStorage.setItem('cc_cfg_pass_sha', cfg.cc_cfg_pass_sha);
+        if(cfg.cc_login_pass_sha) localStorage.setItem('cc_login_pass_sha', cfg.cc_login_pass_sha);
 
         // Esin
         if(cfg.contel_esin_qty !== undefined && cfg.contel_esin_qty !== '')
@@ -2424,7 +3024,7 @@ function renderHistory(){
     var lbl = labels[r.nature] || r.nature;
     var sub = r.nature==='chip'
       ? ('Licenciado: '+(r.licensedName||'—')+' · ICCID: '+(r.iccid||'—')+' · '+(r.qty||1)+' chips')
-      : ('Por: '+(r.requester||'—')+(r.number?' · '+r.number:''));
+      : ('Por: '+(r.requester||'—')+(r.number?' · '+pii(r.number,'phone'):''));
     var val = (r.value && r.value!=='—') ? ' · R$ '+r.value : '';
     var obs = (r.obs && r.obs.trim() && r.obs!=='—') ? '<div class="rec-obs">'+r.obs+'</div>' : '';
     var eid = String(r.id).replace(/'/g,'');
@@ -2485,6 +3085,7 @@ function exportXLSX(type){
   a.href = URL.createObjectURL(blob);
   a.download = 'controle_chips_'+(labels[type]||type)+'_'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
+  logAudit('export','lancamentos:'+type, data.length);
   toast((labels[type]||type)+' exportado!');
 }
 </script>
@@ -3040,6 +3641,7 @@ function exportContelCSV(){
   a.href = URL.createObjectURL(blob);
   a.download = 'contel_movimentacoes_'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
+  logAudit('export','contel', (SL.log||[]).length);
   toast('CSV exportado!');
 }
 </script>
@@ -3116,12 +3718,17 @@ function saveLogiEstoque(){
 function openLogiEstoqueHistorico(){
   var listEl = document.getElementById('logi-historico-list');
   if(!LS.log.length){
-    listEl.innerHTML = '<div class="empty">Nenhum ajuste registrado ainda.</div>';
+    listEl.innerHTML = '<div class="empty">Nenhum registro ainda.</div>';
   } else {
-    var html = '<table class="rtable"><thead><tr><th>Data</th><th>De</th><th>Para</th><th>Resp.</th><th>Justificativa</th></tr></thead><tbody>';
+    var html = '<table class="rtable"><thead><tr><th>Data</th><th>Tipo</th><th>De</th><th>Para</th><th>Resp.</th><th>Detalhe</th></tr></thead><tbody>';
     LS.log.forEach(function(e){
       var d = new Date(e.date);
-      html += '<tr><td class="mono">'+d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</td><td>'+(e.de !== null && e.de !== undefined ? e.de : '—')+'</td><td style="color:var(--accent);font-weight:500">'+e.para+'</td><td style="color:var(--purple)">'+(e.responsavel||'—')+'</td><td style="color:var(--text3)">'+(e.motivo||'—')+'</td></tr>';
+      var tipo=e.tipo||'ajuste';
+      var tipoBadge='<span class="badge bdg-a">Ajuste</span>';
+      if(tipo==='compra') tipoBadge='<span class="badge bdg-g">Compra</span>';
+      else if(tipo==='envio') tipoBadge='<span class="badge" style="background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)">Envio</span>';
+      else if(e.motivo&&e.motivo.indexOf('Desconto')>=0) tipoBadge='<span class="badge bdg-b">Desconto auto</span>';
+      html += '<tr><td class="mono">'+d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</td><td>'+tipoBadge+'</td><td>'+(e.de !== null && e.de !== undefined ? e.de.toLocaleString('pt-BR') : '—')+'</td><td style="color:var(--accent);font-weight:500">'+e.para.toLocaleString('pt-BR')+'</td><td style="color:var(--purple)">'+(e.responsavel||'—')+'</td><td style="color:var(--text3);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(e.motivo||'').replace(/"/g,'&quot;')+'">'+(e.motivo||'—')+'</td></tr>';
     });
     html += '</tbody></table>';
     listEl.innerHTML = html;
@@ -3586,8 +4193,8 @@ function processLogiFile(arrayBuffer, fileName){
         if(!found) validationErrors.push(sheetName+': coluna "'+req+'" não encontrada');
       });
     }
-    checkCols(rowsLic, 'Licença', ['Ativo', 'Tipo Licenca', 'Tipo De Pagamento', 'Status Do Parcelamento', 'Código']);
-    checkCols(rowsAvu, 'Chip avulso', ['Id Transacao', 'Qtde', 'Código']);
+    checkCols(rowsLic, 'Licença', ['Ativo', 'Tipo Licenca', 'Tipo De Pagamento']);
+    checkCols(rowsAvu, 'Chip avulso', ['Id Transacao', 'Qtde']);
     if(validationErrors.length){
       var msg = '⚠️ Problemas encontrados na planilha:\n\n• ' + validationErrors.join('\n• ') + '\n\nOs dados podem ficar incompletos. Deseja continuar mesmo assim?';
       if(!confirm(msg)) return showLogiError('Upload cancelado. Corrija a planilha e tente novamente.\n\nProblemas:\n' + validationErrors.join('\n'));
@@ -3691,8 +4298,8 @@ function processLogiFile(arrayBuffer, fileName){
       var ativ     = String(getCol(r, ['ativado','ativacao','ativação'])).trim().toUpperCase();
       var uf       = String(getCol(r, ['uf','estado'])).trim().toUpperCase();
       var dt       = getCol(r, ['data ativo','data_ativo','data','data_compra','data_venda','data_pagamento']);
-      var idLic    = String(getCol(r, ['código (id)','codigo (id)','codigo_id','id_licenciado','id_lic','codigo_lic'])).trim();
-      var nomeLic  = String(getCol(r, ['nome_licenciado','nome_lic','licenciado_nome','licenciado','nome'])).trim();
+      var idLic    = String(getCol(r, ['código (id)','codigo (id)','codigo_id','id_licenciado','id_lic','codigo_lic','codigo','idconsultor'])).trim();
+      var nomeLic  = String(getCol(r, ['nome_licenciado','nome_lic','licenciado_nome','licenciado','nome consultor','nome'])).trim();
 
       if(status === 'RENOVAÇÃO' || status === 'RENOVACAO' || status === 'RENOVAÇÃO VOUCHER' || status === 'RENOVACAO VOUCHER') return;
 
@@ -3780,8 +4387,8 @@ function processLogiFile(arrayBuffer, fileName){
       var uf   = String(getCol(r, ['destinatario uf','uf','estado'])).trim().toUpperCase();
       var dt   = getCol(r, ['data compra','data_compra','data','data_venda']);
       var qty  = parseInt(getCol(r, ['qtde','quantidade','qty'])) || 1;
-      var idLic   = String(getCol(r, ['código (id)','codigo (id)','codigo_id','id_licenciado','id_lic'])).trim();
-      var nomeLic = String(getCol(r, ['nome_licenciado','nome_lic','licenciado_nome','licenciado','nome'])).trim();
+      var idLic   = String(getCol(r, ['código (id)','codigo (id)','codigo_id','id_licenciado','id_lic','idconsultor','codigo'])).trim();
+      var nomeLic = String(getCol(r, ['nome_licenciado','nome_lic','licenciado_nome','licenciado','nome consultor','nome'])).trim();
 
       // Deduplicação: chave = transação + ID (evita contar mesma linha 2x)
       var avuDedupKey = trans + '|' + idLic;
@@ -3875,7 +4482,7 @@ function processLogiFile(arrayBuffer, fileName){
       } catch(e){}
       console.log('[Logística] atvSeen inicial (dedup):', Object.keys(atvSeen).length);
       rowsAtv.forEach(function(r){
-        var codId = String(getCol(r, ['código (id)','codigo (id)','codigo_id','id_licenciado']) || '').trim();
+        var codId = String(getCol(r, ['código (id)','codigo (id)','codigo_id','id_licenciado','id licenciado','codigo','idconsultor']) || '').trim();
         var idTelecom = String(getCol(r, ['id telecom','id_telecom','idtelecom']) || '').trim();
         var tipoLinha = String(getCol(r, ['tipo de linha','tipo_de_linha','tipo_linha']) || '').trim().toLowerCase();
         var dt = getCol(r, ['data ativo','data_ativo','data']);
@@ -4117,6 +4724,7 @@ function exportLogiCSV(){
   a.href = URL.createObjectURL(blob);
   a.download = 'logistica_resumo_'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
+  logAudit('export','logistica_resumo', '');
   toast('CSV exportado!');
 }
 
@@ -4369,6 +4977,7 @@ function exportLicenciadosCSV(){
   a.href = URL.createObjectURL(blob);
   a.download = 'licenciados_'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
+  logAudit('export','licenciados', all.length);
   toast('CSV exportado!');
 }
 
@@ -4531,6 +5140,387 @@ function showStockAlertBanner(){
   }
   toast('⚠️ Estoque baixo! Alerta '+(SL.cmbContacts.length || email ? 'enviado automaticamente.' : 'Verifique a aba Estoque.'));
 }
+
+/* ── CD — COMPRA E ENVIO DE CHIPS ─────────────────────── */
+function openCdCompraModal(){
+  document.getElementById('cd-compra-qty').value='';
+  document.getElementById('cd-compra-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('cd-compra-fornecedor').value='';
+  document.getElementById('cd-compra-obs').value='';
+  document.getElementById('modal-cd-compra').classList.add('open');
+}
+
+function openCdEnvioModal(){
+  document.getElementById('cd-envio-qty').value='';
+  document.getElementById('cd-envio-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('cd-envio-destino').value='';
+  document.getElementById('cd-envio-obs').value='';
+  document.getElementById('modal-cd-envio').classList.add('open');
+}
+
+function submitCdCompra(){
+  var qty=parseInt(document.getElementById('cd-compra-qty').value);
+  if(isNaN(qty)||qty<1){toast('Informe uma quantidade válida.');return;}
+  var date=document.getElementById('cd-compra-date').value||new Date().toISOString().slice(0,10);
+  var fornecedor=document.getElementById('cd-compra-fornecedor').value||'—';
+  var obs=document.getElementById('cd-compra-obs').value||'';
+  var anterior=LS.qty||0;
+  LS.qty=(LS.qty||0)+qty;
+  LS.log.unshift({id:Date.now(),date:new Date().toISOString(),de:anterior,para:LS.qty,tipo:'compra',motivo:'Compra: +'+qty+' chips'+(fornecedor!=='—'?' — '+fornecedor:'')+(obs?' — '+obs:''),responsavel:S.user||'sistema'});
+  saveLogiEstoqueSheets();
+  document.getElementById('modal-cd-compra').classList.remove('open');
+  renderLogiEstoque();
+  updateSidebar();
+  toast('Compra registrada: +'+qty.toLocaleString('pt-BR')+' chips. Novo estoque: '+LS.qty.toLocaleString('pt-BR'));
+}
+
+function submitCdEnvio(){
+  var qty=parseInt(document.getElementById('cd-envio-qty').value);
+  if(isNaN(qty)||qty<1){toast('Informe uma quantidade válida.');return;}
+  if(LS.qty!==null&&qty>LS.qty){if(!confirm('Quantidade ('+qty+') maior que o estoque atual ('+LS.qty+'). Deseja continuar?'))return;}
+  var date=document.getElementById('cd-envio-date').value||new Date().toISOString().slice(0,10);
+  var destino=document.getElementById('cd-envio-destino').value||'—';
+  var obs=document.getElementById('cd-envio-obs').value||'';
+  var anterior=LS.qty||0;
+  LS.qty=Math.max(0,(LS.qty||0)-qty);
+  LS.log.unshift({id:Date.now(),date:new Date().toISOString(),de:anterior,para:LS.qty,tipo:'envio',motivo:'Envio: -'+qty+' chips → '+destino+(obs?' — '+obs:''),responsavel:S.user||'sistema'});
+  saveLogiEstoqueSheets();
+  document.getElementById('modal-cd-envio').classList.remove('open');
+  renderLogiEstoque();
+  updateSidebar();
+  toast('Envio registrado: -'+qty.toLocaleString('pt-BR')+' chips. Novo estoque: '+LS.qty.toLocaleString('pt-BR'));
+}
+
+/* ── BASE DE PLANILHAS ────────────────────────────────── */
+var BP_CONFIG = [
+  { key:'chipAvulso',   label:'Chip Avulso',     icon:'📦', cor:'var(--accent)', required:['Idlogistica','Qtde','Id Transacao'], accept:'.xlsx,.xls' },
+  { key:'licenciado',   label:'Licenciado',      icon:'👤', cor:'var(--blue)',   required:['Codigo','Ativo','Tipo Licenca'], accept:'.xlsx,.xls' },
+  { key:'clienteAtivo', label:'Cliente Ativo',    icon:'✅', cor:'var(--teal)',   required:['ID Licenciado','ID Telecom'], accept:'.xlsx,.xls' },
+  { key:'dom',          label:'DOM',             icon:'💳', cor:'var(--amber)',  required:['cod_external'], accept:'.csv,.xlsx,.xls,.tsv' },
+  { key:'contel',       label:'Contel',          icon:'📋', cor:'var(--purple)', required:['ICCID ENVELOPADO'], accept:'.xlsx,.xls,.csv' }
+];
+
+/* ── MINIMIZAÇÃO DE DADOS (LGPD) ──────────────────────────
+   Remove colunas com dado pessoal das planilhas que NÃO precisam delas no
+   cálculo. O Chip Avulso é exceção: mantém CPF/endereço até a exportação
+   (purgado por purgeChipAvulsoPII() logo após gerar o CSV de Compras). */
+var PII_COL_PATTERNS = [
+  'cpf','cnpj','documento','rg','nascimento',
+  'email','e mail','e-mail','mail',
+  'celular','telefone','fone','whatsapp','contato',
+  'endereco','endereço','logradouro','rua','bairro','cep','complemento','numero','número',
+  'nome'  // nome do comprador/consultor — sensível fora do contexto de exibição
+];
+/* Colunas que NÃO devem ser removidas mesmo casando com padrão acima
+   (necessárias ao cálculo/identificação). */
+var PII_KEEP_EXACT = {
+  'tipo licenca':1,'tipo_licenca':1,'tipo licença':1,
+  'destinatario uf':1,'uf':1,'estado':1,
+  'codigo (id)':1,'código (id)':1,'codigo_id':1,'codigo':1,'código':1,
+  'id licenciado':1,'id_licenciado':1,'id telecom':1,'id_telecom':1
+};
+
+function isPIIColumn(colName){
+  var c = String(colName||'').toLowerCase().trim();
+  if(PII_KEEP_EXACT[c]) return false;
+  for(var i=0;i<PII_COL_PATTERNS.length;i++){
+    if(c.indexOf(PII_COL_PATTERNS[i]) >= 0) return true;
+  }
+  return false;
+}
+
+/* Retorna nova lista de rows sem as colunas de PII. */
+function stripPIIColumns(rows){
+  if(!rows || !rows.length) return rows;
+  var keys = Object.keys(rows[0]);
+  var drop = {};
+  keys.forEach(function(k){ if(isPIIColumn(k)) drop[k] = true; });
+  if(!Object.keys(drop).length) return rows;
+  return rows.map(function(r){
+    var o = {};
+    Object.keys(r).forEach(function(k){ if(!drop[k]) o[k] = r[k]; });
+    return o;
+  });
+}
+
+/* Aplica minimização conforme a planilha. chipAvulso é preservado até exportar. */
+function bpMinimize(key, rows){
+  if(key === 'chipAvulso') return rows; // mantém PII até a exportação
+  return stripPIIColumns(rows);
+}
+
+/* Purga CPF/endereço/telefone/e-mail do Chip Avulso após a exportação. */
+function purgeChipAvulsoPII(){
+  try {
+    var s = BP.sheets['chipAvulso'];
+    if(s && s.status==='ready' && Array.isArray(s.data) && s.data.length){
+      s.data = stripPIIColumns(s.data);
+      s.piiPurged = true;
+      saveBPToLocal();
+      logAudit('pii_purge','chipAvulso_pos_exportacao', s.data.length);
+    }
+  } catch(e){ console.warn('[Minimização] purge falhou', e); }
+}
+
+function renderBase(){
+  var statusH='';
+  var allReady=true,anyUploaded=false;
+  BP_CONFIG.forEach(function(cfg){
+    var s=BP.sheets[cfg.key];
+    var isOk=s.status==='ready';
+    if(!isOk)allReady=false;
+    if(isOk)anyUploaded=true;
+    var cor=isOk?cfg.cor:'var(--text3)';
+    var bg=isOk?'var(--surface2)':'var(--surface)';
+    statusH+='<div class="mc" style="padding:14px 16px;border-color:'+(isOk?cfg.cor:'var(--border)')+'"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">'+cfg.icon+'</span><span style="font-size:11px;font-weight:600;color:'+cor+';text-transform:uppercase;letter-spacing:.05em">'+cfg.label+'</span></div><div style="font-size:20px;font-weight:600;color:'+cor+'">'+(isOk?s.rows.toLocaleString('pt-BR')+' linhas':'Aguardando')+'</div>'+(s.file?'<div style="font-size:10px;color:var(--text3);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+s.file+'</div>':'')+'</div>';
+  });
+  document.getElementById('bp-status-cards').innerHTML=statusH;
+
+  var slotsH='';
+  BP_CONFIG.forEach(function(cfg,idx){
+    var s=BP.sheets[cfg.key];
+    var isOk=s.status==='ready';
+    slotsH+='<div style="background:var(--surface);border:1px solid '+(isOk?cfg.cor:'var(--border)')+';border-radius:var(--radius-xl);padding:18px 22px;margin-bottom:12px">';
+    slotsH+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:20px">'+cfg.icon+'</span><div><div style="font-size:14px;font-weight:600;color:var(--text)">'+(idx+1)+'. '+cfg.label+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Colunas: '+cfg.required.slice(0,3).join(', ')+'...</div></div></div>';
+    if(isOk){
+      slotsH+='<div style="display:flex;align-items:center;gap:10px"><span style="font-size:12px;color:'+cfg.cor+';font-weight:500">✅ '+s.rows+' registros carregados</span><button onclick="bpClearSlot(\''+cfg.key+'\')" style="background:none;border:1px solid var(--border2);border-radius:var(--radius);padding:4px 10px;color:var(--text3);cursor:pointer;font-size:11px;font-family:var(--font)">Remover</button></div>';
+    } else {
+      slotsH+='<div style="display:flex;align-items:center;gap:8px"><label style="display:inline-flex;align-items:center;gap:7px;background:var(--surface3);color:var(--text2);border:1px solid var(--border2);border-radius:var(--radius);padding:8px 16px;font-size:12px;cursor:pointer;font-family:var(--font);transition:all .15s" onmouseover="this.style.borderColor=\''+cfg.cor+'\'" onmouseout="this.style.borderColor=\'var(--border2)\'"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Selecionar arquivo<input type="file" accept="'+(cfg.accept||'.xlsx,.xls,.csv')+'" style="display:none" onchange="bpHandleUpload(\''+cfg.key+'\',this)"></label></div>';
+    }
+    slotsH+='</div>';
+    // Error/status area
+    slotsH+='<div id="bp-msg-'+cfg.key+'" style="display:none;margin-top:8px;padding:8px 12px;border-radius:var(--radius);font-size:12px"></div>';
+    slotsH+='</div>';
+  });
+  document.getElementById('bp-slots').innerHTML=slotsH;
+
+  // Show process button if at least chipAvulso+dom or licenciado are uploaded
+  var hasCa=BP.sheets.chipAvulso.status==='ready';
+  var hasDom=BP.sheets.dom.status==='ready';
+  var hasLic=BP.sheets.licenciado.status==='ready';
+  var canProcess=((hasCa&&hasDom)||hasLic);
+  var btn=document.getElementById('bp-process-btn');
+  if(btn){btn.style.display=canProcess?'inline-flex':'none';}
+
+  // Log
+  if(BP.log.length){
+    var lh='<div class="sec-title">Histórico de uploads</div><table class="rtable"><thead><tr><th>Data</th><th>Planilha</th><th>Registros</th><th>Novos</th><th>Resultado</th></tr></thead><tbody>';
+    BP.log.slice(0,20).forEach(function(l){
+      var d=new Date(l.date);
+      lh+='<tr><td class="mono">'+d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</td><td style="font-weight:500;color:var(--text)">'+l.label+'</td><td>'+l.rows+'</td><td style="color:var(--accent)">+'+l.novos+'</td><td style="color:'+(l.ok?'var(--accent)':'var(--red)')+'">'+l.msg+'</td></tr>';
+    });
+    lh+='</tbody></table>';
+    document.getElementById('bp-log').innerHTML=lh;
+  }
+}
+
+function bpHandleUpload(key, input){
+  var file=input.files[0];
+  if(!file)return;
+  var cfg=BP_CONFIG.find(function(c){return c.key===key;});
+  if(!cfg)return;
+  var msgEl=document.getElementById('bp-msg-'+key);
+  msgEl.style.display='block';
+  msgEl.style.background='var(--amber-bg)';
+  msgEl.style.color='var(--amber)';
+  msgEl.textContent='⏳ Lendo '+file.name+'...';
+
+  var ext=(file.name.split('.').pop()||'').toLowerCase();
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      if(typeof XLSX==='undefined'){
+        var script=document.createElement('script');
+        script.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+        script.onload=function(){bpParseFile(key,cfg,ev.target.result,file.name,ext,msgEl);};
+        script.onerror=function(){bpShowMsg(msgEl,'error','Falha ao carregar biblioteca XLSX.');};
+        document.head.appendChild(script);
+      }else{
+        bpParseFile(key,cfg,ev.target.result,file.name,ext,msgEl);
+      }
+    }catch(err){bpShowMsg(msgEl,'error','Erro: '+(err.message||err));}
+  };
+  reader.onerror=function(){bpShowMsg(msgEl,'error','Falha ao ler arquivo.');};
+  if(ext==='csv')reader.readAsText(file,'utf-8');
+  else reader.readAsArrayBuffer(file);
+}
+
+function bpParseFile(key,cfg,result,fileName,ext,msgEl){
+  try{
+    var rows=[];
+    if(ext==='csv'||ext==='tsv'){
+      var lines=result.split(/\r?\n/).filter(function(l){return l.trim();});
+      if(!lines.length){bpShowMsg(msgEl,'error','Arquivo vazio.');return;}
+      // Auto-detect separator: tab, semicolon, or comma
+      var tabCount=lines[0].split('\t').length;
+      var semiCount=lines[0].split(';').length;
+      var commaCount=lines[0].split(',').length;
+      var sep='\t'; // default tab
+      if(tabCount>=3) sep='\t';
+      else if(semiCount>=3) sep=';';
+      else sep=',';
+      var header=lines[0].split(sep).map(function(c){return c.trim().replace(/^"|"$/g,'');});
+      for(var i=1;i<lines.length;i++){
+        var cells=lines[i].split(sep);
+        var obj={};
+        header.forEach(function(h,j){obj[h]=(cells[j]||'').trim().replace(/^"|"$/g,'');});
+        rows.push(obj);
+      }
+    }else{
+      var data=new Uint8Array(result);
+      var wb=XLSX.read(data,{type:'array'});
+      var sheet=wb.Sheets[wb.SheetNames[0]];
+      rows=XLSX.utils.sheet_to_json(sheet,{defval:''});
+    }
+    if(!rows.length){bpShowMsg(msgEl,'error','Planilha vazia.');return;}
+
+    // Validate required columns
+    var cols=Object.keys(rows[0]).map(function(k){return k.toLowerCase().trim();});
+    var missing=[];
+    cfg.required.forEach(function(req){
+      var found=false;
+      var rl=req.toLowerCase();
+      for(var i=0;i<cols.length;i++){
+        if(cols[i]===rl||cols[i].indexOf(rl)>=0){found=true;break;}
+      }
+      if(!found)missing.push(req);
+    });
+    if(missing.length){
+      bpShowMsg(msgEl,'error','Colunas não encontradas: '+missing.join(', ')+'\nColunas disponíveis: '+Object.keys(rows[0]).join(', '));
+      return;
+    }
+
+    // Count dedup (compare with existing data)
+    var novos=rows.length; // TODO: implement dedup in Phase 2
+
+    // Minimização de dados (LGPD): remove PII das planilhas que não a usam.
+    var stored = bpMinimize(key, rows);
+    BP.sheets[key]={data:stored,rows:stored.length,date:new Date().toISOString(),file:fileName,status:'ready'};
+    BP.log.unshift({date:new Date().toISOString(),key:key,label:cfg.label,rows:stored.length,novos:novos,ok:true,msg:'Carregado com sucesso'});
+
+    saveBPToLocal();
+    bpShowMsg(msgEl,'ok','✅ '+rows.length.toLocaleString('pt-BR')+' registros carregados de "'+fileName+'"');
+    renderBase();
+  }catch(err){
+    bpShowMsg(msgEl,'error','Erro ao processar: '+(err.message||err));
+  }
+}
+
+function bpShowMsg(el,type,msg){
+  el.style.display='block';
+  if(type==='error'){el.style.background='var(--red-bg)';el.style.color='var(--red)';el.style.border='1px solid var(--red-border)';}
+  else if(type==='ok'){el.style.background='rgba(0,210,106,.06)';el.style.color='var(--accent)';el.style.border='1px solid rgba(0,210,106,.2)';}
+  else{el.style.background='var(--amber-bg)';el.style.color='var(--amber)';el.style.border='1px solid var(--amber-border)';}
+  el.textContent=msg;
+}
+
+function bpClearSlot(key){
+  BP.sheets[key]={data:null,rows:0,date:null,file:null,status:'pending'};
+  saveBPToLocal();
+  renderBase();
+  toast('Planilha removida.');
+}
+
+function bpProcessAll(){
+  // Combines uploaded sheets into a virtual workbook and feeds processLogiFile
+  var ca=BP.sheets.chipAvulso;
+  var lic=BP.sheets.licenciado;
+  var dom=BP.sheets.dom;
+  var atv=BP.sheets.clienteAtivo;
+  var con=BP.sheets.contel;
+
+  if(!lic.data&&!ca.data){toast('Suba pelo menos a planilha de Licenciado ou Chip Avulso.');return;}
+
+  // Build virtual XLSX workbook with the uploaded data
+  if(typeof XLSX==='undefined'){toast('Biblioteca XLSX não carregada.');return;}
+  var wb=XLSX.utils.book_new();
+
+  if(lic.data&&lic.data.length){
+    var wsLic=XLSX.utils.json_to_sheet(lic.data);
+    XLSX.utils.book_append_sheet(wb,wsLic,'Licença');
+  }else{
+    // Create empty Licença sheet to avoid error
+    var wsLic=XLSX.utils.aoa_to_sheet([['Uf','Data Ativo','Ativo','Tipo Licenca','Status Licenca','Tipo De Pagamento','Status Do Parcelamento','Código (ID)']]);
+    XLSX.utils.book_append_sheet(wb,wsLic,'Licença');
+  }
+
+  if(ca.data&&ca.data.length){
+    var wsAvu=XLSX.utils.json_to_sheet(ca.data);
+    XLSX.utils.book_append_sheet(wb,wsAvu,'Chip Avulso');
+  }else{
+    var wsAvu=XLSX.utils.aoa_to_sheet([['Data Compra','Qtde','Status','DESTINATARIO UF','Id Transacao','Código (ID)']]);
+    XLSX.utils.book_append_sheet(wb,wsAvu,'Chip Avulso');
+  }
+
+  if(dom.data&&dom.data.length){
+    var wsDom=XLSX.utils.json_to_sheet(dom.data);
+    XLSX.utils.book_append_sheet(wb,wsDom,'Dom');
+  }else{
+    var wsDom=XLSX.utils.aoa_to_sheet([['cod_external']]);
+    XLSX.utils.book_append_sheet(wb,wsDom,'Dom');
+  }
+
+  if(atv.data&&atv.data.length){
+    var wsAtv=XLSX.utils.json_to_sheet(atv.data);
+    XLSX.utils.book_append_sheet(wb,wsAtv,'Ativações');
+  }
+
+  // Process Contel separately (ICCID) — caminho ÚNICO de baixa por planilha.
+  // Usa as mesmas funções de validação/persistência do fluxo manual para
+  // manter uma única fonte de verdade (evita dupla baixa do mesmo ICCID).
+  if(con.data&&con.data.length){
+    var iccids=[];
+    con.data.forEach(function(r){
+      var keys=Object.keys(r);
+      for(var i=0;i<keys.length;i++){
+        if(keys[i].toLowerCase().indexOf('iccid')>=0){
+          var v=normalizeIccid(r[keys[i]]);
+          if(isValidIccid(v))iccids.push(v);
+          break;
+        }
+      }
+    });
+    if(iccids.length){
+      // Dedup contra o registry persistido (mesma regra do fluxo manual)
+      var registry={};
+      (SL.iccidRegistry||[]).forEach(function(ic){registry[ic]=true;});
+      var seenLocal={};
+      var unique=[];
+      iccids.forEach(function(ic){ if(!seenLocal[ic]){ seenLocal[ic]=true; unique.push(ic);} });
+      var novos=unique.filter(function(ic){return!registry[ic];});
+      if(novos.length){
+        var qtyC=novos.length;
+        SL.chips-=qtyC;
+        SL.env-=qtyC;
+        SL.iccidRegistry=(SL.iccidRegistry||[]).concat(novos);
+        SL.log.unshift({id:Date.now(),type:'planilha',chips:-qtyC,env:-qtyC,date:new Date().toISOString(),source:'Base de Planilhas — '+(con.file||'Contel'),obs:qtyC+' ICCIDs novos processados (Base de Planilhas)',responsavel:S.user});
+        saveContelState();
+        // Persiste log + ICCIDs no Sheets (igual ao fluxo manual)
+        var _le=SL.log[0];
+        fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({appendContelLog:{date:_le.date,type:_le.type,chips:_le.chips||0,env:_le.env||0,iccids:qtyC,obs:_le.obs||'',responsavel:_le.responsavel||''}})}).catch(function(){});
+        fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({appendIccids:novos,addedBy:S.user})}).catch(function(){});
+        renderContel();
+        toast('Contel: '+qtyC+' ICCIDs novos processados (-'+qtyC+' chips, -'+qtyC+' env)');
+        setTimeout(checkContelAlert,500);
+      }else{
+        toast('Contel: nenhum ICCID novo (todos já processados)');
+      }
+    }
+  }
+
+  // Convert virtual workbook to ArrayBuffer and feed processLogiFile
+  var wbOut=XLSX.write(wb,{type:'array',bookType:'xlsx'});
+  document.getElementById('logi-file-status').style.display='block';
+  document.getElementById('logi-file-status').innerHTML='⏳ Processando planilhas combinadas...';
+
+  // Open the modal briefly to show status, then process
+  document.getElementById('modal-logi').classList.add('open');
+  setTimeout(function(){
+    processLogiFile(wbOut,'Base_de_Planilhas_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  },100);
+}
+
+/* renderExport() real está definido na seção de Exportação (Fase 3) abaixo. */
 
 /* ── RESUMO EXECUTIVO ─────────────────────────────────── */
 function renderResumo(){
@@ -4929,7 +5919,232 @@ function exportFullReport(){
   // Generate
   var fileName='iGreen_Chips_Relatorio_'+new Date().toISOString().slice(0,10)+'.xlsx';
   XLSX.writeFile(wb,fileName);
+  logAudit('export','relatorio_completo_6abas', '');
   toast('Relatório Excel exportado com 6 abas!');
+}
+
+/* ── SEGURANÇA — AUTO-LOGOUT + MASCARAMENTO ──────────── */
+function startInactivityTimer(){
+  ['click','keydown','mousemove','touchstart'].forEach(function(evt){
+    document.addEventListener(evt, function(){ SEC.lastActivity = Date.now(); }, {passive:true});
+  });
+  if(SEC.timer) clearInterval(SEC.timer);
+  SEC.timer = setInterval(function(){
+    if(S.user && (Date.now() - SEC.lastActivity) > SEC.timeout){
+      doLogout();
+      toast('Sessão encerrada por inatividade (30 min).');
+    }
+  }, 60000);
+}
+
+function maskCpf(v){
+  if(!v) return '—';
+  var s = String(v).replace(/\D/g,'');
+  if(s.length === 11) return '***.' + s.slice(3,6) + '.***-' + s.slice(9);
+  if(s.length === 14) return '**.' + s.slice(2,5) + '.***/' + s.slice(8,12) + '-**';
+  return v;
+}
+function maskEmail(v){
+  if(!v || v.indexOf('@') < 0) return '—';
+  var parts = v.split('@');
+  var name = parts[0];
+  return name.slice(0, Math.min(2, name.length)) + '***@' + parts[1];
+}
+function maskPhone(v){
+  if(!v) return '—';
+  var s = String(v).replace(/\D/g,'');
+  if(s.length >= 10) return '(' + s.slice(0,2) + ') *****-' + s.slice(-4);
+  return v;
+}
+function sanitize(str){
+  if(!str) return '';
+  var div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+
+/* ── EXPORTAÇÃO — GERAÇÃO DE PLANILHA ────────────────── */
+function renderExport(){
+  // Carrega exportados do localStorage
+  try {
+    var saved = localStorage.getItem('cc_ex_exported');
+    if(saved) EX.exported = JSON.parse(saved);
+    var savedH = localStorage.getItem('cc_ex_history');
+    if(savedH) EX.history = JSON.parse(savedH);
+  } catch(e){}
+
+  var ca = BP.sheets.chipAvulso;
+  var dom = BP.sheets.dom;
+  var disponivel = 0, jaExportado = Object.keys(EX.exported).length;
+
+  if(ca.data && ca.data.length && dom.data && dom.data.length){
+    var domSet = {};
+    dom.data.forEach(function(r){
+      var keys = Object.keys(r);
+      keys.forEach(function(k){
+        if(k.toLowerCase().indexOf('cod_external') >= 0 || k.toLowerCase().indexOf('payer') >= 0){
+          if(r[k]) domSet[String(r[k]).trim()] = true;
+        }
+      });
+    });
+    ca.data.forEach(function(r){
+      var trans = '';
+      var idLog = '';
+      Object.keys(r).forEach(function(k){
+        var kl = k.toLowerCase();
+        if(kl.indexOf('id transacao') >= 0 || kl === 'id_transacao') trans = String(r[k] || '').trim();
+        if(kl === 'idlogistica') idLog = String(r[k] || '').trim();
+      });
+      if(trans && domSet[trans] && idLog && !EX.exported[idLog]) disponivel++;
+    });
+  }
+
+  document.getElementById('ex-disponiveis').textContent = disponivel;
+  document.getElementById('ex-exportados').textContent = jaExportado;
+  document.getElementById('ex-total-exports').textContent = EX.history.length;
+
+  // History
+  if(EX.history.length){
+    var hh = '<table class="rtable"><thead><tr><th>Data</th><th>Registros</th><th>Arquivo</th><th>Ação</th></tr></thead><tbody>';
+    EX.history.slice(0, 20).forEach(function(h){
+      var d = new Date(h.date);
+      hh += '<tr><td class="mono">' + d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) + '</td><td style="color:var(--accent);font-weight:500">' + h.count + ' registros</td><td style="font-size:11px;color:var(--text3)">' + h.fileName + '</td><td><button class="btn-secondary" style="font-size:10px;padding:3px 10px" onclick="redownloadExport(' + EX.history.indexOf(h) + ')">Download</button></td></tr>';
+    });
+    hh += '</tbody></table>';
+    document.getElementById('ex-history').innerHTML = hh;
+  } else {
+    document.getElementById('ex-history').innerHTML = '<div class="empty">Nenhuma exportação realizada ainda.</div>';
+  }
+}
+
+function gerarExportacao(){
+  var ca = BP.sheets.chipAvulso;
+  var dom = BP.sheets.dom;
+  if(!ca.data || !ca.data.length){ toast('Suba a planilha de Chip Avulso na Base de Planilhas.'); return; }
+  if(!dom.data || !dom.data.length){ toast('Suba a planilha DOM na Base de Planilhas.'); return; }
+
+  // Build DOM set
+  var domSet = {};
+  dom.data.forEach(function(r){
+    Object.keys(r).forEach(function(k){
+      var kl = k.toLowerCase();
+      if((kl.indexOf('cod_external') >= 0 || kl.indexOf('payer') >= 0) && r[k])
+        domSet[String(r[k]).trim()] = true;
+    });
+  });
+
+  // Helper to get column value by candidate names
+  function gc(row, candidates){
+    var keys = Object.keys(row);
+    for(var i=0;i<candidates.length;i++){
+      var c = candidates[i].toLowerCase();
+      for(var j=0;j<keys.length;j++){
+        if(keys[j].toLowerCase() === c || keys[j].toLowerCase().indexOf(c) >= 0) return row[keys[j]] || '';
+      }
+    }
+    return '';
+  }
+
+  // Filter: only DOM-confirmed + not yet exported
+  var novos = [];
+  var codes = [];
+  ca.data.forEach(function(r){
+    var trans = String(gc(r, ['id transacao','id_transacao']) || '').trim();
+    var idLog = String(gc(r, ['idlogistica']) || '').trim();
+    if(!trans || !domSet[trans]) return;
+    if(!idLog || EX.exported[idLog]) return;
+    novos.push(r);
+    codes.push(idLog);
+  });
+
+  if(!novos.length){ toast('Nenhum registro novo para exportar. Todos já foram exportados.'); return; }
+
+  // Build CSV 41 columns
+  var exportCols = ['Número pedido','Nome Comprador','Data','CPF/CNPJ Comprador','Endereço Comprador','Bairro Comprador','Número Comprador','Complemento Comprador','CEP Comprador','Cidade Comprador','UF Comprador','Telefone Comprador','Celular Comprador','E-mail Comprador','Produto','SKU','Un','Quantidade','Valor Unitário','Valor Total','Total Pedido','Valor Frete Pedido','Valor Desconto Pedido','Outras despesas','Nome Entrega','Endereço Entrega','Número Entrega','Complemento Entrega','Cidade Entrega','UF Entrega','CEP Entrega','Bairro Entrega','Transportadora','Serviço','Tipo Frete','Observações','Qtd Parcela','Data Prevista','Vendedor','Forma Pagamento','ID Forma Pagamento'];
+
+  var bom = '\uFEFF';
+  var rows = [exportCols.join(';')];
+
+  novos.forEach(function(r){
+    var idLog = gc(r, ['idlogistica']);
+    var nome = gc(r, ['destinatario nome']);
+    var data = gc(r, ['data compra']);
+    var cpf = gc(r, ['documento consultor']);
+    var endereco = gc(r, ['endereco']);
+    var bairro = gc(r, ['destinatario bairro']);
+    var numero = gc(r, ['destinatario numero']);
+    var compl = gc(r, ['destinatario compl']);
+    var cep = gc(r, ['destinatario cep']);
+    var cidade = gc(r, ['destinatario cidade']);
+    var uf = gc(r, ['destinatario uf']);
+    var cel = gc(r, ['celular']);
+    var email = gc(r, ['e mail consultor']);
+    var qtde = parseInt(gc(r, ['qtde'])) || 1;
+    var valorTotal = 'R$ ' + (qtde * 10) + ',00';
+
+    var row = [
+      '"'+sanitize(idLog)+'"','"'+sanitize(nome)+'"','"'+sanitize(data)+'"','"'+sanitize(cpf)+'"',
+      '"'+sanitize(endereco)+'"','"'+sanitize(bairro)+'"','"'+sanitize(numero)+'"','"'+sanitize(compl)+'"',
+      '"'+sanitize(cep)+'"','"'+sanitize(cidade)+'"','"'+sanitize(uf)+'"','"'+sanitize(cel)+'"',
+      '"'+sanitize(cel)+'"','"'+sanitize(email)+'"',
+      '"chip avulso"','"CHIPS_A-03"','"un"','"'+qtde+'"','"R$ 10,00"','"'+valorTotal+'"',
+      '','','','',
+      '"'+sanitize(nome)+'"','"'+sanitize(endereco)+'"','"'+sanitize(numero)+'"','"'+sanitize(compl)+'"',
+      '"'+sanitize(cidade)+'"','"'+sanitize(uf)+'"','"'+sanitize(cep)+'"','"'+sanitize(bairro)+'"',
+      '"onlog"','','','','','','"Chips Avulsos"','',''
+    ];
+    rows.push(row.join(';'));
+  });
+
+  // Generate file
+  var hoje = new Date();
+  var fileName = 'Compras_de_' + hoje.toISOString().slice(0,10) + '.csv';
+  var blob = new Blob([bom + rows.join('\n')], { type:'text/csv;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fileName;
+  a.click();
+
+  // Mark as exported
+  codes.forEach(function(c){ EX.exported[c] = true; });
+  EX.history.unshift({ id:Date.now(), date:new Date().toISOString(), count:novos.length, fileName:fileName, codes:codes.join(', ') });
+  try {
+    localStorage.setItem('cc_ex_exported', JSON.stringify(EX.exported));
+    localStorage.setItem('cc_ex_history', JSON.stringify(EX.history));
+  } catch(e){}
+
+  // Show codes for copy
+  document.getElementById('ex-codes').style.display = 'block';
+  document.getElementById('ex-codes-box').textContent = codes.join(', ');
+  document.getElementById('ex-codes-count').textContent = codes.length + ' códigos';
+
+  renderExport();
+  logAudit('export_pii','compras_chip_avulso_41col', novos.length);
+  purgeChipAvulsoPII();
+  toast('Exportação gerada: ' + novos.length + ' registros em ' + fileName + ' · dados pessoais purgados da base local');
+}
+
+function copyExCodes(){
+  var txt = document.getElementById('ex-codes-box').textContent;
+  navigator.clipboard.writeText(txt).then(function(){
+    var ok = document.getElementById('ex-codes-ok');
+    ok.style.opacity = '1';
+    setTimeout(function(){ ok.style.opacity = '0'; }, 2200);
+  });
+}
+
+function limparExportados(){
+  if(!confirm('Isso resetará o controle de registros exportados. Na próxima exportação, TODOS os registros confirmados serão incluídos. Continuar?')) return;
+  EX.exported = {};
+  try { localStorage.removeItem('cc_ex_exported'); } catch(e){}
+  renderExport();
+  toast('Controle de exportados resetado.');
+}
+
+function redownloadExport(idx){
+  var h = EX.history[idx];
+  if(!h){ toast('Registro não encontrado.'); return; }
+  toast('Para re-download, gere uma nova exportação. O histórico é apenas referência.');
 }
 
 /* ── INIT ────────────────────────────────────────────── */
@@ -4951,6 +6166,9 @@ function exportFullReport(){
     document.getElementById('cfg-alert-test').style.display = 'block';
 
   buildQuickUsers();
+
+  // Restaura planilhas brutas (Base de Planilhas) salvas localmente
+  try { loadBPFromLocal(); } catch(e){ console.warn('[BP] restore falhou', e); }
 
   // Auto-refresh a cada 3 min (apenas se logado)
   setInterval(function(){
